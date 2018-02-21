@@ -91,6 +91,9 @@
 		<Unit filename="/Users/joshwolper/Desktop/quik-deform/global.h">
 			<Option target="QUIKDEFORM"/>
 		</Unit>
+		<Unit filename="/Users/joshwolper/Desktop/quik-deform/initialize.h">
+			<Option target="QUIKDEFORM"/>
+		</Unit>
 		<Unit filename="/Users/joshwolper/Desktop/quik-deform/main.cpp">
 			<Option target="QUIKDEFORM"/>
 		</Unit>

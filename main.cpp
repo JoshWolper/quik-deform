@@ -12,13 +12,13 @@ int main(){
 
     //Define our variables
     double h = 1e-4; //timestep
-    double mass = 1.0;
+    double mass = 1.0; //mass of each point
 
-    Vector3d gravity = Vector3d(0.0, -9.8, 0.0);
+    Vector3d gravity = Vector3d(0.0, -9.8, 0.0); //gravity vector for external force later
 
-    int numPoints = 5; //eventually dynamically fill this
+    int numPoints = 5; //eventually dynamically fill this when we are reading in an obj
 
-    //Set the diagonal mass matrix
+    //Set the m x m diagonal mass matrix, M
     MatrixXd iden(numPoints, numPoints);
     iden = MatrixXd::Identity(numPoints, numPoints);
     MatrixXd M = iden * mass; //underlined as an error but this actually works lol

@@ -5,6 +5,6 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS "-O3 ")
 
-set(SOURCE_FILES main.cpp SVD.h SVD.cpp global.h)
+set(SOURCE_FILES main.cpp SVD.h SVD.cpp global.h initialize.h)
 
 add_executable(QUIKDEFORM ${SOURCE_FILES})
