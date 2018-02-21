@@ -27,7 +27,7 @@ void readObj(std::string filename, std::vector<Vector3d>& vertices, std::vector<
     while(std::getline(inputfile, line)){
         std::stringstream ss(line);
         if (line[0] == 'v'){
-            Vector3f currPoint;
+            Vector3d currPoint;
             ss.ignore();
             for (int i = 0; i < 3; i++){
                 ss >> currPoint(i);
@@ -60,10 +60,11 @@ MatrixXd initializeQ(std::string filename){
 
     for(int i = 0; i < numPoints; i++){
 
-
+        q(i,0) = points[i][0];
+        q(i,1) = points[i][1];
+        q(i,2) = points[i][2]; //fill each row iteratively
 
     }
-
 
     return q;
 }

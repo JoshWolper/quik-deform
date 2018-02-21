@@ -3,6 +3,8 @@
 //Developed by Josh Wolper and Yichen Shou
 
 #include "Eigen/Eigen"
+#include "initialize.h"
+#include "global.h"
 #include <iostream>
 
 using namespace Eigen;
@@ -13,10 +15,14 @@ int main(){
     //Define our variables
     double h = 1e-4; //timestep
     double mass = 1.0; //mass of each point
-
     Vector3d gravity = Vector3d(0.0, -9.8, 0.0); //gravity vector for external force later
 
-    int numPoints = 5; //eventually dynamically fill this when we are reading in an obj
+    string objectFile = "../Models/tetrahedron.obj";
+    MatrixXd q0 = initializeQ(objectFile);
+
+    cout << "Our q0 matrix is: " << endl << q0 << endl;
+
+    int numPoints = q0.rows(); //eventually dynamically fill this when we are reading in an obj
 
     //Set the m x m diagonal mass matrix, M
     MatrixXd iden(numPoints, numPoints);

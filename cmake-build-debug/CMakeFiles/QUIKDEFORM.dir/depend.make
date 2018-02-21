@@ -567,5 +567,7 @@ CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../Eigen/src/plugins/CommonCwiseBinaryOps.
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../Eigen/src/plugins/CommonCwiseUnaryOps.h
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../Eigen/src/plugins/MatrixCwiseBinaryOps.h
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../Eigen/src/plugins/MatrixCwiseUnaryOps.h
+CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../global.h
+CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../initialize.h
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../main.cpp
 
