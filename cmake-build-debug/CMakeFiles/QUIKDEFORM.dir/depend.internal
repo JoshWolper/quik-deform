@@ -290,13 +290,21 @@ CMakeFiles/QUIKDEFORM.dir/main.cpp.o
  /Users/joshwolper/Desktop/quik-deform/Eigen/Cholesky
  /Users/joshwolper/Desktop/quik-deform/Eigen/Core
  /Users/joshwolper/Desktop/quik-deform/Eigen/Dense
+ /Users/joshwolper/Desktop/quik-deform/Eigen/Eigen
  /Users/joshwolper/Desktop/quik-deform/Eigen/Eigenvalues
  /Users/joshwolper/Desktop/quik-deform/Eigen/Geometry
  /Users/joshwolper/Desktop/quik-deform/Eigen/Householder
+ /Users/joshwolper/Desktop/quik-deform/Eigen/IterativeLinearSolvers
  /Users/joshwolper/Desktop/quik-deform/Eigen/Jacobi
  /Users/joshwolper/Desktop/quik-deform/Eigen/LU
+ /Users/joshwolper/Desktop/quik-deform/Eigen/OrderingMethods
  /Users/joshwolper/Desktop/quik-deform/Eigen/QR
  /Users/joshwolper/Desktop/quik-deform/Eigen/SVD
+ /Users/joshwolper/Desktop/quik-deform/Eigen/Sparse
+ /Users/joshwolper/Desktop/quik-deform/Eigen/SparseCholesky
+ /Users/joshwolper/Desktop/quik-deform/Eigen/SparseCore
+ /Users/joshwolper/Desktop/quik-deform/Eigen/SparseLU
+ /Users/joshwolper/Desktop/quik-deform/Eigen/SparseQR
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Cholesky/LDLT.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Cholesky/LLT.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Cholesky/LLT_LAPACKE.h
@@ -427,6 +435,7 @@ CMakeFiles/QUIKDEFORM.dir/main.cpp.o
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Core/util/Macros.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Core/util/Memory.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Core/util/Meta.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/Core/util/NonMPL2.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Core/util/ReenableStupidWarnings.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Core/util/StaticAssert.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Core/util/XprHelper.h
@@ -467,6 +476,14 @@ CMakeFiles/QUIKDEFORM.dir/main.cpp.o
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Householder/BlockHouseholder.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Householder/Householder.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Householder/HouseholderSequence.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/IterativeLinearSolvers/BasicPreconditioners.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/IterativeLinearSolvers/BiCGSTAB.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/IterativeLinearSolvers/ConjugateGradient.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/IterativeLinearSolvers/IncompleteCholesky.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/IterativeLinearSolvers/IncompleteLUT.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/IterativeLinearSolvers/IterativeSolverBase.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/IterativeLinearSolvers/LeastSquareConjugateGradient.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/IterativeLinearSolvers/SolveWithGuess.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/Jacobi/Jacobi.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/LU/Determinant.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/LU/FullPivLU.h
@@ -474,6 +491,9 @@ CMakeFiles/QUIKDEFORM.dir/main.cpp.o
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/LU/PartialPivLU.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/LU/PartialPivLU_LAPACKE.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/LU/arch/Inverse_SSE.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/OrderingMethods/Amd.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/OrderingMethods/Eigen_Colamd.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/OrderingMethods/Ordering.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/QR/ColPivHouseholderQR.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/QR/ColPivHouseholderQR_LAPACKE.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/QR/CompleteOrthogonalDecomposition.h
@@ -485,6 +505,56 @@ CMakeFiles/QUIKDEFORM.dir/main.cpp.o
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/SVD/JacobiSVD_LAPACKE.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/SVD/SVDBase.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/SVD/UpperBidiagonalization.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCholesky/SimplicialCholesky.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCholesky/SimplicialCholesky_impl.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/AmbiVector.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/CompressedStorage.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/ConservativeSparseSparseProduct.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/MappedSparseMatrix.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseAssign.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseBlock.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseColEtree.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseCompressedBase.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseCwiseBinaryOp.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseCwiseUnaryOp.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseDenseProduct.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseDiagonalProduct.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseDot.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseFuzzy.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseMap.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseMatrix.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseMatrixBase.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparsePermutation.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseProduct.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseRedux.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseRef.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseSelfAdjointView.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseSolverBase.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseSparseProductWithPruning.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseTranspose.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseTriangularView.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseUtil.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseVector.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/SparseView.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseCore/TriangularSolver.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLUImpl.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_Memory.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_Structs.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_SupernodalMatrix.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_Utils.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_column_bmod.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_column_dfs.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_copy_to_ucol.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_gemm_kernel.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_heap_relax_snode.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_kernel_bmod.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_panel_bmod.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_panel_dfs.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_pivotL.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_pruneL.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseLU/SparseLU_relax_snode.h
+ /Users/joshwolper/Desktop/quik-deform/Eigen/src/SparseQR/SparseQR.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/misc/Image.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/misc/Kernel.h
  /Users/joshwolper/Desktop/quik-deform/Eigen/src/misc/RealSvd2x2.h

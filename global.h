@@ -24,6 +24,8 @@ struct SVDResultDouble
     Eigen::Matrix3d V;
 };
 
+//TODO: Add the constraint class here??
+
 struct Particle{
     float massP;
     float volumeP;
