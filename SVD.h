@@ -1,6 +1,7 @@
 //
-// Created by VElysianP on 11/7/2017.
+// SVD Routine written for an MPM simulation project (Fall 2017) by Yaoyi Bai, Ziyin Qu, and Josh Wolper
 //
+
 #pragma once
 #ifndef MPM_SVD_H
 #define MPM_SVD_H

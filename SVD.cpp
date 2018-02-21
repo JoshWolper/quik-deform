@@ -1,5 +1,5 @@
 //
-// Created by ziyinqu on 11/9/17.
+// SVD Routine written for an MPM simulation project (Fall 2017) by Yaoyi Bai, Ziyin Qu, and Josh Wolper
 //
 
 #include "SVD.h"

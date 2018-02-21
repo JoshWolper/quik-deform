@@ -1,0 +1,3 @@
+/Users/joshwolper/Desktop/quik-deform/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/joshwolper/Desktop/quik-deform/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/joshwolper/Desktop/quik-deform/cmake-build-debug/CMakeFiles/QUIKDEFORM.dir

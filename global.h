@@ -1,6 +1,7 @@
 //
-// Created by VElysianP on 10/1/2017.
+// Global structures written for an MPM simulation project (Fall 2017) by Yaoyi Bai, Ziyin Qu, and Josh Wolper
 //
+
 #pragma once
 #ifndef MATERIAL_POINT_METHOD_SIM_GLOBAL_H
 #define MATERIAL_POINT_METHOD_SIM_GLOBAL_H
