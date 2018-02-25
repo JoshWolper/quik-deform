@@ -3,9 +3,9 @@
 //Developed by Josh Wolper and Yichen Shou
 
 #include "Eigen/Eigen"
-#include "initialize.h"
 #include "global.h"
 #include <iostream>
+#include "QuikDeformer.h"
 
 using namespace Eigen;
 using namespace std;
@@ -14,24 +14,15 @@ int main(){
 
     //Define our variables
     double h = 1e-4; //timestep
+    int iter = 5; // solverIterations
     double mass = 1.0; //mass of each point
+    int fr = 24; // frame rate
     Vector3d gravity = Vector3d(0.0, -9.8, 0.0); //gravity vector for external force later
-
     string objectFile = "../Models/tetrahedron.obj";
-    MatrixXd q0 = initializeQ(objectFile);
 
-    cout << "Our q0 matrix is: " << endl << q0 << endl;
-
-    int numPoints = q0.rows(); //eventually dynamically fill this when we are reading in an obj
-
-    //Set the m x m diagonal mass matrix, M
-    MatrixXd iden(numPoints, numPoints);
-    iden = MatrixXd::Identity(numPoints, numPoints);
-    MatrixXd M = iden * mass; //underlined as an error but this actually works lol
-
-    cout << "Our mass matrix M is: " << endl << M << endl;
-
-
+    QuikDeformer quikDeformer(objectFile, h, iter, fr, mass);
+    quikDeformer.addConstraint("strain");
+    quikDeformer.printMatrices();
 
     //Cholesky example (take matrix A, decompose into L * L.transpose, we need L later)
     Matrix3d A = Matrix3d::Zero();
