@@ -14,8 +14,8 @@ public:
                                std::vector<Eigen::Vector3i>& faces) {};
     ~StrainConstraint(){};
 
-    // function that will satisfy
-    Eigen::MatrixXd Satisfy(double timeStep);
+    // This function should calculate a set of constraint satisfying points in the P matrix
+    void projectConstraint(Eigen::MatrixXd qN_1);
 
 private:
     // do we need a class like this for the ElasticConstraint?

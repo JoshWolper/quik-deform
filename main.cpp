@@ -60,10 +60,12 @@ int main(){
     int iter = 5; // solverIterations
     double mass = 1.0; //mass of each point
     int fr = 24; // frame rate
-    Vector3d gravity = Vector3d(0.0, -9.8, 0.0); //gravity vector for external force later
+    double vx = 0;
+    double vy = 1; //init initial velocity direction and magnitude
+    double vz = 0;
     string objectFile = "../Models/tetrahedron.obj";
 
-    QuikDeformer quikDeformer(objectFile, h, iter, fr, mass);
+    QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz);
     quikDeformer.addConstraint("strain");
     quikDeformer.printMatrices();
 

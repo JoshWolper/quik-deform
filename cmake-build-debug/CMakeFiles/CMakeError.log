@@ -1066,3 +1066,577 @@ int main() {
 #endif
 }
 
+Performing C SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_05c1c/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_05c1c.dir/build.make CMakeFiles/cmTC_05c1c.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_05c1c.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -DOpenMP_FLAG_DETECTED   -o CMakeFiles/cmTC_05c1c.dir/src.c.o   -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:2:10: fatal error: 'omp.h' file not found
+#include <omp.h>
+         ^
+1 error generated.
+CMakeFiles/cmTC_05c1c.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_05c1c.dir/src.c.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_05c1c.dir/src.c.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_05c1c/fast' failed
+gmake[1]: *** [cmTC_05c1c/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_2e449/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_2e449.dir/build.make CMakeFiles/cmTC_2e449.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_2e449.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -DOpenMP_FLAG_DETECTED -fopenmp   -o CMakeFiles/cmTC_2e449.dir/src.c.o   -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+clang: error: unsupported option '-fopenmp'
+CMakeFiles/cmTC_2e449.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_2e449.dir/src.c.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_2e449.dir/src.c.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_2e449/fast' failed
+gmake[1]: *** [cmTC_2e449/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_116ba/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_116ba.dir/build.make CMakeFiles/cmTC_116ba.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_116ba.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -DOpenMP_FLAG_DETECTED -fopenmp=libomp   -o CMakeFiles/cmTC_116ba.dir/src.c.o   -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+clang: error: unsupported argument 'libomp' to option 'fopenmp='
+CMakeFiles/cmTC_116ba.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_116ba.dir/src.c.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_116ba.dir/src.c.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_116ba/fast' failed
+gmake[1]: *** [cmTC_116ba/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_3891a/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_3891a.dir/build.make CMakeFiles/cmTC_3891a.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_3891a.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -DOpenMP_FLAG_DETECTED /openmp   -o CMakeFiles/cmTC_3891a.dir/src.c.o   -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+clang: error: no such file or directory: '/openmp'
+CMakeFiles/cmTC_3891a.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_3891a.dir/src.c.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_3891a.dir/src.c.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_3891a/fast' failed
+gmake[1]: *** [cmTC_3891a/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_ea443/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_ea443.dir/build.make CMakeFiles/cmTC_ea443.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_ea443.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -DOpenMP_FLAG_DETECTED -Qopenmp   -o CMakeFiles/cmTC_ea443.dir/src.c.o   -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+clang: error: unknown argument: '-Qopenmp'
+CMakeFiles/cmTC_ea443.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_ea443.dir/src.c.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_ea443.dir/src.c.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_ea443/fast' failed
+gmake[1]: *** [cmTC_ea443/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_0abbf/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_0abbf.dir/build.make CMakeFiles/cmTC_0abbf.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_0abbf.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -DOpenMP_FLAG_DETECTED -openmp   -o CMakeFiles/cmTC_0abbf.dir/src.c.o   -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c:2:10: fatal error: 'omp.h' file not found
+#include <omp.h>
+         ^
+1 error generated.
+CMakeFiles/cmTC_0abbf.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_0abbf.dir/src.c.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_0abbf.dir/src.c.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_0abbf/fast' failed
+gmake[1]: *** [cmTC_0abbf/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_b131c/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_b131c.dir/build.make CMakeFiles/cmTC_b131c.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_b131c.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -DOpenMP_FLAG_DETECTED -xopenmp   -o CMakeFiles/cmTC_b131c.dir/src.c.o   -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+clang: error: language not recognized: 'openmp'
+clang: warning: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c: 'linker' input unused
+CMakeFiles/cmTC_b131c.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_b131c.dir/src.c.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_b131c.dir/src.c.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_b131c/fast' failed
+gmake[1]: *** [cmTC_b131c/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_213fc/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_213fc.dir/build.make CMakeFiles/cmTC_213fc.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_213fc.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -DOpenMP_FLAG_DETECTED +Oopenmp   -o CMakeFiles/cmTC_213fc.dir/src.c.o   -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+clang: error: no such file or directory: '+Oopenmp'
+CMakeFiles/cmTC_213fc.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_213fc.dir/src.c.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_213fc.dir/src.c.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_213fc/fast' failed
+gmake[1]: *** [cmTC_213fc/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_e13ff/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_e13ff.dir/build.make CMakeFiles/cmTC_e13ff.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_e13ff.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -DOpenMP_FLAG_DETECTED -qsmp   -o CMakeFiles/cmTC_e13ff.dir/src.c.o   -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+clang: error: unknown argument: '-qsmp'
+CMakeFiles/cmTC_e13ff.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_e13ff.dir/src.c.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_e13ff.dir/src.c.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_e13ff/fast' failed
+gmake[1]: *** [cmTC_e13ff/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_44070/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_44070.dir/build.make CMakeFiles/cmTC_44070.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_44070.dir/src.c.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc   -DOpenMP_FLAG_DETECTED -mp   -o CMakeFiles/cmTC_44070.dir/src.c.o   -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.c
+clang: error: unknown argument: '-mp'
+CMakeFiles/cmTC_44070.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_44070.dir/src.c.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_44070.dir/src.c.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_44070/fast' failed
+gmake[1]: *** [cmTC_44070/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C++ SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_a4b22/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_a4b22.dir/build.make CMakeFiles/cmTC_a4b22.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_a4b22.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -O3  -DOpenMP_FLAG_DETECTED   -std=gnu++11 -o CMakeFiles/cmTC_a4b22.dir/src.cxx.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx:2:10: fatal error: 'omp.h' file not found
+#include <omp.h>
+         ^
+1 error generated.
+CMakeFiles/cmTC_a4b22.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_a4b22.dir/src.cxx.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_a4b22.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_a4b22/fast' failed
+gmake[1]: *** [cmTC_a4b22/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C++ SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_41790/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_41790.dir/build.make CMakeFiles/cmTC_41790.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_41790.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -O3  -DOpenMP_FLAG_DETECTED -fopenmp   -std=gnu++11 -o CMakeFiles/cmTC_41790.dir/src.cxx.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+clang: error: unsupported option '-fopenmp'
+CMakeFiles/cmTC_41790.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_41790.dir/src.cxx.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_41790.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_41790/fast' failed
+gmake[1]: *** [cmTC_41790/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C++ SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_c81d5/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_c81d5.dir/build.make CMakeFiles/cmTC_c81d5.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_c81d5.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -O3  -DOpenMP_FLAG_DETECTED -fopenmp=libomp   -std=gnu++11 -o CMakeFiles/cmTC_c81d5.dir/src.cxx.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+clang: error: unsupported argument 'libomp' to option 'fopenmp='
+CMakeFiles/cmTC_c81d5.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_c81d5.dir/src.cxx.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_c81d5.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_c81d5/fast' failed
+gmake[1]: *** [cmTC_c81d5/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C++ SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_af61d/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_af61d.dir/build.make CMakeFiles/cmTC_af61d.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_af61d.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -O3  -DOpenMP_FLAG_DETECTED /openmp   -std=gnu++11 -o CMakeFiles/cmTC_af61d.dir/src.cxx.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+clang: error: no such file or directory: '/openmp'
+CMakeFiles/cmTC_af61d.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_af61d.dir/src.cxx.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_af61d.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_af61d/fast' failed
+gmake[1]: *** [cmTC_af61d/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C++ SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_b26c4/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_b26c4.dir/build.make CMakeFiles/cmTC_b26c4.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_b26c4.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -O3  -DOpenMP_FLAG_DETECTED -Qopenmp   -std=gnu++11 -o CMakeFiles/cmTC_b26c4.dir/src.cxx.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+clang: error: unknown argument: '-Qopenmp'
+CMakeFiles/cmTC_b26c4.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_b26c4.dir/src.cxx.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_b26c4.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_b26c4/fast' failed
+gmake[1]: *** [cmTC_b26c4/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C++ SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_ade9a/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_ade9a.dir/build.make CMakeFiles/cmTC_ade9a.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_ade9a.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -O3  -DOpenMP_FLAG_DETECTED -openmp   -std=gnu++11 -o CMakeFiles/cmTC_ade9a.dir/src.cxx.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx:2:10: fatal error: 'omp.h' file not found
+#include <omp.h>
+         ^
+1 error generated.
+CMakeFiles/cmTC_ade9a.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_ade9a.dir/src.cxx.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_ade9a.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_ade9a/fast' failed
+gmake[1]: *** [cmTC_ade9a/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C++ SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_6a444/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_6a444.dir/build.make CMakeFiles/cmTC_6a444.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_6a444.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -O3  -DOpenMP_FLAG_DETECTED -xopenmp   -std=gnu++11 -o CMakeFiles/cmTC_6a444.dir/src.cxx.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+clang: error: language not recognized: 'openmp'
+clang: warning: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx: 'linker' input unused
+CMakeFiles/cmTC_6a444.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_6a444.dir/src.cxx.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_6a444.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_6a444/fast' failed
+gmake[1]: *** [cmTC_6a444/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C++ SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_61283/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_61283.dir/build.make CMakeFiles/cmTC_61283.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_61283.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -O3  -DOpenMP_FLAG_DETECTED +Oopenmp   -std=gnu++11 -o CMakeFiles/cmTC_61283.dir/src.cxx.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+clang: error: no such file or directory: '+Oopenmp'
+CMakeFiles/cmTC_61283.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_61283.dir/src.cxx.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_61283.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_61283/fast' failed
+gmake[1]: *** [cmTC_61283/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C++ SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_98c68/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_98c68.dir/build.make CMakeFiles/cmTC_98c68.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_98c68.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -O3  -DOpenMP_FLAG_DETECTED -qsmp   -std=gnu++11 -o CMakeFiles/cmTC_98c68.dir/src.cxx.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+clang: error: unknown argument: '-qsmp'
+CMakeFiles/cmTC_98c68.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_98c68.dir/src.cxx.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_98c68.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_98c68/fast' failed
+gmake[1]: *** [cmTC_98c68/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
+Performing C++ SOURCE FILE Test OpenMP_FLAG_DETECTED failed with the following output:
+Change Dir: /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command:"/opt/local/bin/gmake" "cmTC_74436/fast"
+gmake[1]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+/opt/local/bin/gmake -f CMakeFiles/cmTC_74436.dir/build.make CMakeFiles/cmTC_74436.dir/build
+gmake[2]: Entering directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_74436.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -O3  -DOpenMP_FLAG_DETECTED -mp   -std=gnu++11 -o CMakeFiles/cmTC_74436.dir/src.cxx.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp/src.cxx
+clang: error: unknown argument: '-mp'
+CMakeFiles/cmTC_74436.dir/build.make:65: recipe for target 'CMakeFiles/cmTC_74436.dir/src.cxx.o' failed
+gmake[2]: *** [CMakeFiles/cmTC_74436.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_74436/fast' failed
+gmake[1]: *** [cmTC_74436/fast] Error 2
+gmake[1]: Leaving directory '/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+Source file was:
+
+#include <omp.h>
+int main() {
+#ifdef _OPENMP
+  return 0;
+#else
+  breaks_on_purpose
+#endif
+}
+
