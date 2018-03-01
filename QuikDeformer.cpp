@@ -65,7 +65,7 @@ void QuikDeformer::setupMatrices(double mass, double vx, double vy, double vz) {
         (*vMatrix)(i,2) = vz; //fill each row iteratively
 
         (*fExtMatrix)(i,0) = 0;
-        (*fExtMatrix)(i,1) = -9.81; //add gravity force to each point in our external force matrix
+        (*fExtMatrix)(i,1) = -9.81 * mass; //add gravity force to each point in our external force matrix
         (*fExtMatrix)(i,2) = 0;
     }
 
@@ -173,7 +173,7 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
                 }
 
                 // Line 7 : Global Step (solve linear system and find qN_1)
-                qN_1 = solveLinearSystem(sn); //call this function to solve the global step!
+                qN_1 = solveLinearSystem(sn, L, Ltranspose); //call this function to solve the global step!
             }
 
             // Line 9: vn+1 = (qn+1 - qn) / h
@@ -184,13 +184,13 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
         }
 
         // print out the frame
-        //writeObj(outputFilePath + std::to_string(frame) + ".obj", qN_1);
+        writeObj(outputFilePath + std::to_string(frame) + ".obj", qN_1);
     }
 
 }
 
 // global step. merge all projected points into a single set of points
-MatrixXd QuikDeformer::solveLinearSystem(Eigen::MatrixXd sn) {
+MatrixXd QuikDeformer::solveLinearSystem(Eigen::MatrixXd sn, Eigen::MatrixXd L, Eigen::MatrixXd Ltranspose) {
 
     //First compute the right side of the expression to solve (our b term)
     MatrixXd b = MatrixXd(numVertices, 3); //m by m matrix for this factor
@@ -212,11 +212,13 @@ MatrixXd QuikDeformer::solveLinearSystem(Eigen::MatrixXd sn) {
 
     }
 
-    
+    //First we must solve the equation Ly = b to get y!
+    MatrixXd y = L.colPivHouseholderQr().solve(b);
 
+    //Then we must solve the equation Ltranspose q = y to get q!
+    MatrixXd q = Ltranspose.colPivHouseholderQr().solve(y);
 
-
-    return MatrixXd();
+    return q;
 }
 
 // writes data into a .obj file

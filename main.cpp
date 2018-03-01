@@ -61,20 +61,18 @@ int main(){
     double mass = 1.0; //mass of each point
     int fr = 24; // frame rate
     double vx = 0;
-    double vy = 1; //init initial velocity direction and magnitude
+    double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
     string objectFile = "../Models/tetrahedron.obj";
 
+    double seconds = 10;
+    string outputFilepath = "../Output/";
+
     QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz);
-    quikDeformer.addConstraint("strain");
-    quikDeformer.printMatrices();
+    quikDeformer.runSimulation(seconds, outputFilepath);
 
-
-
-
-
-
-
+    //quikDeformer.addConstraint("strain");
+    //quikDeformer.printMatrices();
 
 
     // openMP test:

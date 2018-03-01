@@ -60,7 +60,7 @@ private:
     void writeObj(const std::string& fileName, Eigen::MatrixXd qMat) const;
     void writeBgeo(const std::string& fileName) const;
     void setupMatrices(double mass, double vx, double vy, double vz);
-    Eigen::MatrixXd solveLinearSystem(Eigen::MatrixXd sn);
+    Eigen::MatrixXd solveLinearSystem(Eigen::MatrixXd sn, Eigen::MatrixXd L, Eigen::MatrixXd Ltranspose);
 };
 
 
