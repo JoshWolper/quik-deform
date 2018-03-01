@@ -139,52 +139,56 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
     MatrixXd L = lltOfA.matrixL(); // retrieve factor L  in the decomposition
     MatrixXd Ltranspose = L.transpose();
 
+    //Set up some variables to deal with time
+    int stepsPerFrame = (int)ceil(1 / (timeStep / (1 / (double)frameRate))); //calculate how many steps per frame we should have based on our desired frame rate and dt!
+    int step = 0;
+    int frame = 0;
 
-    // set up variables for calculating the right dt
-    double time = 0.0;
-    double frameTime = 1.0 / frameRate;
-    int totalFrames = seconds * frameRate;
+    int numFrames = seconds * frameRate;
 
-    for (int frame = 1; frame <= totalFrames; frame++){
-        double currentFrameEndTime = frame * frameTime;
+    //Run the sim until we have the desired number of frames
+    while(frame < numFrames){
 
-        // run the simulation until we're at the desired frame time
-        while (time < currentFrameEndTime){
+        /*----Algorithm 1 begin (from proj dyn paper)------*/
 
-            //update time
-            double dt = std::min(timeStep, currentFrameEndTime - time);
-            time += dt;
+        // Line 1 : Calculate sn
+        MatrixXd sn(numVertices, 3);
+        sn = qN + (timeStep * vN) + ((timeStep * timeStep) * *invMassMatrix * *fExtMatrix);
 
-            /*----Algorithm 1 begin (from proj dyn paper)------*/
+        // Line 2 : qn+1 = sn
+        qN_1 = sn;
 
-            // Line 1 : Calculate sn
-            MatrixXd sn(numVertices, 3);
-            sn = qN + (timeStep * vN) + ((timeStep * timeStep) * *invMassMatrix * *fExtMatrix);
+        // Lines 3-7 : solver loop
+        for (auto i = 0; i < solverIterations; i++){
 
-            // Line 2 : qn+1 = sn
-            qN_1 = sn;
-
-            // Lines 3-7 : solver loop
-            for (auto i = 0; i < solverIterations; i++){
-
-                // Lines 4-6 : Local Step (calc p_i for each constraint C_i)
-                for(int j = 0; j < constraints.size(); j++){
-                    constraints[j]->projectConstraint(qN_1); //project the constraint based on our calculated q n+1
-                }
-
-                // Line 7 : Global Step (solve linear system and find qN_1)
-                qN_1 = solveLinearSystem(sn, L, Ltranspose); //call this function to solve the global step!
+            // Lines 4-6 : Local Step (calc p_i for each constraint C_i)
+            for(int j = 0; j < constraints.size(); j++){
+                constraints[j]->projectConstraint(qN_1); //project the constraint based on our calculated q n+1
             }
 
-            // Line 9: vn+1 = (qn+1 - qn) / h
-            vN_1 = (qN_1 - qN) / timeStep;
-
-            //At end of this loop set qN = qN+1 because we are moving to the next time now for the next loop!
-            qN = qN_1;
+            // Line 7 : Global Step (solve linear system and find qN_1)
+            qN_1 = solveLinearSystem(sn, L, Ltranspose); //call this function to solve the global step!
         }
 
-        // print out the frame
-        writeObj(outputFilePath + std::to_string(frame) + ".obj", qN_1);
+        // Line 9: vn+1 = (qn+1 - qn) / h
+        vN_1 = (qN_1 - qN) / timeStep;
+
+        //At end of this loop set qN = qN+1 because we are moving to the next time now for the next loop!
+        qN = qN_1;
+
+        //do the same for vN
+        vN = vN_1;
+
+        if (step % stepsPerFrame == 0) {
+
+            //Save the particles!
+            cout << "INFO: Current Frame is " << frame << endl;
+            writeObj(outputFilePath + std::to_string(frame) + ".obj", qN_1);
+            frame = frame + 1; //update frame
+
+        }
+
+        step = step + 1;
     }
 
 }

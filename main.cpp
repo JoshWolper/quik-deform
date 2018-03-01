@@ -58,14 +58,14 @@ int main(){
     //Define our variables
     double h = 1e-4; //timestep
     int iter = 5; // solverIterations
-    double mass = 1.0; //mass of each point
-    int fr = 24; // frame rate
+    double mass = 1; //mass of each point
+    int fr = 60; // frame rate
     double vx = 0;
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
     string objectFile = "../Models/tetrahedron.obj";
 
-    double seconds = 10;
+    double seconds = 3;
     string outputFilepath = "../Output/";
 
     QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz);
@@ -74,28 +74,8 @@ int main(){
     //quikDeformer.addConstraint("strain");
     //quikDeformer.printMatrices();
 
-
     // openMP test:
     //ompTest();
-
-
-    /*
-    //Cholesky example (take matrix A, decompose into L * L.transpose, we need L later)
-    Matrix3d A = Matrix3d::Zero();
-    A << 4, -1, 2, -1, 6, 0, 2, 0, 5; //must make sure the matrix A is positive definite to ensure Cholesky is stable
-
-    cout << "The matrix A is" << endl << A << endl;
-
-    LLT<Matrix3d, Lower> lltOfA(A); // compute the Cholesky decomposition of A
-    Matrix3d L = lltOfA.matrixL(); // retrieve factor L  in the decomposition
-    // The previous two lines can also be written as "L = A.llt().matrixL()"
-
-    cout << "The Cholesky factor L is" << endl << L << endl;
-    cout << "To check this, let us compute L * L.transpose()" << endl;
-    cout << L * L.transpose() << endl;
-    cout << "This should equal the matrix A" << endl;
-
-     */
 
     return 0;
 }
