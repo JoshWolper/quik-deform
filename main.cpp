@@ -5,7 +5,7 @@
 #include "Eigen/Eigen"
 #include "global.h"
 #include <iostream>
-#include <omp.h>
+//#include <omp.h>
 #include "QuikDeformer.h"
 #include <chrono> // for testing function speed
 
@@ -63,18 +63,20 @@ int main(){
     Vector3d gravity = Vector3d(0.0, -9.8, 0.0); //gravity vector for external force later
     string objectFile = "../Models/tetrahedron.obj";
 
-    // QuikDeformer quikDeformer(objectFile, h, iter, fr, mass);
-    // quikDeformer.addConstraint("strain");
-    // quikDeformer.printMatrices();
+    QuikDeformer quikDeformer(objectFile, h, iter, fr, mass);
+    quikDeformer.addConstraint("strain");
+    quikDeformer.printMatrices();
+
+
+
+
+
+
+
 
 
     // openMP test:
-    ompTest();
-    // conclusion
-    // openMP definitely works though from just running the random testFunc I wrote, going parallel doesn't seem
-    // to consistently do things faster. I suspect this is probably because the cpu probably already does some
-    // parallelization under the hood to speed things up that might be better than openMP. also the speed is dependent
-    // on what other processes my computer is processing so that could muck things up too.
+    //ompTest();
 
 
     /*

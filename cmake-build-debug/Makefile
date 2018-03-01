@@ -48,10 +48,10 @@ RM = /Applications/CLion.app/Contents/bin/cmake/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /Users/joshwolper/Desktop/quik-deform
+CMAKE_SOURCE_DIR = /Users/joshwolper/Desktop/quik-deform/quik-deform
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/joshwolper/Desktop/quik-deform/cmake-build-debug
+CMAKE_BINARY_DIR = /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/joshwolper/Desktop/quik-deform/cmake-build-debug/CMakeFiles /Users/joshwolper/Desktop/quik-deform/cmake-build-debug/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/joshwolper/Desktop/quik-deform/cmake-build-debug/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -123,6 +123,33 @@ QUIKDEFORM/fast:
 	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/build
 .PHONY : QUIKDEFORM/fast
 
+QuikDeformer.o: QuikDeformer.cpp.o
+
+.PHONY : QuikDeformer.o
+
+# target to build an object file
+QuikDeformer.cpp.o:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o
+.PHONY : QuikDeformer.cpp.o
+
+QuikDeformer.i: QuikDeformer.cpp.i
+
+.PHONY : QuikDeformer.i
+
+# target to preprocess a source file
+QuikDeformer.cpp.i:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.i
+.PHONY : QuikDeformer.cpp.i
+
+QuikDeformer.s: QuikDeformer.cpp.s
+
+.PHONY : QuikDeformer.s
+
+# target to generate assembly for a file
+QuikDeformer.cpp.s:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.s
+.PHONY : QuikDeformer.cpp.s
+
 SVD.o: SVD.cpp.o
 
 .PHONY : SVD.o
@@ -149,6 +176,33 @@ SVD.s: SVD.cpp.s
 SVD.cpp.s:
 	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/SVD.cpp.s
 .PHONY : SVD.cpp.s
+
+StrainConstraint.o: StrainConstraint.cpp.o
+
+.PHONY : StrainConstraint.o
+
+# target to build an object file
+StrainConstraint.cpp.o:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.o
+.PHONY : StrainConstraint.cpp.o
+
+StrainConstraint.i: StrainConstraint.cpp.i
+
+.PHONY : StrainConstraint.i
+
+# target to preprocess a source file
+StrainConstraint.cpp.i:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.i
+.PHONY : StrainConstraint.cpp.i
+
+StrainConstraint.s: StrainConstraint.cpp.s
+
+.PHONY : StrainConstraint.s
+
+# target to generate assembly for a file
+StrainConstraint.cpp.s:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.s
+.PHONY : StrainConstraint.cpp.s
 
 main.o: main.cpp.o
 
@@ -186,9 +240,15 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... QUIKDEFORM"
+	@echo "... QuikDeformer.o"
+	@echo "... QuikDeformer.i"
+	@echo "... QuikDeformer.s"
 	@echo "... SVD.o"
 	@echo "... SVD.i"
 	@echo "... SVD.s"
+	@echo "... StrainConstraint.o"
+	@echo "... StrainConstraint.i"
+	@echo "... StrainConstraint.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
