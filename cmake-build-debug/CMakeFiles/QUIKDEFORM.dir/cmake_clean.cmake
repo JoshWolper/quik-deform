@@ -3,6 +3,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/QUIKDEFORM.dir/SVD.cpp.o"
   "CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o"
   "CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.o"
+  "CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o"
   "QUIKDEFORM.pdb"
   "QUIKDEFORM"
 )

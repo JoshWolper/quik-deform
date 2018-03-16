@@ -123,6 +123,33 @@ QUIKDEFORM/fast:
 	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/build
 .PHONY : QUIKDEFORM/fast
 
+PositionConstraint.o: PositionConstraint.cpp.o
+
+.PHONY : PositionConstraint.o
+
+# target to build an object file
+PositionConstraint.cpp.o:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o
+.PHONY : PositionConstraint.cpp.o
+
+PositionConstraint.i: PositionConstraint.cpp.i
+
+.PHONY : PositionConstraint.i
+
+# target to preprocess a source file
+PositionConstraint.cpp.i:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.i
+.PHONY : PositionConstraint.cpp.i
+
+PositionConstraint.s: PositionConstraint.cpp.s
+
+.PHONY : PositionConstraint.s
+
+# target to generate assembly for a file
+PositionConstraint.cpp.s:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.s
+.PHONY : PositionConstraint.cpp.s
+
 QuikDeformer.o: QuikDeformer.cpp.o
 
 .PHONY : QuikDeformer.o
@@ -240,6 +267,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... QUIKDEFORM"
+	@echo "... PositionConstraint.o"
+	@echo "... PositionConstraint.i"
+	@echo "... PositionConstraint.s"
 	@echo "... QuikDeformer.o"
 	@echo "... QuikDeformer.i"
 	@echo "... QuikDeformer.s"

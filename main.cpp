@@ -69,10 +69,16 @@ int main(){
     string outputFilepath = "../Output/";
 
     QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz);
-    quikDeformer.runSimulation(seconds, outputFilepath);
 
-    //quikDeformer.addConstraint("strain");
-    //quikDeformer.printMatrices();
+    quikDeformer.printMatrices();
+
+    //Add position constraints based on a given index into the vertex list
+    int posConstraintIndex = 2;
+    double posConstraintW = 10000;
+    quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
+
+    //Run the simulation!
+    quikDeformer.runSimulation(seconds, outputFilepath);
 
     // openMP test:
     //ompTest();

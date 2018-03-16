@@ -12,6 +12,7 @@
 #include <string>
 #include "Constraint.h"
 #include "StrainConstraint.h"
+#include "PositionConstraint.h"
 
 class QuikDeformer {
 public:
@@ -36,7 +37,10 @@ public:
 
     int size () const { return numVertices; }
     void runSimulation(double seconds, const std::string& outputFilePath);
+
     void addConstraint(const std::string& type); // TODO: maybe use enums to add constraints instead?
+    void addPositionConstraint(double weight,  int posConstraintIndex);
+
     void printMatrices() const;
 
     // TODO: getters and setters for private variables?
@@ -50,14 +54,14 @@ private:
     std::vector<Eigen::Vector3d> vertices;
     std::vector<Eigen::Vector3i> fragments;
     std::vector<Constraint*> constraints;
-    Eigen::MatrixXd* qMatrix;
-    Eigen::MatrixXd* vMatrix;
-    Eigen::MatrixXd* fExtMatrix;
+    Eigen::VectorXd* qMatrix;
+    Eigen::VectorXd* vMatrix;
+    Eigen::VectorXd* fExtMatrix;
     Eigen::MatrixXd* mMatrix;
     Eigen::MatrixXd* invMassMatrix;
 
     void readObj(const std::string& fileName);
-    void writeObj(const std::string& fileName, Eigen::MatrixXd qMat) const;
+    void writeObj(const std::string& fileName, Eigen::VectorXd qMat) const;
     void writeBgeo(const std::string& fileName) const;
     void setupMatrices(double mass, double vx, double vy, double vz);
     Eigen::MatrixXd solveLinearSystem(Eigen::MatrixXd sn, Eigen::MatrixXd L, Eigen::MatrixXd Ltranspose);

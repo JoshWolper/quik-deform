@@ -14,21 +14,27 @@ public:
 
     virtual void projectConstraint(Eigen::MatrixXd qN_1){};
 
-    Eigen::MatrixXd getP(){ return *pMatrix; };
-    Eigen::MatrixXd getA(){ return *aMatrix; };
-    Eigen::MatrixXd getB(){ return *bMatrix; };
-    Eigen::MatrixXd getS(){ return *sMatrix; };
-
+    Eigen::VectorXd getP(){ return pMatrix; };
+    Eigen::MatrixXd getA(){ return aMatrix; };
+    Eigen::MatrixXd getB(){ return bMatrix; };
+    Eigen::MatrixXd getS(){ return sMatrix; };
     double getW() { return w; };
+
+    void setP(Eigen::VectorXd P){ pMatrix = P;};
+    void setA(Eigen::MatrixXd A){ aMatrix = A;};
+    void setB(Eigen::MatrixXd B){ bMatrix = B;};
+    void setS(Eigen::MatrixXd S){ sMatrix = S;};
+    void setW(double weight){ w = weight; };
+
     int getCardinality() { return cardinality; };
 
 private:
     double w; //constraint weight
     int cardinality; //number of particles involved in constraint
-    Eigen::MatrixXd* pMatrix; //p matrix for all projected points of the constraint
-    Eigen::MatrixXd* sMatrix; //selection matrix
-    Eigen::MatrixXd* aMatrix; //A matrix
-    Eigen::MatrixXd* bMatrix; //B matrix
+    Eigen::VectorXd pMatrix; //p matrix for all projected points of the constraint
+    Eigen::MatrixXd sMatrix; //selection matrix
+    Eigen::MatrixXd aMatrix; //A matrix
+    Eigen::MatrixXd bMatrix; //B matrix
 
 };
 

@@ -85,6 +85,12 @@
 		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h">
 			<Option target="QUIKDEFORM"/>
 		</Unit>
+		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.cpp">
+			<Option target="QUIKDEFORM"/>
+		</Unit>
+		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.h">
+			<Option target="QUIKDEFORM"/>
+		</Unit>
 		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/QuikDeformer.cpp">
 			<Option target="QUIKDEFORM"/>
 		</Unit>

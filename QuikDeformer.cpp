@@ -50,27 +50,27 @@ void QuikDeformer::readObj(const std::string& fileName){
 // function called after readObj to construct the matrices we need
 void QuikDeformer::setupMatrices(double mass, double vx, double vy, double vz) {
     // set up the q0 matrix
-    qMatrix = new MatrixXd(numVertices, 3); //init our M by 3 matrix, qMatrix
-    vMatrix = new MatrixXd(numVertices, 3); //init our M by 3 matrix, vMatrix
-    fExtMatrix = new MatrixXd(numVertices, 3); //init our M by 3 matrix, fExtMatrix
+    qMatrix = new VectorXd(numVertices * 3, 1); //init our 3M by 1 vector, qMatrix
+    vMatrix = new VectorXd(numVertices * 3, 1); //init our 3M by 1 vector, vMatrix
+    fExtMatrix = new VectorXd(numVertices * 3, 1); //init our 3M by 1 vector, fExtMatrix
 
 
     for(int i = 0; i < numVertices; i++){
-        (*qMatrix)(i,0) = vertices[i][0];
-        (*qMatrix)(i,1) = vertices[i][1];
-        (*qMatrix)(i,2) = vertices[i][2]; //fill each row iteratively
+        (*qMatrix)((3*i) + 0) = vertices[i][0];
+        (*qMatrix)((3*i) + 1) = vertices[i][1];
+        (*qMatrix)((3*i) + 2) = vertices[i][2]; //fill each row iteratively
 
-        (*vMatrix)(i,0) = vx;
-        (*vMatrix)(i,1) = vy;
-        (*vMatrix)(i,2) = vz; //fill each row iteratively
+        (*vMatrix)((3*i) + 0) = vx;
+        (*vMatrix)((3*i) + 1) = vy;
+        (*vMatrix)((3*i) + 2) = vz; //fill each row iteratively
 
-        (*fExtMatrix)(i,0) = 0;
-        (*fExtMatrix)(i,1) = -9.81 * mass; //add gravity force to each point in our external force matrix
-        (*fExtMatrix)(i,2) = 0;
+        (*fExtMatrix)((3*i) + 0) = 0;
+        (*fExtMatrix)((3*i) + 1) = -9.81 * mass; //add gravity force to each point in our external force matrix
+        (*fExtMatrix)((3*i) + 2) = 0;
     }
 
     // set up the mass matrix
-    long numPoints = qMatrix->rows(); //eventually dynamically fill this when we are reading in an obj
+    long numPoints = numVertices * 3; //eventually dynamically fill this when we are reading in an obj
 
     //Set the m x m diagonal mass matrix, M
     MatrixXd* temp = new MatrixXd(numPoints, numPoints);
@@ -103,15 +103,37 @@ void QuikDeformer::addConstraint(const std::string &type) {
     }
 }
 
+void QuikDeformer::addPositionConstraint(double weight, int posConstraintIndex){
+
+    //Turn index into sMatrix and p Vector!
+
+    MatrixXd sMatrix = MatrixXd(3, 3 * numVertices); //3 by 3M S matrix
+    VectorXd p = VectorXd(3,1);
+
+    p(0) = vertices[posConstraintIndex][0];
+    p(1) = vertices[posConstraintIndex][1];
+    p(2) = vertices[posConstraintIndex][2];
+
+    sMatrix.setZero();
+    sMatrix(0, (3 * posConstraintIndex + 0)) = 1;
+    sMatrix(1, (3 * posConstraintIndex + 1)) = 1;
+    sMatrix(2, (3 * posConstraintIndex + 2)) = 1;
+
+    cout << "sMatrix is: " << endl << sMatrix << endl;
+
+    constraints.push_back(new PositionConstraint(weight, sMatrix, p));
+
+}
+
 
 // runs the actual simulation and outputs the results appropriately
 void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePath) {
 
     //setup variables for current value and for "next" or "n+1" value!
-    MatrixXd qN = MatrixXd(numVertices, 3);
-    MatrixXd qN_1 = MatrixXd(numVertices, 3);
-    MatrixXd vN = MatrixXd(numVertices, 3);
-    MatrixXd vN_1 = MatrixXd(numVertices, 3);
+    VectorXd qN = VectorXd(3 * numVertices, 1);
+    VectorXd qN_1 = VectorXd(3 * numVertices, 1);
+    VectorXd vN = VectorXd(3 * numVertices, 1);
+    VectorXd vN_1 = VectorXd(3 * numVertices, 1);
 
     qN = *qMatrix;
     vN = *vMatrix;
@@ -146,17 +168,26 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
 
     int numFrames = seconds * frameRate;
 
+    cout << "Simulation steps begin: " << endl;
+
     //Run the sim until we have the desired number of frames
     while(frame < numFrames){
 
         /*----Algorithm 1 begin (from proj dyn paper)------*/
 
         // Line 1 : Calculate sn
-        MatrixXd sn(numVertices, 3);
+        VectorXd sn(3 * numVertices, 1);
+
+        cout << "made sn vector" << endl;
+
         sn = qN + (timeStep * vN) + ((timeStep * timeStep) * *invMassMatrix * *fExtMatrix);
+
+        cout << "line 1 complete" << endl;
 
         // Line 2 : qn+1 = sn
         qN_1 = sn;
+
+        cout << "line 2 complete" << endl;
 
         // Lines 3-7 : solver loop
         for (auto i = 0; i < solverIterations; i++){
@@ -170,14 +201,20 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
             qN_1 = solveLinearSystem(sn, L, Ltranspose); //call this function to solve the global step!
         }
 
+        cout << "lines 3-7 complete" << endl;
+
         // Line 9: vn+1 = (qn+1 - qn) / h
         vN_1 = (qN_1 - qN) / timeStep;
+
+        cout << "line 9 complete" << endl;
 
         //At end of this loop set qN = qN+1 because we are moving to the next time now for the next loop!
         qN = qN_1;
 
         //do the same for vN
         vN = vN_1;
+
+        cout << "finished sim step" << endl;
 
         if (step % stepsPerFrame == 0) {
 
@@ -226,7 +263,7 @@ MatrixXd QuikDeformer::solveLinearSystem(Eigen::MatrixXd sn, Eigen::MatrixXd L, 
 }
 
 // writes data into a .obj file
-void QuikDeformer::writeObj(const std::string &fileName, Eigen::MatrixXd qMat) const {
+void QuikDeformer::writeObj(const std::string &fileName, Eigen::VectorXd qMat) const {
 
     //TODO: Test this and make sure it actually reads our values from the position matrix we pass!
 
@@ -236,9 +273,9 @@ void QuikDeformer::writeObj(const std::string &fileName, Eigen::MatrixXd qMat) c
 
     // first write all the vector data
     for (int i = 0; i < numVertices; i++){
-        out << "v  " << std::to_string(qMat(i,0));
-        out << "  " << std::to_string(qMat(i,1));
-        out << "  " << std::to_string(qMat(i,2)) << std::endl;
+        out << "v  " << std::to_string(qMat(3*i + 0));
+        out << "  " << std::to_string(qMat(3*i + 1));
+        out << "  " << std::to_string(qMat(3*i + 2)) << std::endl;
     }
     out << std::endl;
 
