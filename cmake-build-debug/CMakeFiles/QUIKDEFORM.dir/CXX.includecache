@@ -1406,6 +1406,20 @@ lapacke_mangling.h
 
 /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/src/plugins/MatrixCwiseUnaryOps.h
 
+/Users/joshwolper/Desktop/quik-deform/quik-deform/GroundConstraint.cpp
+GroundConstraint.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/GroundConstraint.h
+
+/Users/joshwolper/Desktop/quik-deform/quik-deform/GroundConstraint.h
+Eigen/Eigen
+/Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Eigen
+Constraint.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h
+vector
+-
+iostream
+-
+
 /Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.cpp
 PositionConstraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.h
@@ -1441,6 +1455,8 @@ StrainConstraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.h
 PositionConstraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.h
+GroundConstraint.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/GroundConstraint.h
 
 /Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.cpp
 SVD.h

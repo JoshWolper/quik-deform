@@ -19,12 +19,15 @@ public:
     Eigen::MatrixXd getB(){ return bMatrix; };
     Eigen::MatrixXd getS(){ return sMatrix; };
     double getW() { return w; };
+    std::vector<int> getIndeces(){ return indeces; };
 
     void setP(Eigen::VectorXd P){ pMatrix = P;};
     void setA(Eigen::MatrixXd A){ aMatrix = A;};
     void setB(Eigen::MatrixXd B){ bMatrix = B;};
     void setS(Eigen::MatrixXd S){ sMatrix = S;};
     void setW(double weight){ w = weight; };
+
+    void setIndeces(std::vector<int> ids){ indeces = ids; };
 
     int getCardinality() { return cardinality; };
 
@@ -35,6 +38,7 @@ private:
     Eigen::MatrixXd sMatrix; //selection matrix
     Eigen::MatrixXd aMatrix; //A matrix
     Eigen::MatrixXd bMatrix; //B matrix
+    std::vector<int> indeces; //index matrix
 
 };
 

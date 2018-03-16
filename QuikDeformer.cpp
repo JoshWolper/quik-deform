@@ -125,9 +125,38 @@ void QuikDeformer::addPositionConstraint(double weight, int posConstraintIndex){
 
 }
 
+void QuikDeformer::addGroundConstraint(double weight, vector<int> posConstraintIndeces, double floorVal){
+
+    //Turn index into sMatrix and p Vector!
+
+    MatrixXd sMatrix = MatrixXd(3 * posConstraintIndeces.size(), 3 * numVertices); //3 by 3M S matrix
+    VectorXd p = VectorXd(3 * posConstraintIndeces.size(), 1); //make our vector to hold all the points in the constraint
+
+    sMatrix.setZero();
+
+    for(int i = 0; i < posConstraintIndeces.size(); i++){
+
+        p(i*3 + 0) = vertices[posConstraintIndeces[i]][0];
+        p(i*3 + 1) = vertices[posConstraintIndeces[i]][1];
+        p(i*3 + 2) = vertices[posConstraintIndeces[i]][2];
+
+        sMatrix((3 * i + 0), (3 * posConstraintIndeces[i] + 0)) = 1;
+        sMatrix((3 * i + 1), (3 * posConstraintIndeces[i] + 1)) = 1;
+        sMatrix((3 * i + 2), (3 * posConstraintIndeces[i] + 2)) = 1;
+
+    }
+
+    cout << "sMatrix is: " << endl << sMatrix << endl;
+
+    constraints.push_back(new GroundConstraint(weight, sMatrix, p, posConstraintIndeces, floorVal));
+
+}
+
 
 // runs the actual simulation and outputs the results appropriately
-void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePath) {
+void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePath, bool printsOn) {
+
+    setPrintsOn(printsOn);
 
     //setup variables for current value and for "next" or "n+1" value!
     VectorXd qN = VectorXd(3 * numVertices, 1);
@@ -168,7 +197,7 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
 
     int numFrames = seconds * frameRate;
 
-    cout << "Simulation steps begin: " << endl;
+    if(printsOn == true){cout << "Simulation steps begin: " << endl;}
 
     //Run the sim until we have the desired number of frames
     while(frame < numFrames){
@@ -178,16 +207,16 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
         // Line 1 : Calculate sn
         VectorXd sn(3 * numVertices, 1);
 
-        cout << "made sn vector" << endl;
+        if(printsOn == true){cout << "made sn vector" << endl;}
 
         sn = qN + (timeStep * vN) + ((timeStep * timeStep) * *invMassMatrix * *fExtMatrix);
 
-        cout << "line 1 complete" << endl;
+        if(printsOn == true){cout << "line 1 complete" << endl;}
 
         // Line 2 : qn+1 = sn
         qN_1 = sn;
 
-        cout << "line 2 complete" << endl;
+        if(printsOn == true){cout << "line 2 complete" << endl;}
 
         // Lines 3-7 : solver loop
         for (auto i = 0; i < solverIterations; i++){
@@ -197,16 +226,34 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
                 constraints[j]->projectConstraint(qN_1); //project the constraint based on our calculated q n+1
             }
 
+            if(printsOn == true){cout << "local step complete" << endl;}
+
             // Line 7 : Global Step (solve linear system and find qN_1)
             qN_1 = solveLinearSystem(sn, L, Ltranspose); //call this function to solve the global step!
+
+            if(printsOn == true){cout << "global step complete" << endl;}
         }
 
-        cout << "lines 3-7 complete" << endl;
+        if(printsOn == true){cout << "lines 3-7 complete" << endl;}
+
+        //Ground Collision Checks and Corrections
+        for(int i = 0; i < numVertices; i++){ //check each position for y < 0
+
+            double yVal = qN_1(3*i + 1);
+
+            if(yVal < 0){
+
+                qN_1(3*i + 1) = 0;
+
+            }
+
+        }
+
 
         // Line 9: vn+1 = (qn+1 - qn) / h
         vN_1 = (qN_1 - qN) / timeStep;
 
-        cout << "line 9 complete" << endl;
+        if(printsOn == true){cout << "line 9 complete" << endl;}
 
         //At end of this loop set qN = qN+1 because we are moving to the next time now for the next loop!
         qN = qN_1;
@@ -214,7 +261,7 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
         //do the same for vN
         vN = vN_1;
 
-        cout << "finished sim step" << endl;
+        if(printsOn == true){cout << "finished sim step" << endl;}
 
         if (step % stepsPerFrame == 0) {
 

@@ -13,6 +13,7 @@
 #include "Constraint.h"
 #include "StrainConstraint.h"
 #include "PositionConstraint.h"
+#include "GroundConstraint.h"
 
 class QuikDeformer {
 public:
@@ -36,12 +37,16 @@ public:
     ~QuikDeformer();
 
     int size () const { return numVertices; }
-    void runSimulation(double seconds, const std::string& outputFilePath);
+    void runSimulation(double seconds, const std::string& outputFilePath, bool printsOn);
 
     void addConstraint(const std::string& type); // TODO: maybe use enums to add constraints instead?
     void addPositionConstraint(double weight,  int posConstraintIndex);
+    void addGroundConstraint(double weight, std::vector<int> posConstraintIndeces, double floorVal);
 
     void printMatrices() const;
+
+    void setPrintsOn(bool printStatus){ printsOn = printStatus; };
+    bool getPrintsOn(){ return printsOn; };
 
     // TODO: getters and setters for private variables?
 
@@ -51,6 +56,7 @@ private:
     int solverIterations;
     int frameRate;
     int numVertices;
+    bool printsOn = false;
     std::vector<Eigen::Vector3d> vertices;
     std::vector<Eigen::Vector3i> fragments;
     std::vector<Constraint*> constraints;

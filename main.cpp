@@ -72,13 +72,23 @@ int main(){
 
     quikDeformer.printMatrices();
 
-    //Add position constraints based on a given index into the vertex list
+    //ADD POSITION CONSTRAINTS
     int posConstraintIndex = 2;
     double posConstraintW = 10000;
     quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
 
+    //ADD GROUND CONSTRAINTS
+    /*std::vector<int> indeces;
+    for(int i = 0; i < quikDeformer.size(); i++){ //add all indeces
+        indeces.push_back(i);
+    }
+    double groundConstraintW = 1000000;
+    double floor = 0;
+    quikDeformer.addGroundConstraint(groundConstraintW, indeces, floor);*/
+
+
     //Run the simulation!
-    quikDeformer.runSimulation(seconds, outputFilepath);
+    quikDeformer.runSimulation(seconds, outputFilepath, false);
 
     // openMP test:
     //ompTest();
