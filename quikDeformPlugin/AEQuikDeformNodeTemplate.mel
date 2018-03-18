@@ -1,0 +1,195 @@
+// guide found here: http://danostrov.com/2012/10/27/intro-to-aetemplates/
+
+global proc AEQuikDeformNodeTemplate( string $nodeName )
+{
+    editorTemplate -beginScrollLayout;
+ 
+	// --------------------------------------------
+	//          Simulation attributes
+	// --------------------------------------------
+    editorTemplate -beginLayout "Simulation Attributes" -collapse 0;
+
+		// custom int slider for solverIterations
+		editorTemplate -callCustom "iterSliderAttributeNew" "iterSliderAttributeUpdate" "solverIterations";
+		// custom float slider for timeStep
+		editorTemplate -callCustom "timeSliderAttributeNew" "timeSliderAttributeUpdate" "timeStep";
+        editorTemplate -label "Frames" -addControl "framesToSimulate";
+		// custom radio buttons for frameRate
+		editorTemplate -callCustom "frameRateRadioAttributeNew" "frameRateRadioAttributeUpdate" "frameRate";
+		// custom float slider for mass
+		editorTemplate -callCustom "massSliderAttributeNew" "massSliderAttributeUpdate" "mass";
+		editorTemplate -label "Initial Point Velocity" - addControl "initialVelocity";
+
+    editorTemplate -endLayout;
+
+	// --------------------------------------------
+	//          Constraint attributes
+	// --------------------------------------------
+	editorTemplate -beginLayout "Constraints" -collapse 0;
+
+		editorTemplate -label "Enable Strain Constraint" -addControl "doStrainConstraint";
+		// custom float slider for Strain Constraint Weight
+		editorTemplate -callCustom "strainSliderAttributeNew" "strainSliderAttributeUpdate" "strainConstraintWeight";
+		editorTemplate -label "Enable Volume Constraint" -addControl "doVolumeConstraint";
+		// custom float slider for Volume Constraint Weight
+		editorTemplate -callCustom "volumeSliderAttributeNew" "volumeSliderAttributeUpdate" "volumeConstraintWeight";
+		editorTemplate -label "Enable Bending Constraint" -addControl "doBendingConstraint";
+		// custom float slider for Bending Constraint Weight
+		editorTemplate -callCustom "bendingSliderAttributeNew" "bendingSliderAttributeUpdate" "bendingConstraintWeight";
+
+	editorTemplate -endLayout;
+
+	// --------------------------------------------
+	//          External Forces attributes
+	// --------------------------------------------
+	editorTemplate -beginLayout "External Forces" -collapse 0;
+
+		editorTemplate -label "Enable Gravity" -addControl "doGravity";
+		editorTemplate -label "Gravity Force" -addControl "gravityForce";
+		editorTemplate -label "Enable Wind" -addControl "doWind";
+		editorTemplate -label "Wind Force" -addControl "windForce";
+
+	editorTemplate -endLayout;
+
+	// --------------------------------------------
+	//          Other attributes
+	// --------------------------------------------
+	// Create an "Extras" section and also add controls for any
+	// attributes we have not explicitly mentioned.
+    editorTemplate -addExtraControls;
+
+    editorTemplate -endScrollLayout;
+
+	// Tell the attribute editor not to display the attributes we don't care about.
+	editorTemplate -suppress "caching";
+	editorTemplate -suppress "nodeState";
+	editorTemplate -suppress "frozen";
+}
+
+
+// --------------------------------------------
+//     procs to define custom UI elements
+// --------------------------------------------
+
+// ----- slider for solver iterations -----
+global proc iterSliderAttributeNew( string $attrName )
+{
+	intSliderGrp 
+		-label "Solver Iterations" 
+		-field true
+		-minValue 1 
+		-maxValue 25 
+		-value 5
+		iterSlider;
+}
+
+global proc iterSliderAttributeUpdate( string $attrName )
+{
+   intSliderGrp -e -attribute $attrName iterSlider;
+}
+
+
+// ----- slider for time step -----
+global proc timeSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Time Step" 
+		-field true
+		-minValue 0.001 
+		-maxValue 0.2 
+		-value 0.01
+		timeSlider;
+}
+
+global proc timeSliderAttributeUpdate( string $attrName )
+{
+   floatSliderGrp -e -attribute $attrName timeSlider;
+}
+
+
+// ----- radio buttons for framerate -----
+global proc frameRateRadioAttributeNew( string $attrName)
+{
+	radioButtonGrp
+		-label "Frame Rate"
+		-numberOfRadioButtons 2
+		-label1 "24"
+		-data1 24
+		-label2 "30"
+		-data2 30
+		-select 1
+		frameRateRadio;
+}
+
+global proc frameRateRadioAttributeUpdate( string $attrName )
+{
+   radioButtonGrp -e -attribute $attrName frameRateRadio;
+}
+
+// ----- slider for mass -----
+global proc massSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Vertex Mass" 
+		-field true
+		-minValue 0.01 
+		-maxValue 10 
+		-value 1
+		massSlider;
+}
+
+global proc massSliderAttributeUpdate( string $attrName )
+{
+   floatSliderGrp -e -attribute $attrName massSlider;
+}
+
+// ----- slider for strain constraint weight -----
+global proc strainSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Strain Weight" 
+		-field true
+		-minValue 0.001 
+		-maxValue 1 
+		-value 1
+		strainSlider;
+}
+
+global proc strainSliderAttributeUpdate( string $attrName )
+{
+   floatSliderGrp -e -attribute $attrName strainSlider;
+}
+
+// ----- slider for volume constraint weight -----
+global proc volumeSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Volume Weight" 
+		-field true
+		-minValue 0.001 
+		-maxValue 1 
+		-value 1
+		volumeSlider;
+}
+
+global proc volumeSliderAttributeUpdate( string $attrName )
+{
+   floatSliderGrp -e -attribute $attrName volumeSlider;
+}
+
+// ----- slider for strain constraint weight -----
+global proc bendingSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Bending Weight" 
+		-field true
+		-minValue 0.001 
+		-maxValue 1 
+		-value 1
+		bendingSlider;
+}
+
+global proc bendingSliderAttributeUpdate( string $attrName )
+{
+   floatSliderGrp -e -attribute $attrName bendingSlider;
+}

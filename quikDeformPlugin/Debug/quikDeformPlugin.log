@@ -1,4 +1,5 @@
-﻿  quikDeformPluginCmd.cpp
+﻿  QuikDeformNode.cpp
+e:\visualstudio15projects\quik-deform\quik-deform\GroundConstraint.h(32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
      Creating library Debug\quikDeformPlugin.lib and object Debug\quikDeformPlugin.exp
   quikDeformPlugin.vcxproj -> E:\VisualStudio15Projects\quik-deform\quikDeformPlugin\Debug\quikDeformPlugin.mll
   quikDeformPlugin.vcxproj -> Debug\quikDeformPlugin.pdb (Full PDB)

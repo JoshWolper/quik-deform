@@ -15,10 +15,28 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="quikDeformPluginCmd.cpp" />
+    <ClCompile Include="..\quik-deform\GroundConstraint.cpp" />
+    <ClCompile Include="..\quik-deform\main.cpp" />
+    <ClCompile Include="..\quik-deform\PositionConstraint.cpp" />
+    <ClCompile Include="..\quik-deform\QuikDeformer.cpp" />
+    <ClCompile Include="..\quik-deform\StrainConstraint.cpp" />
+    <ClCompile Include="..\quik-deform\SVD.cpp" />
+    <ClCompile Include="QuikDeformNode.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="quikDeformPluginCmd.h" />
+    <ClInclude Include="..\quik-deform\Constraint.h" />
+    <ClInclude Include="..\quik-deform\global.h" />
+    <ClInclude Include="..\quik-deform\GroundConstraint.h" />
+    <ClInclude Include="..\quik-deform\initialize.h" />
+    <ClInclude Include="..\quik-deform\PositionConstraint.h" />
+    <ClInclude Include="..\quik-deform\QuikDeformer.h" />
+    <ClInclude Include="..\quik-deform\StrainConstraint.h" />
+    <ClInclude Include="..\quik-deform\SVD.h" />
+    <ClInclude Include="QuikDeformNode.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AEQuikDeformNodeTemplate.mel" />
+    <None Include="Debug\QuikDeformNodeMenu.mel" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>
@@ -66,7 +84,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;E:\Program Files\Autodesk\Maya2017\include;%(AdditionalIncludeDirectories);E:\VisualStudio15Projects\quik-deform</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;E:\Program Files\Autodesk\Maya2017\include;%(AdditionalIncludeDirectories);E:\VisualStudio15Projects\quik-deform;E:\VisualStudio15Projects\quik-deform\quik-deform</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>$(Configuration)\quikDeformPlugin.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>

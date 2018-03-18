@@ -23,13 +23,63 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="quikDeformPluginCmd.cpp">
+    <ClCompile Include="..\quik-deform\SVD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\quik-deform\StrainConstraint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\quik-deform\QuikDeformer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\quik-deform\PositionConstraint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\quik-deform\GroundConstraint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\quik-deform\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QuikDeformNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="quikDeformPluginCmd.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="..\quik-deform\Constraint.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\quik-deform\global.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\quik-deform\GroundConstraint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\quik-deform\initialize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\quik-deform\PositionConstraint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\quik-deform\QuikDeformer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\quik-deform\StrainConstraint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\quik-deform\SVD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QuikDeformNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AEQuikDeformNodeTemplate.mel">
+      <Filter>Miscellaneous Files</Filter>
+    </None>
+    <None Include="Debug\QuikDeformNodeMenu.mel">
+      <Filter>Miscellaneous Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

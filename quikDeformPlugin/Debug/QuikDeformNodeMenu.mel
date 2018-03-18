@@ -1,0 +1,7 @@
+string $myMenu = `menu -p $gMainWindow -to true -l "QuikDeform"`; 
+menuItem -parent $myMenu -label "QuikDeform Node" -c "setUpQuikDeformNode";
+
+
+global proc setUpQuikDeformNode(){
+    createNode QuikDeformNode -n QuikDeformNode1;
+}
