@@ -63,7 +63,9 @@ int main(){
     double vx = 0;
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
-    string objectFile = "../Models/tetrahedron.obj";
+    //string objectFile = "../Models/tetrahedron.obj";
+    string objectFile = "../Models/cube.obj";
+
 
     double seconds = 3;
     string outputFilepath = "../Output/";
