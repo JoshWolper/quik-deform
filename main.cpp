@@ -8,6 +8,7 @@
 //#include <omp.h>
 #include "QuikDeformer.h"
 #include <chrono> // for testing function speed
+#include "OBJGenerator.h"
 
 using namespace Eigen;
 using namespace std;
@@ -63,8 +64,17 @@ int main(){
     double vx = 0;
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
+
     //string objectFile = "../Models/tetrahedron.obj";
-    string objectFile = "../Models/cube.obj";
+    //string objectFile = "../Models/cube.obj";
+
+    string objectFile = "../Models/cloth.obj";
+    double vertexDist = 0.5;
+    int width = 5;
+    int height = 5;
+    OBJGeneratorMode mode = OBJGeneratorMode::vertical;
+    double startHeight = 3;
+    OBJGenerator::generateClothOBJ(objectFile, vertexDist, width, height, mode, startHeight); //make the cloth to be used
 
 
     double seconds = 3;
@@ -75,9 +85,16 @@ int main(){
     quikDeformer.printMatrices();
 
     //ADD POSITION CONSTRAINTS
-    int posConstraintIndex = 2;
-    double posConstraintW = 10000;
+    int posConstraintIndex = 0;
+    double posConstraintW = 100000;
     quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
+
+    posConstraintIndex = 4;
+    posConstraintW = 100000;
+    quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
+
+    double strain2DWeight = 10000;
+    //quikDeformer.add2DStrainConstraints(strain2DWeight); //Go through mesh and find all triangles, add a constraint for each one!
 
     //ADD GROUND CONSTRAINTS
     /*std::vector<int> indeces;

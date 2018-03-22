@@ -12,6 +12,6 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-set(SOURCE_FILES main.cpp SVD.h SVD.cpp global.h QuikDeformer.h QuikDeformer.cpp Constraint.h StrainConstraint.h StrainConstraint.cpp PositionConstraint.h PositionConstraint.cpp GroundConstraint.cpp GroundConstraint.h)
+set(SOURCE_FILES main.cpp SVD.h SVD.cpp global.h QuikDeformer.h QuikDeformer.cpp Constraint.h StrainConstraint.h StrainConstraint.cpp PositionConstraint.h PositionConstraint.cpp GroundConstraint.cpp GroundConstraint.h OBJGenerator.cpp OBJGenerator.h)
 
 add_executable(QUIKDEFORM ${SOURCE_FILES})

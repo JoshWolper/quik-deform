@@ -1420,6 +1420,24 @@ vector
 iostream
 -
 
+/Users/joshwolper/Desktop/quik-deform/quik-deform/OBJGenerator.cpp
+OBJGenerator.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/OBJGenerator.h
+
+/Users/joshwolper/Desktop/quik-deform/quik-deform/OBJGenerator.h
+Eigen/Core
+/Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Core
+Eigen/Dense
+/Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Dense
+string
+-
+iostream
+-
+fstream
+-
+vector
+-
+
 /Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.cpp
 PositionConstraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.h
@@ -1501,4 +1519,6 @@ QuikDeformer.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/QuikDeformer.h
 chrono
 -
+OBJGenerator.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/OBJGenerator.h
 

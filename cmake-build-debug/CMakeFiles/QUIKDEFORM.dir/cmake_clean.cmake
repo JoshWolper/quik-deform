@@ -5,6 +5,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.o"
   "CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o"
   "CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o"
+  "CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o"
   "QUIKDEFORM.pdb"
   "QUIKDEFORM"
 )

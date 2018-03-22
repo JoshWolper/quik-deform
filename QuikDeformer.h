@@ -42,6 +42,7 @@ public:
     void addConstraint(const std::string& type); // TODO: maybe use enums to add constraints instead?
     void addPositionConstraint(double weight,  int posConstraintIndex);
     void addGroundConstraint(double weight, std::vector<int> posConstraintIndeces, double floorVal);
+    void add2DStrainConstraints(double strain2DWeight);
 
     void printMatrices() const;
 

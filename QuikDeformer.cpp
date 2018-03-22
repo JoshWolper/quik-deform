@@ -153,6 +153,36 @@ void QuikDeformer::addGroundConstraint(double weight, vector<int> posConstraintI
 }
 
 
+void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
+
+    //For each triangle in mesh
+    for(int i = 0; i < fragments.size(); i++){
+
+        Vector3i currTriangle = fragments[i];
+
+        //Compute Dm
+        MatrixXd Dm = MatrixXd(2,2);
+
+        int id0 = 3 * (currTriangle[0] - 1);
+        int id1 = 3 * (currTriangle[1] - 1);
+        int id2 = 3 * (currTriangle[2] - 1);
+
+        Dm(0,0) = (*qMatrix)(id1 + 0) - (*qMatrix)(id0 + 0); //top left = X1.x - X0.x
+        Dm(1,0) = (*qMatrix)(id1 + 1) - (*qMatrix)(id0 + 1); //bottom left = X1.y - X0.y
+
+        Dm(0,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //top right = X2.x - X0.x
+        Dm(1,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //bottom right = X2.y - X0.y
+
+        MatrixXd Dminv = Dm.inverse();
+
+        cout << "Dm for triangle " << i << " :" << Dm << endl;
+
+    }
+
+}
+
+
+
 // runs the actual simulation and outputs the results appropriately
 void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePath, bool printsOn) {
 
