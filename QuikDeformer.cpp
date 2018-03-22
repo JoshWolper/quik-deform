@@ -95,14 +95,6 @@ void QuikDeformer::printMatrices() const {
     cout << "Our inverse mass matrix is: " << endl << *invMassMatrix << endl;
 }
 
-
-// adds constraints
-void QuikDeformer::addConstraint(const std::string &type) {
-    if (type == "strain"){
-        constraints.push_back(new StrainConstraint(vertices, fragments));
-    }
-}
-
 void QuikDeformer::addPositionConstraint(double weight, int posConstraintIndex){
 
     //Turn index into sMatrix and p Vector!
@@ -171,16 +163,101 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
         Dm(1,0) = (*qMatrix)(id1 + 1) - (*qMatrix)(id0 + 1); //bottom left = X1.y - X0.y
 
         Dm(0,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //top right = X2.x - X0.x
-        Dm(1,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //bottom right = X2.y - X0.y
+        Dm(1,1) = (*qMatrix)(id2 + 1) - (*qMatrix)(id0 + 1); //bottom right = X2.y - X0.y
 
         MatrixXd Dminv = Dm.inverse();
 
-        cout << "Dm for triangle " << i << " :" << Dm << endl;
+        double area = Dm.determinant() * 0.5;
+
+        //cout << "Dm for triangle " << i << " :" << endl << Dm << endl;
+
+        //UNFINISHED (obviously lol)
 
     }
 
 }
 
+void QuikDeformer::add3DStrainConstraints(double strain3DWeight){
+
+    //First we must fill the tetrahedrons vector by iterating over the mesh
+    //For now this is hard coded for a single tetrahedron
+    vector<int> tet;
+    for(int i = 0; i<4; i++){
+        tet.push_back(i);
+    }
+    tetrahedrons.push_back(tet);
+
+    //For each tetrahedron in mesh
+    for(int i = 0; i < tetrahedrons.size(); i++){
+
+        vector<int> currTet = tetrahedrons[i];
+
+        //Compute Dm
+        MatrixXd Dm = MatrixXd(3,3);
+
+        int id0 = 3 * (currTet[0]); //might have to subtract 1 if NOT 0-indexed
+        int id1 = 3 * (currTet[1]);
+        int id2 = 3 * (currTet[2]);
+        int id3 = 3 * (currTet[3]);
+
+        Dm(0,0) = (*qMatrix)(id1 + 0) - (*qMatrix)(id0 + 0); //top left = X1.x - X0.x
+        Dm(1,0) = (*qMatrix)(id1 + 1) - (*qMatrix)(id0 + 1); //middle left = X1.y - X0.y
+        Dm(2,0) = (*qMatrix)(id1 + 2) - (*qMatrix)(id0 + 2); //bottom left = X1.z - X0.z
+
+        Dm(0,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //top middle = X2.x - X0.x
+        Dm(1,1) = (*qMatrix)(id2 + 1) - (*qMatrix)(id0 + 1); //middle middle = X2.y - X0.y
+        Dm(2,1) = (*qMatrix)(id2 + 2) - (*qMatrix)(id0 + 2); //bottom middle = X2.z - X0.z
+
+        Dm(0,2) = (*qMatrix)(id3 + 0) - (*qMatrix)(id0 + 0); //top right = X3.x - X0.x
+        Dm(1,2) = (*qMatrix)(id3 + 1) - (*qMatrix)(id0 + 1); //middle right = X3.y - X0.y
+        Dm(2,2) = (*qMatrix)(id3 + 2) - (*qMatrix)(id0 + 2); //bottom right = X3.z - X0.z
+
+        MatrixXd Dminv = Dm.inverse();
+
+        double volume = Dm.determinant() / 6.0;
+
+        cout << "Dm for tet " << i << " :" << endl << Dm << endl;
+
+        //SET S MATRIX
+        MatrixXd sMat = MatrixXd(12, 3 * numVertices).setZero();
+        for(int j = 0; j < currTet.size(); j++){
+            //fill in S matrix for each index
+            sMat((3 * j + 0), (3 * currTet[j] + 0)) = 1;
+            sMat((3 * j + 1), (3 * currTet[j] + 1)) = 1;
+            sMat((3 * j + 2), (3 * currTet[j] + 2)) = 1;
+        }
+        cout << "SMatrix: " << endl << sMat << endl;
+
+        //SET BP MATRIX (okay to init to all zero)
+        VectorXd Bp = VectorXd(9,1).setZero();
+
+        //SET A MATRIX
+        MatrixXd aMat = MatrixXd(9,12).setZero();
+        buildTetStrainA(aMat, Dminv); //build aMat
+
+        //Set B = Identity (9 by 9)
+        Eigen::MatrixXd bMat = Eigen::MatrixXd(9, 9).setIdentity(); //identity since what we are passing for p is actually Bp
+
+        constraints.push_back(new TetStrainConstraint(strain3DWeight, sMat, Bp, aMat, bMat, currTet, volume, Dminv));
+
+    }
+
+}
+
+void QuikDeformer::buildTetStrainA(MatrixXd& A_matrix, MatrixXd& G){
+
+    A_matrix.setZero();
+    A_matrix(0,3)=G(0,0);A_matrix(0,6)=G(1,0);A_matrix(0,9)=G(2,0);A_matrix(0,0)=-G(0,0)-G(1,0)-G(2,0);
+    A_matrix(1,3)=G(0,1);A_matrix(1,6)=G(1,1);A_matrix(1,9)=G(2,1);A_matrix(1,0)=-G(0,1)-G(1,1)-G(2,1);
+    A_matrix(2,3)=G(0,2);A_matrix(2,6)=G(1,2);A_matrix(2,9)=G(2,2);A_matrix(2,0)=-G(0,2)-G(1,2)-G(2,2);
+    A_matrix(3,4)=G(0,0);A_matrix(3,7)=G(1,0);A_matrix(3,10)=G(2,0);A_matrix(3,1)=-G(0,0)-G(1,0)-G(2,0);
+    A_matrix(4,4)=G(0,1);A_matrix(4,7)=G(1,1);A_matrix(4,10)=G(2,1);A_matrix(4,1)=-G(0,1)-G(1,1)-G(2,1);
+    A_matrix(5,4)=G(0,2);A_matrix(5,7)=G(1,2);A_matrix(5,10)=G(2,2);A_matrix(5,1)=-G(0,2)-G(1,2)-G(2,2);
+    A_matrix(6,5)=G(0,0);A_matrix(6,8)=G(1,0);A_matrix(6,11)=G(2,0);A_matrix(6,2)=-G(0,0)-G(1,0)-G(2,0);
+    A_matrix(7,5)=G(0,1);A_matrix(7,8)=G(1,1);A_matrix(7,11)=G(2,1);A_matrix(7,2)=-G(0,1)-G(1,1)-G(2,1);
+    A_matrix(8,5)=G(0,2);A_matrix(8,8)=G(1,2);A_matrix(8,11)=G(2,2);A_matrix(8,2)=-G(0,2)-G(1,2)-G(2,2);
+
+}
 
 
 // runs the actual simulation and outputs the results appropriately

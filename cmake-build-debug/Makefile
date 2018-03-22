@@ -258,32 +258,32 @@ SVD.cpp.s:
 	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/SVD.cpp.s
 .PHONY : SVD.cpp.s
 
-StrainConstraint.o: StrainConstraint.cpp.o
+TetStrainConstraint.o: TetStrainConstraint.cpp.o
 
-.PHONY : StrainConstraint.o
+.PHONY : TetStrainConstraint.o
 
 # target to build an object file
-StrainConstraint.cpp.o:
-	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.o
-.PHONY : StrainConstraint.cpp.o
+TetStrainConstraint.cpp.o:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o
+.PHONY : TetStrainConstraint.cpp.o
 
-StrainConstraint.i: StrainConstraint.cpp.i
+TetStrainConstraint.i: TetStrainConstraint.cpp.i
 
-.PHONY : StrainConstraint.i
+.PHONY : TetStrainConstraint.i
 
 # target to preprocess a source file
-StrainConstraint.cpp.i:
-	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.i
-.PHONY : StrainConstraint.cpp.i
+TetStrainConstraint.cpp.i:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.i
+.PHONY : TetStrainConstraint.cpp.i
 
-StrainConstraint.s: StrainConstraint.cpp.s
+TetStrainConstraint.s: TetStrainConstraint.cpp.s
 
-.PHONY : StrainConstraint.s
+.PHONY : TetStrainConstraint.s
 
 # target to generate assembly for a file
-StrainConstraint.cpp.s:
-	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.s
-.PHONY : StrainConstraint.cpp.s
+TetStrainConstraint.cpp.s:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.s
+.PHONY : TetStrainConstraint.cpp.s
 
 main.o: main.cpp.o
 
@@ -336,9 +336,9 @@ help:
 	@echo "... SVD.o"
 	@echo "... SVD.i"
 	@echo "... SVD.s"
-	@echo "... StrainConstraint.o"
-	@echo "... StrainConstraint.i"
-	@echo "... StrainConstraint.s"
+	@echo "... TetStrainConstraint.o"
+	@echo "... TetStrainConstraint.i"
+	@echo "... TetStrainConstraint.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

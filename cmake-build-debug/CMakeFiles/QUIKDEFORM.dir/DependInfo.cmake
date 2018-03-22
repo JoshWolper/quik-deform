@@ -9,7 +9,7 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.cpp" "/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o"
   "/Users/joshwolper/Desktop/quik-deform/quik-deform/QuikDeformer.cpp" "/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o"
   "/Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.cpp" "/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/QUIKDEFORM.dir/SVD.cpp.o"
-  "/Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.cpp" "/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.o"
+  "/Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.cpp" "/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o"
   "/Users/joshwolper/Desktop/quik-deform/quik-deform/main.cpp" "/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles/QUIKDEFORM.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "AppleClang")

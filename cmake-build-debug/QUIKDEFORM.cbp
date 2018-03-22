@@ -115,10 +115,10 @@
 		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.h">
 			<Option target="QUIKDEFORM"/>
 		</Unit>
-		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.cpp">
+		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.cpp">
 			<Option target="QUIKDEFORM"/>
 		</Unit>
-		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.h">
+		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.h">
 			<Option target="QUIKDEFORM"/>
 		</Unit>
 		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/global.h">

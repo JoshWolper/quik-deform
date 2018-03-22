@@ -23,9 +23,9 @@ void OBJGenerator::generateClothOBJ(const std::string &fileName,
         for (int i = 0; i <= height; i++){
             for (int j = 0; j <= width; j++){
                 Vector3d pos;
-                pos <<  0,
+                pos <<  0 + j * vertexDist,
                         0 - i * vertexDist,
-                        0 - j * vertexDist;
+                        0;
 
                 pos(1) = pos(1) + startHeight; //increase y value by startHeight!
 

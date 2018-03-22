@@ -65,9 +65,10 @@ int main(){
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
 
-    //string objectFile = "../Models/tetrahedron.obj";
+    string objectFile = "../Models/tetrahedron.obj";
     //string objectFile = "../Models/cube.obj";
 
+    /* //Uncomment this chunk if we want to use the cloth generator to make our input object file!
     string objectFile = "../Models/cloth.obj";
     double vertexDist = 0.5;
     int width = 5;
@@ -75,26 +76,31 @@ int main(){
     OBJGeneratorMode mode = OBJGeneratorMode::vertical;
     double startHeight = 3;
     OBJGenerator::generateClothOBJ(objectFile, vertexDist, width, height, mode, startHeight); //make the cloth to be used
-
+    */
 
     double seconds = 3;
     string outputFilepath = "../Output/";
 
     QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz);
 
-    quikDeformer.printMatrices();
+    //quikDeformer.printMatrices();
 
-    //ADD POSITION CONSTRAINTS
-    int posConstraintIndex = 0;
-    double posConstraintW = 100000;
-    quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
+    //------ADD POSITION CONSTRAINTS------//
+    //int posConstraintIndex = 0;
+    //double posConstraintW = 100000;
+    //quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
 
-    posConstraintIndex = 4;
-    posConstraintW = 100000;
-    quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
+    //posConstraintIndex = 5;
+    //posConstraintW = 100000;
+    //quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
 
-    double strain2DWeight = 10000;
+    //------ADD STRAIN CONSTRAINTS--------//
+    //double strain2DWeight = 10000;
     //quikDeformer.add2DStrainConstraints(strain2DWeight); //Go through mesh and find all triangles, add a constraint for each one!
+
+    double strain3DWeight = 20;
+    quikDeformer.add3DStrainConstraints(strain3DWeight); //go through mesh and find all tets, add a constraint for each one!
+
 
     //ADD GROUND CONSTRAINTS
     /*std::vector<int> indeces;

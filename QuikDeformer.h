@@ -11,9 +11,11 @@
 #include <vector>
 #include <string>
 #include "Constraint.h"
-#include "StrainConstraint.h"
 #include "PositionConstraint.h"
 #include "GroundConstraint.h"
+#include "TetStrainConstraint.h"
+#include "TriangleStrainConstraint.h"
+#include "SVD.h"
 
 class QuikDeformer {
 public:
@@ -39,10 +41,11 @@ public:
     int size () const { return numVertices; }
     void runSimulation(double seconds, const std::string& outputFilePath, bool printsOn);
 
-    void addConstraint(const std::string& type); // TODO: maybe use enums to add constraints instead?
     void addPositionConstraint(double weight,  int posConstraintIndex);
     void addGroundConstraint(double weight, std::vector<int> posConstraintIndeces, double floorVal);
     void add2DStrainConstraints(double strain2DWeight);
+    void add3DStrainConstraints(double strain3DWeight);
+
 
     void printMatrices() const;
 
@@ -60,6 +63,7 @@ private:
     bool printsOn = false;
     std::vector<Eigen::Vector3d> vertices;
     std::vector<Eigen::Vector3i> fragments;
+    std::vector<std::vector<int>> tetrahedrons; //vector of int vectors
     std::vector<Constraint*> constraints;
     Eigen::VectorXd* qMatrix;
     Eigen::VectorXd* vMatrix;
@@ -71,6 +75,7 @@ private:
     void writeObj(const std::string& fileName, Eigen::VectorXd qMat) const;
     void writeBgeo(const std::string& fileName) const;
     void setupMatrices(double mass, double vx, double vy, double vz);
+    void buildTetStrainA(Eigen::MatrixXd& A_matrix, Eigen::MatrixXd& G);
     Eigen::MatrixXd solveLinearSystem(Eigen::MatrixXd sn, Eigen::MatrixXd L, Eigen::MatrixXd Ltranspose);
 };
 

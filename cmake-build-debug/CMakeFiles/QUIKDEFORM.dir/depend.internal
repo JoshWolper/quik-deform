@@ -1072,7 +1072,10 @@ CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o
  /Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/QuikDeformer.cpp
  /Users/joshwolper/Desktop/quik-deform/quik-deform/QuikDeformer.h
- /Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/TriangleStrainConstraint.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/global.h
 CMakeFiles/QUIKDEFORM.dir/SVD.cpp.o
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Cholesky
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Core
@@ -1358,7 +1361,7 @@ CMakeFiles/QUIKDEFORM.dir/SVD.cpp.o
  /Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.cpp
  /Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/global.h
-CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.o
+CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Cholesky
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Core
@@ -1641,8 +1644,10 @@ CMakeFiles/QUIKDEFORM.dir/StrainConstraint.cpp.o
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/src/plugins/CommonCwiseUnaryOps.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/src/plugins/MatrixCwiseBinaryOps.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/src/plugins/MatrixCwiseUnaryOps.h
- /Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.cpp
- /Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.cpp
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/global.h
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Cholesky
@@ -1930,6 +1935,8 @@ CMakeFiles/QUIKDEFORM.dir/main.cpp.o
  /Users/joshwolper/Desktop/quik-deform/quik-deform/OBJGenerator.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/QuikDeformer.h
- /Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/TriangleStrainConstraint.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/global.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/main.cpp

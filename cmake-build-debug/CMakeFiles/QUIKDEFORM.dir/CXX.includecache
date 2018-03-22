@@ -1469,12 +1469,16 @@ string
 -
 Constraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h
-StrainConstraint.h
-/Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.h
 PositionConstraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/PositionConstraint.h
 GroundConstraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/GroundConstraint.h
+TetStrainConstraint.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.h
+TriangleStrainConstraint.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/TriangleStrainConstraint.h
+SVD.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.h
 
 /Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.cpp
 SVD.h
@@ -1492,16 +1496,30 @@ Eigen/Eigen
 global.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/global.h
 
-/Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.cpp
-StrainConstraint.h
-/Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.cpp
+TetStrainConstraint.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.h
 
-/Users/joshwolper/Desktop/quik-deform/quik-deform/StrainConstraint.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.h
+Eigen/Eigen
+/Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Eigen
+Constraint.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h
+SVD.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.h
+vector
+-
+iostream
+-
+
+/Users/joshwolper/Desktop/quik-deform/quik-deform/TriangleStrainConstraint.h
 Eigen/Eigen
 /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Eigen
 Constraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h
 vector
+-
+iostream
 -
 
 /Users/joshwolper/Desktop/quik-deform/quik-deform/global.h

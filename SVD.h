@@ -3,8 +3,8 @@
 //
 
 #pragma once
-#ifndef MPM_SVD_H
-#define MPM_SVD_H
+#ifndef QUIKDEFORM_SVD_H
+#define QUIKDEFORM_SVD_H
 
 #include "Eigen/Eigen"
 
@@ -16,4 +16,4 @@ SVDResult SingularValueDecomposition3D(Matrix3f F);
 
 SVDResultDouble SingularValueDecomposition3DDouble(Matrix3d F);
 
-#endif //MPM_SVD_H
+#endif //QUIKDEFORM_SVD_H
