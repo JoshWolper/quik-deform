@@ -64,6 +64,7 @@ SVDResultDouble SingularValueDecomposition3DDouble(Matrix3d F)
     tempSigma(1,1) = singVals(1);
     tempSigma(2,2) = singVals(2);
 
+
     //sorting
     if(tempU.determinant()<0)
     {

@@ -27,7 +27,8 @@ public:
                  double mass,
                  double initVelX,
                  double initVelY,
-                 double initVelZ):
+                 double initVelZ,
+                 bool gravOn):
                     timeStep(timeStep),
                     solverIterations(solverIterations),
                     frameRate(frameRate),
@@ -35,6 +36,7 @@ public:
                     {
                         readObj(objFilePath);
                         setupMatrices(mass, initVelX, initVelY, initVelZ);
+                        gravityOn = gravOn;
                     };
     ~QuikDeformer();
 
@@ -45,7 +47,6 @@ public:
     void addGroundConstraint(double weight, std::vector<int> posConstraintIndeces, double floorVal);
     void add2DStrainConstraints(double strain2DWeight);
     void add3DStrainConstraints(double strain3DWeight);
-
 
     void printMatrices() const;
 
@@ -61,6 +62,7 @@ private:
     int frameRate;
     int numVertices;
     bool printsOn = false;
+    bool gravityOn = true;
     std::vector<Eigen::Vector3d> vertices;
     std::vector<Eigen::Vector3i> fragments;
     std::vector<std::vector<int>> tetrahedrons; //vector of int vectors

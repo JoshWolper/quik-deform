@@ -6,13 +6,16 @@
 #define QUIKDEFORM_CONSTRAINT_H
 
 #include "Eigen/Eigen"
+#include <iostream>
+
+using namespace std;
 
 class Constraint{
 public:
     Constraint(){};
     virtual ~Constraint(){};
 
-    virtual void projectConstraint(Eigen::MatrixXd qN_1){};
+    virtual void projectConstraint(Eigen::VectorXd qN_1){ cout << "ERROR: projectConstraints function not implemented" << endl; return; };
 
     Eigen::VectorXd getP(){ return pMatrix; };
     Eigen::MatrixXd getA(){ return aMatrix; };
@@ -22,6 +25,9 @@ public:
     double getVolume() { return volume; };
     std::vector<int> getIndeces(){ return indeces; };
     Eigen::MatrixXd getDmInv(){ return DmInv; };
+    Eigen::Matrix3d getDefGrad(){ return defGrad; };
+    int getCardinality() { return cardinality; };
+    Eigen::MatrixXd getDs(){ return Ds; };
 
     void setP(Eigen::VectorXd P){ pMatrix = P;};
     void setA(Eigen::MatrixXd A){ aMatrix = A;};
@@ -30,10 +36,10 @@ public:
     void setW(double weight){ w = weight; };
     void setVolume(double vol){ volume = vol; };
     void setDmInv(Eigen::MatrixXd Dminv){ DmInv = Dminv; };
-
     void setIndeces(std::vector<int> ids){ indeces = ids; };
+    void setDefGrad(Eigen::Matrix3d F){ defGrad = F; };
+    void setDs(Eigen::MatrixXd Ds_arg){ Ds = Ds_arg; };
 
-    int getCardinality() { return cardinality; };
 
 private:
     double w; //constraint weight
@@ -45,6 +51,8 @@ private:
     Eigen::MatrixXd bMatrix; //B matrix
     std::vector<int> indeces; //index matrix
     Eigen::MatrixXd DmInv; //store for strain constraints
+    Eigen::Matrix3d defGrad; //store current deformation gradient of constraint so we can print it
+    Eigen::MatrixXd Ds;
 
 };
 

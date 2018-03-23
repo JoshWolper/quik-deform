@@ -9,6 +9,8 @@
 /Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h
 Eigen/Eigen
 /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Eigen
+iostream
+-
 
 /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Cholesky
 Core
@@ -1448,6 +1450,8 @@ Eigen/Eigen
 Constraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h
 vector
+-
+iostream
 -
 
 /Users/joshwolper/Desktop/quik-deform/quik-deform/QuikDeformer.cpp

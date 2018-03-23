@@ -65,7 +65,7 @@ void QuikDeformer::setupMatrices(double mass, double vx, double vy, double vz) {
         (*vMatrix)((3*i) + 2) = vz; //fill each row iteratively
 
         (*fExtMatrix)((3*i) + 0) = 0;
-        (*fExtMatrix)((3*i) + 1) = -9.81 * mass; //add gravity force to each point in our external force matrix
+        (*fExtMatrix)((3*i) + 1) = (gravityOn == true) ? (-9.81 * mass) : 0.0; //add gravity force to each point in our external force matrix
         (*fExtMatrix)((3*i) + 2) = 0;
     }
 
@@ -329,8 +329,28 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
         for (auto i = 0; i < solverIterations; i++){
 
             // Lines 4-6 : Local Step (calc p_i for each constraint C_i)
-            for(int j = 0; j < constraints.size(); j++){
+            for(int j = 0; j < constraints.size(); j++) {
+                if (printsOn == true) { cout << "Processing constraint " << j << "..." << endl; }
+
                 constraints[j]->projectConstraint(qN_1); //project the constraint based on our calculated q n+1
+
+                if (printsOn == true) {
+                    MatrixXd aMat, bMat, sMat, Dminv, Ds;
+                    Matrix3d defGrad;
+                    aMat = constraints[j]->getA();
+                    bMat = constraints[j]->getB();
+                    sMat = constraints[j]->getS();
+                    defGrad = constraints[j]->getDefGrad();
+                    Dminv = constraints[j]->getDmInv();
+                    Ds = constraints[j]->getDs();
+
+                    //cout << "A Matrix: " << endl << aMat << endl;
+                    //cout << "B Matrix: " << endl << bMat << endl;
+                    //cout << "S Matrix: " << endl << sMat << endl;
+                    cout << "Ds of constraint " << j << " : " << endl << Ds << endl;
+                    cout << "Dminv of constraint " << j << " : " << endl << Dminv << endl;
+                    cout << "F of constraint " << j << " : " << endl << defGrad << endl;
+                }
             }
 
             if(printsOn == true){cout << "local step complete" << endl;}

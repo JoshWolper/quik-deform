@@ -64,6 +64,19 @@ int main(){
     double vx = 0;
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
+    bool gravityOn = true;
+    bool printsOn = false;
+
+    //Weight PARAMETERS
+    double E = 5000;
+    double nu = 0.3;
+    double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
+    double lame_mu = E / ((double)2 * ((double)1 + nu));
+
+    double tetStrainWeight = 2 * lame_mu;
+    double volumeWeight = 3 * lame_lambda;
+
+    cout << "Strain Weight is: " << tetStrainWeight << endl;
 
     string objectFile = "../Models/tetrahedron.obj";
     //string objectFile = "../Models/cube.obj";
@@ -81,7 +94,7 @@ int main(){
     double seconds = 3;
     string outputFilepath = "../Output/";
 
-    QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz);
+    QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz, gravityOn);
 
     //quikDeformer.printMatrices();
 
@@ -98,8 +111,7 @@ int main(){
     //double strain2DWeight = 10000;
     //quikDeformer.add2DStrainConstraints(strain2DWeight); //Go through mesh and find all triangles, add a constraint for each one!
 
-    double strain3DWeight = 20;
-    quikDeformer.add3DStrainConstraints(strain3DWeight); //go through mesh and find all tets, add a constraint for each one!
+    quikDeformer.add3DStrainConstraints(tetStrainWeight); //go through mesh and find all tets, add a constraint for each one!
 
 
     //ADD GROUND CONSTRAINTS
@@ -113,7 +125,7 @@ int main(){
 
 
     //Run the simulation!
-    quikDeformer.runSimulation(seconds, outputFilepath, false);
+    quikDeformer.runSimulation(seconds, outputFilepath, printsOn);
 
     // openMP test:
     //ompTest();
