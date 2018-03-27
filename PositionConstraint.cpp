@@ -12,7 +12,7 @@ void PositionConstraint::projectConstraint(Eigen::VectorXd qN_1){
     //Since the constraint manifold for a point is only a single point, p_i will always be the same!
     //We don't actually have to do anything here!
 
-    std::cout << "Solved position constraint! " << std::endl;
+    //std::cout << "Solved position constraint! " << std::endl;
 
     return;
 }

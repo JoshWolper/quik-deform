@@ -56,7 +56,7 @@ void ompTest(){
 
 int main(){
 
-    //Define our variables
+    //SIM PARAMETERS
     double h = 1e-4; //timestep
     int iter = 5; // solverIterations
     double mass = 1; //mass of each point
@@ -64,17 +64,29 @@ int main(){
     double vx = 0;
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
-    bool gravityOn = true;
+    bool gravityOn = false;
     bool printsOn = false;
+    bool volumetric = true; //whether this is a thin shell or volumetric
+    double seconds = 4; //how long to run sim
+    string outputFilepath = "../Output/";
+
+    //WIND PARAMETERS
+    bool windOn = false;
+    double wx = 1; //wind direction
+    double wy = 0;
+    double wz = 0;
+    double windMag = 1.5; //wind magnitude
+    bool windOsc = false; //whether the wind oscillates or is constant
 
     //Weight PARAMETERS
-    double E = 5000;
+    double E = 500000;
     double nu = 0.3;
     double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
     double lame_mu = E / ((double)2 * ((double)1 + nu));
 
     double tetStrainWeight = 2 * lame_mu;
     double volumeWeight = 3 * lame_lambda;
+
 
     cout << "Strain Weight is: " << tetStrainWeight << endl;
 
@@ -91,10 +103,18 @@ int main(){
     OBJGenerator::generateClothOBJ(objectFile, vertexDist, width, height, mode, startHeight); //make the cloth to be used
     */
 
-    double seconds = 3;
-    string outputFilepath = "../Output/";
+    /* Use these files for testing high poly stuff! 600 tets
+    string nodeFile = "../tetgen1.5.1-beta1/example.1.node";
+    string eleFile = "../tetgen1.5.1-beta1/example.1.ele";
+    string faceFile = "../tetgen1.5.1-beta1/example.1.face";
+    */
 
-    QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz, gravityOn);
+    string nodeFile = "../Models/cube.1.node";
+    string eleFile = "../Models/cube.1.ele";
+    string faceFile = "../Models/cube.1.face";
+
+    //QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
+    QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
 
     //quikDeformer.printMatrices();
 
@@ -108,21 +128,15 @@ int main(){
     //quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
 
     //------ADD STRAIN CONSTRAINTS--------//
-    //double strain2DWeight = 10000;
-    //quikDeformer.add2DStrainConstraints(strain2DWeight); //Go through mesh and find all triangles, add a constraint for each one!
+    if(volumetric) { quikDeformer.add3DStrainConstraints(tetStrainWeight); }//go through mesh and find all tets, add a constraint for each one!
 
-    quikDeformer.add3DStrainConstraints(tetStrainWeight); //go through mesh and find all tets, add a constraint for each one!
-
-
-    //ADD GROUND CONSTRAINTS
-    /*std::vector<int> indeces;
-    for(int i = 0; i < quikDeformer.size(); i++){ //add all indeces
-        indeces.push_back(i);
+    //------ADD WIND EFFECTS--------------//
+    if(windOn){
+        quikDeformer.addWind(wx, wy, wz, windMag, windOsc);
     }
-    double groundConstraintW = 1000000;
-    double floor = 0;
-    quikDeformer.addGroundConstraint(groundConstraintW, indeces, floor);*/
 
+    //Randomize vertices for a fun test
+    quikDeformer.randomizeVertices();
 
     //Run the simulation!
     quikDeformer.runSimulation(seconds, outputFilepath, printsOn);
