@@ -1,7 +1,28 @@
 string $myMenu = `menu -p $gMainWindow -to true -l "QuikDeform"`; 
 menuItem -parent $myMenu -label "QuikDeform Node" -c "setUpQuikDeformNode";
+menuItem -parent $myMenu -label "QuikDeform Node With Selection" -c "setUpQuikDeformNodeSpecial";
 
 
 global proc setUpQuikDeformNode(){
     createNode QuikDeformNode -n QuikDeformNode1;
+}
+
+
+global proc setUpQuikDeformNodeSpecial(){
+    string $selection[] = `ls -selection`; 
+    if (size($selection) == 1){
+		string $shapes[] = `listRelatives -shapes $selection[0]`;
+		$mesh = $shapes[0];
+
+        createNode transform -n QuikDeformedTransform;
+		createNode mesh -n QuikDeformedMesh -p QuikDeformedTransform;
+        createNode QuikDeformNode -n QuikDeformNode1;
+        
+		connectAttr time1.outTime QuikDeformNode1.currentFrame;
+		connectAttr ($mesh + ".outMesh") QuikDeformNode1.inputMesh;
+        connectAttr QuikDeformNode1.outputMesh QuikDeformedMesh.inMesh;
+
+    } else{
+        print ("Error: more or less than 1 object selected");
+    }
 }

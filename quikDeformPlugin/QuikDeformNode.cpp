@@ -8,15 +8,38 @@
 		return MS::kFailure;		\
 	}
 
+// helper function for getting triangles from a mesh
+void getTrianglesHelper(const MFnMesh& mesh, std::vector<std::vector<int>>& indices) {
+	MIntArray triangleCounts, triangleIndices;
+	mesh.getTriangles(triangleCounts, triangleIndices);
+
+	int triangleNum = 0;
+	for (auto i = 0u; i < triangleCounts.length(); i++) {
+		triangleNum += triangleCounts[i];
+	}
+
+	for (int i = 0; i < triangleNum; i++) {
+		std::vector<int> triangle;
+		triangle.push_back(triangleIndices[i * 3]);
+		triangle.push_back(triangleIndices[i * 3 + 1]);
+		triangle.push_back(triangleIndices[i * 3 + 2]);
+		indices.push_back(triangle);
+	}
+
+}
+
 
 // ---------------------------------------
 // initialize attributes 
 // ---------------------------------------
 // simulation attributes
+MObject QuikDeformNode::inputMesh;
+MObject QuikDeformNode::outputMesh;
 MObject QuikDeformNode::timeStep;
 MObject QuikDeformNode::solverIterations;
 MObject QuikDeformNode::framesToSimulate;
 MObject QuikDeformNode::frameRate;
+MObject QuikDeformNode::currentFrame;
 MObject QuikDeformNode::mass;
 MObject QuikDeformNode::initialVelocity;
 
@@ -35,6 +58,7 @@ MObject QuikDeformNode::doWind;
 MObject QuikDeformNode::windForce;
 
 MTypeId QuikDeformNode::id(0x80000);
+
 
 
 // create the node
@@ -56,10 +80,13 @@ MStatus QuikDeformNode::initialize() {
 	// create all attributes 
 	// ---------------------------------------
 	// simulation attributes
+	QuikDeformNode::inputMesh = typedAttr.create("inputMesh", "im", MFnData::kMesh);
+	QuikDeformNode::outputMesh = typedAttr.create("outputMesh", "om", MFnData::kMesh);
 	QuikDeformNode::timeStep = numAttr.create("timeStep", "ts", MFnNumericData::kDouble, 0.01);
 	QuikDeformNode::solverIterations = numAttr.create("solverIterations", "si", MFnNumericData::kInt, 5);
 	QuikDeformNode::framesToSimulate = numAttr.create("framesToSimulate", "f", MFnNumericData::kInt, 24);
 	QuikDeformNode::frameRate = numAttr.create("frameRate", "fr", MFnNumericData::kInt, 24);
+	QuikDeformNode::currentFrame = numAttr.create("currentFrame", "cf", MFnNumericData::kInt, 24);
 	QuikDeformNode::mass = numAttr.create("mass", "m", MFnNumericData::kDouble, 1.0);
 	QuikDeformNode::initialVelocity = numAttr.createPoint("initialVelocity", "iv");
 	// constraint attributes
@@ -74,15 +101,18 @@ MStatus QuikDeformNode::initialize() {
 	QuikDeformNode::gravityForce = numAttr.createPoint("gravityForce", "gf");
 	QuikDeformNode::doWind = numAttr.create("doWind", "dw", MFnNumericData::kBoolean, 0);
 	QuikDeformNode::windForce = numAttr.createPoint("windForce", "wf");
-	
+
 	// ---------------------------------------
 	// add all created attributes 
 	// ---------------------------------------
 	// simulation attributes
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::inputMesh));
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::timeStep));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::solverIterations));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::framesToSimulate));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::frameRate));
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::currentFrame));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::mass));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::initialVelocity));
 	// constraint attributes
@@ -101,6 +131,7 @@ MStatus QuikDeformNode::initialize() {
 	// ---------------------------------------
 	// link created attributes 
 	// ---------------------------------------
+	attributeAffects(QuikDeformNode::currentFrame, QuikDeformNode::outputMesh);
 	/*
 	returnStatus = attributeAffects(LSystemNode::time, LSystemNode::outputMesh);
 	McheckErr(returnStatus, "ERROR in attributeAffects\n");
@@ -111,6 +142,7 @@ MStatus QuikDeformNode::initialize() {
 	returnStatus = attributeAffects(LSystemNode::grammar, LSystemNode::outputMesh);
 	McheckErr(returnStatus, "ERROR in attributeAffects\n");
 	*/
+
 
 	return MS::kSuccess;
 }
@@ -157,24 +189,99 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	MStatus returnStatus;
 
 	// get simulation attributes
+	MDataHandle inputMeshData = data.inputValue(inputMesh); // TODO: is it too much wasted effort to get the new input Mesh at every compute?
 	MDataHandle timeStepData = data.inputValue(timeStep);
 	MDataHandle solverIterationsData = data.inputValue(solverIterations);
 	MDataHandle framesToSimulateData = data.inputValue(framesToSimulate);
 	MDataHandle frameRateData = data.inputValue(frameRate);
+	MDataHandle currentFrameData = data.inputValue(currentFrame);
 	MDataHandle massData = data.inputValue(mass);
 	MDataHandle initialVelocityData = data.inputValue(initialVelocity);
-	
+
+	MObject originalObj = inputMeshData.asMesh(); // this returns a local space mesh https://tinyurl.com/ycgcmc49
+	MFnMesh originalMesh = originalObj;
 	double dt = timeStepData.asDouble();
 	int iter = solverIterationsData.asInt();
-	int frames = framesToSimulateData.asInt();
+	int totalFrames = framesToSimulateData.asInt();
+	int curFrame = currentFrameData.asInt();
+
+	MGlobal::displayInfo(("total frames is " + std::to_string(totalFrames)).c_str());
+	MGlobal::displayInfo(("current frame is " + std::to_string(curFrame)).c_str());
+
 	// get constraint attributes
 	MDataHandle doStrainConstraintData = data.inputValue(doStrainConstraint);
 	bool doStrain = doStrainConstraintData.asBool();
+	MDataHandle doVolumeConstraintData = data.inputValue(doVolumeConstraint);
+	bool doVolume = doVolumeConstraintData.asBool();
+	MDataHandle doBendingConstraintData = data.inputValue(doBendingConstraint);
+	bool doBending = doBendingConstraintData.asBool();
 
-	// get external forces attributes
+	//TODO: get external forces attributes
 
 
-	data.setClean(plug);
+	// get output data
+	MDataHandle outputMeshData = data.outputValue(outputMesh);
+	MFnMeshData dataCreator;
+	MObject newOutputObj = dataCreator.create();
+	MFnMesh newMesh;
+	newMesh.copy(originalObj, newOutputObj);
+
+
+	// get the vertices
+	MFloatPointArray vertices;
+	originalMesh.getPoints(vertices);
+
+	/*
+	for (unsigned int i = 0u; i < vertices.length(); i++) {
+	MFloatPoint vertex = vertices[i];
+	std::string msg = "vertex " + std::to_string(i) + " is at " + std::to_string(vertex[0]) + ", " + std::to_string(vertex[1]) + ", " + std::to_string(vertex[2]);
+	MGlobal::displayInfo(msg.c_str());
+	}
+
+	// get the faces
+	std::vector<std::vector<int>> indices;
+	getTrianglesHelper(originalMesh, indices);
+
+	MGlobal::displayInfo("printing triangleVertices");
+	for (auto i = 0u; i < indices.size(); i++) {
+	std::string msg = "triangle " + std::to_string(i) + " has " + std::to_string(indices[i][0]) + ", "
+	+ std::to_string(indices[i][1]) + ", "	+ std::to_string(indices[i][2]);
+	MGlobal::displayInfo(msg.c_str());
+	}
+	*/
+
+	// move the vertices 
+	// for now just compute all frames from the get go. assume attributes won't change
+	if (initialPosition.length() == 0) {
+		// fill the initial position
+		initialPosition = vertices;
+	}
+
+	// compute all frames
+	if (computedFrames.size() < totalFrames) {
+		for (auto i = computedFrames.size(); i < totalFrames; i++) {
+			if (i == 0) {
+				computedFrames.push_back(initialPosition);
+			}
+			else {
+				computedFrames.push_back(computedFrames[i - 1]);
+			}
+
+			for (unsigned int j = 0u; j < computedFrames[i].length(); j++) {
+				computedFrames[i][j][2] += 0.2f;
+			}
+		}
+	}
+
+	// update output
+	if (curFrame <= totalFrames) {
+		newMesh.setPoints(computedFrames[curFrame - 1]);
+		newMesh.setObject(newOutputObj);
+		outputMeshData.set(newOutputObj);
+
+		data.setClean(plug);
+	}
+
 
 	return MStatus::kSuccess;
 }
@@ -195,8 +302,8 @@ MStatus initializePlugin(MObject obj)
 	sprintf_s(buffer, 2048, "source \"%s/QuikDeformNodeMenu.mel\";", path.c_str());
 	MGlobal::executeCommand(buffer, true);
 
-	if (!status) { 
-		status.perror("register QuikDeformNode failed"); 
+	if (!status) {
+		status.perror("register QuikDeformNode failed");
 		return status;
 	}
 

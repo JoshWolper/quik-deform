@@ -64,6 +64,9 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 	editorTemplate -suppress "caching";
 	editorTemplate -suppress "nodeState";
 	editorTemplate -suppress "frozen";
+	editorTemplate -suppress "inputMesh";
+	editorTemplate -suppress "outputMesh";
+	editorTemplate -suppress "currentFrame";
 }
 
 

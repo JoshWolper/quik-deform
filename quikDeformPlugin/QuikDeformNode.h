@@ -17,6 +17,13 @@
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MSimple.h>
+#include <maya/MSelectionList.h>
+#include <maya/MDagPath.h>
+#include <maya/MFnMesh.h>
+#include <maya/MFnMeshData.h>
+#include <maya/MFloatPoint.h>
+#include <maya/MFloatPointArray.h>
+#include <maya/MItMeshPolygon.h>
 
 // QuikDeform header files
 #include <Eigen\Eigen>
@@ -28,21 +35,24 @@
 #include <string>
 
 
-// defines a custom maya quikDeform Node
+// define a custom maya quikDeform Node
 class QuikDeformNode : public MPxNode
 {
 public:
 	QuikDeformNode() {};
-	virtual ~QuikDeformNode() {};
+	virtual ~QuikDeformNode() { };
 	virtual MStatus compute(const MPlug& plug, MDataBlock& data);
 	static void* creator();
 	static MStatus initialize();
 
 	// simulation attributes
+	static MObject inputMesh;
+	static MObject outputMesh;
 	static MObject timeStep;
 	static MObject solverIterations;
 	static MObject framesToSimulate;
 	static MObject frameRate;
+	static MObject currentFrame;
 	static MObject mass;
 	static MObject initialVelocity;
 	
@@ -61,4 +71,9 @@ public:
 	static MObject windForce;
 
 	static MTypeId id;
+
+private:
+	// basic node stats
+	MFloatPointArray initialPosition;
+	std::vector<MFloatPointArray> computedFrames;
 };
