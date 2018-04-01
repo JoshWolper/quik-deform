@@ -294,20 +294,47 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
 
         //cout << "Dm for triangle " << i << " :" << endl << Dm << endl;
 
-        //UNFINISHED (obviously lol)
+        //SET S MATRIX
+        MatrixXd sMat = MatrixXd(9, 3 * numVertices).setZero();
+        for(int j = 0; j < currTriangle.size(); j++){
+            //fill in S matrix for each index
+            sMat((3 * j + 0), (3 * (currTriangle[j] - 1) + 0)) = 1;
+            sMat((3 * j + 1), (3 * (currTriangle[j] - 1) + 1)) = 1;
+            sMat((3 * j + 2), (3 * (currTriangle[j] - 1) + 2)) = 1;
+        }
+        //cout << "SMatrix: " << endl << sMat << endl;
+
+        //SET BP MATRIX (okay to init to all zero)
+        VectorXd Bp = VectorXd(9,1).setZero();
+
+        //SET A MATRIX
+        MatrixXd aMat = MatrixXd(9,12).setZero();
+        buildTetStrainA(aMat, Dminv); //build aMat
+
+        //Set B = Identity (9 by 9)
+        Eigen::MatrixXd bMat = Eigen::MatrixXd(9, 9).setIdentity(); //identity since what we are passing for p is actually Bp
+
+        //constraints.push_back(new TetStrainConstraint(strain3DWeight, sMat, Bp, aMat, bMat, currTet, volume, Dminv));
+
+        cout << "Finished triangle " << i << " :" << endl;
 
     }
 
 }
 
-void QuikDeformer::add3DStrainConstraints(double strain3DWeight){
+void QuikDeformer::buildTriangleStrainA(MatrixXd& A_matrix, MatrixXd& G){
 
-    //For now this is hard coded for a single tetrahedron
-    /*vector<int> tet;
-    for(int i = 0; i<4; i++){
-        tet.push_back(i);
-    }
-    tetrahedrons.push_back(tet);*/
+    A_matrix.setZero();
+    A_matrix(0,2)=G(0,0);A_matrix(0,4)=G(1,0);A_matrix(0,0)=-G(0,0)-G(1,0);
+    A_matrix(1,2)=G(0,1);A_matrix(1,4)=G(1,1);A_matrix(1,0)=-G(0,1)-G(1,1);
+    A_matrix(2,3)=G(0,0);A_matrix(2,5)=G(1,0);A_matrix(2,1)=-G(0,0)-G(1,0);
+    A_matrix(3,3)=G(0,1);A_matrix(3,5)=G(1,1);A_matrix(3,1)=-G(0,1)-G(1,1);
+
+    return;
+}
+
+
+void QuikDeformer::add3DStrainConstraints(double strain3DWeight){
 
     //For each tetrahedron in mesh
     for(int i = 0; i < tetrahedrons.size(); i++){
@@ -492,6 +519,8 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
         for (auto i = 0; i < solverIterations; i++){
 
             // Lines 4-6 : Local Step (calc p_i for each constraint C_i)
+            //#pragma omp parallel
+            //#pragma omp for //parallelize with openMP!
             for(int j = 0; j < constraints.size(); j++) {
                 if (printsOn == true) { cout << "Processing constraint " << j << "..." << endl; }
 

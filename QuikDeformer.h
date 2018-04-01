@@ -16,6 +16,7 @@
 #include "TetStrainConstraint.h"
 #include "TriangleStrainConstraint.h"
 #include "SVD.h"
+//#include <omp.h>
 
 class QuikDeformer {
 public:
@@ -110,6 +111,7 @@ private:
     void writeObj(const std::string& fileName, Eigen::VectorXd qMat) const;
     void writeBgeo(const std::string& fileName) const;
     void setupMatrices(double mass, double vx, double vy, double vz);
+    void buildTriangleStrainA(MatrixXd& A_matrix, MatrixXd& G);
     void buildTetStrainA(Eigen::MatrixXd& A_matrix, Eigen::MatrixXd& G);
     Eigen::MatrixXd solveLinearSystem(Eigen::MatrixXd sn, Eigen::MatrixXd L, Eigen::MatrixXd Ltranspose);
     double randDouble(double min, double max);
