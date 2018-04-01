@@ -257,6 +257,15 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		initialPosition = vertices;
 	}
 
+	// use QuikDeformer to calculate new vertices
+	/*
+	TODO: figure out way to pass the following into QuikDeformer object constructor:
+	All vertices
+	All fragments // 1 BASED INDEXING
+	All tetrahedrons (from tetgen)
+	*/
+
+
 	// compute all frames
 	if (computedFrames.size() < totalFrames) {
 		for (auto i = computedFrames.size(); i < totalFrames; i++) {
