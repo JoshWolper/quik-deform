@@ -26,9 +26,6 @@
     <ClCompile Include="..\quik-deform\SVD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\quik-deform\StrainConstraint.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\quik-deform\QuikDeformer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -42,6 +39,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QuikDeformNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\quik-deform\OBJGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\quik-deform\TetStrainConstraint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\quik-deform\TriangleStrainConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -64,13 +70,19 @@
     <ClInclude Include="..\quik-deform\QuikDeformer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\quik-deform\StrainConstraint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\quik-deform\SVD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="QuikDeformNode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\quik-deform\OBJGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\quik-deform\TetStrainConstraint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\quik-deform\TriangleStrainConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

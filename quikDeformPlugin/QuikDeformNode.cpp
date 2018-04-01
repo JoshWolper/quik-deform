@@ -168,9 +168,6 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	int totalFrames = framesToSimulateData.asInt();
 	int curFrame = currentFrameData.asInt();
 
-	MGlobal::displayInfo(("total frames is " + std::to_string(totalFrames)).c_str());
-	MGlobal::displayInfo(("current frame is " + std::to_string(curFrame)).c_str());
-
 	// get constraint attributes
 	MDataHandle doStrainConstraintData = data.inputValue(doStrainConstraint);
 	bool doStrain = doStrainConstraintData.asBool();
@@ -216,10 +213,11 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	*/
 
 	// test if tetgen works
+	MGlobal::displayInfo(std::string("start tetgen test with " + std::to_string(vertices.length()) + " vertices and " + std::to_string(indices.size()) + " facets").c_str());
 	tetgenio tetInput, tetOutput;
 	tetgenio::facet *f;
 	tetgenio::polygon *p;
-	tetInput.firstnumber = 1;
+	tetInput.firstnumber = 0;
 	
 	// populate the points
 	tetInput.numberofpoints = vertices.length();
@@ -228,6 +226,9 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		tetInput.pointlist[i * 3]	  = vertices[i][0];
 		tetInput.pointlist[i * 3 + 1] = vertices[i][1];
 		tetInput.pointlist[i * 3 + 2] = vertices[i][2];
+		std::string msg = "input vertex " + std::to_string(i) + " has " + std::to_string(tetInput.pointlist[i * 3]) + ", "
+			+ std::to_string(tetInput.pointlist[i * 3 + 1]) + ", " + std::to_string(tetInput.pointlist[i * 3] + 2);
+		MGlobal::displayInfo(msg.c_str());
 	}
 
 	// populate the facets
@@ -246,11 +247,16 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		p->vertexlist[0] = indices[i][0];
 		p->vertexlist[1] = indices[i][1];
 		p->vertexlist[2] = indices[i][2];
+		std::string msg = "input triangle " + std::to_string(i) + " has " + std::to_string(p->vertexlist[0]) + ", "
+			+ std::to_string(p->vertexlist[1]) + ", " + std::to_string(p->vertexlist[2]);
+		MGlobal::displayInfo(msg.c_str());
 	}
 
-	tetgenbehavior tetCmd;
-	tetCmd.parse_commandline("pq");
-	tetgenH::tetrahedralize(&tetCmd, &tetInput, &tetOutput);
+	tetrahedralize("pq", &tetInput, &tetOutput);
+
+	MGlobal::displayInfo(std::string("finish tetgen test with " + std::to_string(tetOutput.numberofpoints) + " points and " 
+		+ std::to_string(tetOutput.numberoftetrahedra) + " tetrahedrons"
+		+ std::to_string(tetOutput.numberoftrifaces) + " triFaces").c_str());
 
 	// print the number of points
 	for (int i = 0; i < tetOutput.numberofpoints; i++) {
