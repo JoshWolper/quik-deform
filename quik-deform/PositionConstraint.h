@@ -8,6 +8,7 @@
 #include "Eigen/Eigen"
 #include "Constraint.h"
 #include <vector>
+#include <iostream>
 
 class PositionConstraint : public Constraint{
 public:

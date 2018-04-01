@@ -16,6 +16,7 @@ global proc setUpQuikDeformNodeSpecial(){
 
         createNode transform -n QuikDeformedTransform;
 		createNode mesh -n QuikDeformedMesh -p QuikDeformedTransform;
+		sets -add initialShadingGroup QuikDeformedMesh;
         createNode QuikDeformNode -n QuikDeformNode1;
         
 		connectAttr time1.outTime QuikDeformNode1.currentFrame;

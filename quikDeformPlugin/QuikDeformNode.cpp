@@ -148,43 +148,6 @@ MStatus QuikDeformNode::initialize() {
 }
 
 
-void test(int i) {
-	double h = 1e-4; //timestep
-	int iter = 5; // solverIterations
-	double mass = 1; //mass of each point
-	int fr = 60; // frame rate
-	double vx = 0;
-	double vy = 0; //init initial velocity direction and magnitude
-	double vz = 0;
-	std::string objectFile = "E:/VisualStudio15Projects/quik-deform/quik-deform/Models/tetrahedron.obj";
-
-	double seconds = 3;
-	std::string outputFilepath = "E:/VisualStudio15Projects/quik-deform/quik-deform/newOutput";
-
-	QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz);
-
-	quikDeformer.printMatrices();
-
-	//ADD POSITION CONSTRAINTS
-	int posConstraintIndex = 2;
-	double posConstraintW = 10000;
-	quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
-
-	//ADD GROUND CONSTRAINTS
-	/*std::vector<int> indeces;
-	for(int i = 0; i < quikDeformer.size(); i++){ //add all indeces
-	indeces.push_back(i);
-	}
-	double groundConstraintW = 1000000;
-	double floor = 0;
-	quikDeformer.addGroundConstraint(groundConstraintW, indeces, floor);*/
-
-
-	//Run the simulation!
-	quikDeformer.runSimulation(seconds, outputFilepath, false);
-}
-
-
 MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	MStatus returnStatus;
 
@@ -219,7 +182,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	//TODO: get external forces attributes
 
 
-	// get output data
+	// create output data
 	MDataHandle outputMeshData = data.outputValue(outputMesh);
 	MFnMeshData dataCreator;
 	MObject newOutputObj = dataCreator.create();
@@ -227,9 +190,11 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	newMesh.copy(originalObj, newOutputObj);
 
 
-	// get the vertices
+	// get the vertices and faces
 	MFloatPointArray vertices;
 	originalMesh.getPoints(vertices);
+	std::vector<std::vector<int>> indices;
+	getTrianglesHelper(originalMesh, indices);
 
 	/*
 	for (unsigned int i = 0u; i < vertices.length(); i++) {
@@ -249,6 +214,70 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	MGlobal::displayInfo(msg.c_str());
 	}
 	*/
+
+	// test if tetgen works
+	tetgenio tetInput, tetOutput;
+	tetgenio::facet *f;
+	tetgenio::polygon *p;
+	tetInput.firstnumber = 1;
+	
+	// populate the points
+	tetInput.numberofpoints = vertices.length();
+	tetInput.pointlist = new REAL[tetInput.numberofpoints * 3];
+	for (int i = 0; i < tetInput.numberofpoints; i++) {
+		tetInput.pointlist[i * 3]	  = vertices[i][0];
+		tetInput.pointlist[i * 3 + 1] = vertices[i][1];
+		tetInput.pointlist[i * 3 + 2] = vertices[i][2];
+	}
+
+	// populate the facets
+	tetInput.numberoffacets = indices.size();
+	tetInput.facetlist = new tetgenio::facet[tetInput.numberoffacets];
+	tetInput.facetmarkerlist = new int[tetInput.numberoffacets];
+	for (int i = 0; i < tetInput.numberoffacets; i++) {
+		f = &tetInput.facetlist[i];
+		f->numberofpolygons = 1;
+		f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
+		f->numberofholes = 0;
+		f->holelist = NULL;
+		p = &f->polygonlist[0];
+		p->numberofvertices = 3;
+		p->vertexlist = new int[p->numberofvertices];
+		p->vertexlist[0] = indices[i][0];
+		p->vertexlist[1] = indices[i][1];
+		p->vertexlist[2] = indices[i][2];
+	}
+
+	tetgenbehavior tetCmd;
+	tetCmd.parse_commandline("pq");
+	tetgenH::tetrahedralize(&tetCmd, &tetInput, &tetOutput);
+
+	// print the number of points
+	for (int i = 0; i < tetOutput.numberofpoints; i++) {
+		std::string msg = "vertex " + std::to_string(i) + " is at " 
+			+ std::to_string(tetOutput.pointlist[i * 3]) + ", " 
+			+ std::to_string(tetOutput.pointlist[i * 3] + 1) + ", "
+			+ std::to_string(tetOutput.pointlist[i * 3] + 2);
+		MGlobal::displayInfo(msg.c_str());
+	}
+	// print the number of tetrahedrons
+	for (int i = 0; i < tetOutput.numberoftetrahedra; i++) {
+		std::string msg = "tetrahedron " + std::to_string(i) + " has "
+			+ std::to_string(tetOutput.tetrahedronlist[i * 4]) + ", "
+			+ std::to_string(tetOutput.tetrahedronlist[i * 4 + 1]) + ", "
+			+ std::to_string(tetOutput.tetrahedronlist[i * 4 + 2]) + ", "
+			+ std::to_string(tetOutput.tetrahedronlist[i * 4 + 3]);
+		MGlobal::displayInfo(msg.c_str());
+	}
+	// print the number of triangles
+	for (int i = 0; i < tetOutput.numberoftrifaces; i++) {
+		std::string msg = "triFace " + std::to_string(i) + " has "
+			+ std::to_string(tetOutput.trifacelist[i * 3]) + ", "
+			+ std::to_string(tetOutput.trifacelist[i * 3 + 1]) + ", "
+			+ std::to_string(tetOutput.trifacelist[i * 3 + 2]);
+		MGlobal::displayInfo(msg.c_str());
+	}
+
 
 	// move the vertices 
 	// for now just compute all frames from the get go. assume attributes won't change

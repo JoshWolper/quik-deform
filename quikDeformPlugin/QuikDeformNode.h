@@ -27,6 +27,7 @@
 
 // QuikDeform header files
 #include <Eigen\Eigen>
+#include <tetgen.h>
 #include "global.h"
 #include "QuikDeformer.h"
 

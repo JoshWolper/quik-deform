@@ -1,4 +1,6 @@
 #include "QuikDeformer.h"
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 using namespace Eigen;
 using namespace std;
@@ -45,7 +47,116 @@ void QuikDeformer::readObj(const std::string& fileName){
 
     numVertices = vertices.size();
 
+    return;
 }
+
+void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath){
+
+    //Open all the files and check for errors
+    ifstream nodeFile, eleFile, faceFile;
+    nodeFile.open(nodePath);
+    if(!nodeFile){
+        cerr << "Unable to open " << nodePath << "!" << std::endl;
+        exit(1);
+    }
+    eleFile.open(elePath);
+    if(!eleFile){
+        cerr << "Unable to open " << elePath << "!" << std::endl;
+        exit(1);
+    }
+    faceFile.open(facePath);
+    if(!faceFile){
+        cerr << "Unable to open " << facePath << "!" << std::endl;
+        exit(1);
+    }
+
+    //NODE FILE
+    string line;
+    getline(nodeFile, line); //grab first line before starting (since it's not used)
+    while( getline(nodeFile, line) ){
+        stringstream ss(line);
+
+        if (line[0] == '#'){
+            break; //last line of file!
+        }
+
+        Vector3d currPoint;
+        ss.ignore();
+        double garbage;
+        ss >> garbage; //throw out first value
+
+        for (int i = 0; i < 3; i++){
+            ss >> currPoint(i);
+        }
+
+        vertices.push_back(currPoint);
+
+    }
+
+    //cout << "Finished node file!" << endl;
+
+    //ELE FILE
+    getline(eleFile, line); //grab first line before starting (since it's not used)
+    while( getline(eleFile, line) ){
+        stringstream ss(line);
+
+        if (line[0] == '#'){
+            break; //last line of file!
+        }
+
+        vector<int> currTet;
+        ss.ignore();
+        int garbage, x;
+        ss >> garbage; //throw away first val
+
+        for (int i = 0; i < 4; i++){
+            ss >> x;
+            currTet.push_back(x);
+        }
+
+        tetrahedrons.push_back(currTet);
+
+    }
+
+    //cout << "Finished ele file!" << endl;
+
+    //FACE FILE
+    getline(faceFile, line); //grab first line before starting (since it's not used)
+    while( getline(faceFile, line) ){
+        stringstream ss(line);
+
+        if (line[0] == '#'){
+            break; //last line of file!
+        }
+
+        Vector3i currFragment;
+        ss.ignore();
+        int garbage;
+        ss >> garbage; //throw away first value (it's garbage)
+
+        for (int i = 0; i < 3; i++){
+            ss >> currFragment(i);
+        }
+
+        fragments.push_back(currFragment);
+
+    }
+
+    numVertices = vertices.size();
+
+    //cout << "First particle: " << vertices[0] << endl;
+    //cout << "First tet: " << tetrahedrons[0][0] << " " <<  tetrahedrons[0][1] << " " << tetrahedrons[0][2] << " " << tetrahedrons[0][3] << endl;
+    //cout << "First face: " << fragments[0] << endl;
+
+    cout << "Num particles: " << vertices.size() << endl;
+    cout << "Num tets: " << tetrahedrons.size() << endl;
+    cout << "Num fragments: " << fragments.size() << endl;
+
+
+    return;
+}
+
+
 
 // function called after readObj to construct the matrices we need
 void QuikDeformer::setupMatrices(double mass, double vx, double vy, double vz) {
@@ -65,7 +176,7 @@ void QuikDeformer::setupMatrices(double mass, double vx, double vy, double vz) {
         (*vMatrix)((3*i) + 2) = vz; //fill each row iteratively
 
         (*fExtMatrix)((3*i) + 0) = 0;
-        (*fExtMatrix)((3*i) + 1) = -9.81 * mass; //add gravity force to each point in our external force matrix
+        (*fExtMatrix)((3*i) + 1) = (gravityOn == true) ? (-9.81 * mass) : 0.0; //add gravity force to each point in our external force matrix
         (*fExtMatrix)((3*i) + 2) = 0;
     }
 
@@ -95,12 +206,16 @@ void QuikDeformer::printMatrices() const {
     cout << "Our inverse mass matrix is: " << endl << *invMassMatrix << endl;
 }
 
+void QuikDeformer::addWind(double wx, double wy, double wz, double windMag, bool windOsc){
 
-// adds constraints
-void QuikDeformer::addConstraint(const std::string &type) {
-    if (type == "strain"){
-        constraints.push_back(new StrainConstraint(vertices, fragments));
+    for(int i = 0; i < numVertices; i++){
+
+        (*fExtMatrix)((3*i) + 0) += (wx * windMag);
+        (*fExtMatrix)((3*i) + 1) += (wy * windMag); //update the forces to include wind effects in the specified direction and magnitude
+        (*fExtMatrix)((3*i) + 2) += (wz * windMag);
+
     }
+
 }
 
 void QuikDeformer::addPositionConstraint(double weight, int posConstraintIndex){
@@ -151,6 +266,161 @@ void QuikDeformer::addGroundConstraint(double weight, vector<int> posConstraintI
     constraints.push_back(new GroundConstraint(weight, sMatrix, p, posConstraintIndeces, floorVal));
 
 }
+
+
+void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
+
+    //For each triangle in mesh
+    for(int i = 0; i < fragments.size(); i++){
+
+        Vector3i currTriangle = fragments[i];
+
+        //Compute Dm
+        MatrixXd Dm = MatrixXd(2,2);
+
+        int id0 = 3 * (currTriangle[0] - 1);
+        int id1 = 3 * (currTriangle[1] - 1);
+        int id2 = 3 * (currTriangle[2] - 1);
+
+        Dm(0,0) = (*qMatrix)(id1 + 0) - (*qMatrix)(id0 + 0); //top left = X1.x - X0.x
+        Dm(1,0) = (*qMatrix)(id1 + 1) - (*qMatrix)(id0 + 1); //bottom left = X1.y - X0.y
+
+        Dm(0,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //top right = X2.x - X0.x
+        Dm(1,1) = (*qMatrix)(id2 + 1) - (*qMatrix)(id0 + 1); //bottom right = X2.y - X0.y
+
+        MatrixXd Dminv = Dm.inverse();
+
+        double area = Dm.determinant() * 0.5;
+
+        //cout << "Dm for triangle " << i << " :" << endl << Dm << endl;
+
+        //UNFINISHED (obviously lol)
+
+    }
+
+}
+
+void QuikDeformer::add3DStrainConstraints(double strain3DWeight){
+
+    //For now this is hard coded for a single tetrahedron
+    /*vector<int> tet;
+    for(int i = 0; i<4; i++){
+        tet.push_back(i);
+    }
+    tetrahedrons.push_back(tet);*/
+
+    //For each tetrahedron in mesh
+    for(int i = 0; i < tetrahedrons.size(); i++){
+
+        vector<int> currTet = tetrahedrons[i];
+
+        //Compute Dm
+        MatrixXd Dm = MatrixXd(3,3);
+
+        int id0 = 3 * (currTet[0] - 1); //might have to subtract 1 if NOT 0-indexed
+        int id1 = 3 * (currTet[1] - 1);
+        int id2 = 3 * (currTet[2] - 1);
+        int id3 = 3 * (currTet[3] - 1);
+
+        Dm(0,0) = (*qMatrix)(id1 + 0) - (*qMatrix)(id0 + 0); //top left = X1.x - X0.x
+        Dm(1,0) = (*qMatrix)(id1 + 1) - (*qMatrix)(id0 + 1); //middle left = X1.y - X0.y
+        Dm(2,0) = (*qMatrix)(id1 + 2) - (*qMatrix)(id0 + 2); //bottom left = X1.z - X0.z
+
+        Dm(0,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //top middle = X2.x - X0.x
+        Dm(1,1) = (*qMatrix)(id2 + 1) - (*qMatrix)(id0 + 1); //middle middle = X2.y - X0.y
+        Dm(2,1) = (*qMatrix)(id2 + 2) - (*qMatrix)(id0 + 2); //bottom middle = X2.z - X0.z
+
+        Dm(0,2) = (*qMatrix)(id3 + 0) - (*qMatrix)(id0 + 0); //top right = X3.x - X0.x
+        Dm(1,2) = (*qMatrix)(id3 + 1) - (*qMatrix)(id0 + 1); //middle right = X3.y - X0.y
+        Dm(2,2) = (*qMatrix)(id3 + 2) - (*qMatrix)(id0 + 2); //bottom right = X3.z - X0.z
+
+        MatrixXd Dminv = Dm.inverse();
+
+        double volume = Dm.determinant() / 6.0;
+
+        //cout << "Dm for tet " << i << " :" << endl << Dm << endl;
+
+        //SET S MATRIX
+        MatrixXd sMat = MatrixXd(12, 3 * numVertices).setZero();
+        for(int j = 0; j < currTet.size(); j++){
+            //fill in S matrix for each index
+            sMat((3 * j + 0), (3 * (currTet[j] - 1) + 0)) = 1;
+            sMat((3 * j + 1), (3 * (currTet[j] - 1) + 1)) = 1;
+            sMat((3 * j + 2), (3 * (currTet[j] - 1) + 2)) = 1;
+        }
+        //cout << "SMatrix: " << endl << sMat << endl;
+
+        //SET BP MATRIX (okay to init to all zero)
+        VectorXd Bp = VectorXd(9,1).setZero();
+
+        //SET A MATRIX
+        MatrixXd aMat = MatrixXd(9,12).setZero();
+        buildTetStrainA(aMat, Dminv); //build aMat
+
+        //Set B = Identity (9 by 9)
+        Eigen::MatrixXd bMat = Eigen::MatrixXd(9, 9).setIdentity(); //identity since what we are passing for p is actually Bp
+
+        constraints.push_back(new TetStrainConstraint(strain3DWeight, sMat, Bp, aMat, bMat, currTet, volume, Dminv));
+
+        cout << "Finished tet " << i << " :" << endl;
+
+    }
+
+}
+
+void QuikDeformer::buildTetStrainA(MatrixXd& A_matrix, MatrixXd& G){
+
+    A_matrix.setZero();
+    A_matrix(0,3)=G(0,0);A_matrix(0,6)=G(1,0);A_matrix(0,9)=G(2,0);A_matrix(0,0)=-G(0,0)-G(1,0)-G(2,0);
+    A_matrix(1,3)=G(0,1);A_matrix(1,6)=G(1,1);A_matrix(1,9)=G(2,1);A_matrix(1,0)=-G(0,1)-G(1,1)-G(2,1);
+    A_matrix(2,3)=G(0,2);A_matrix(2,6)=G(1,2);A_matrix(2,9)=G(2,2);A_matrix(2,0)=-G(0,2)-G(1,2)-G(2,2);
+    A_matrix(3,4)=G(0,0);A_matrix(3,7)=G(1,0);A_matrix(3,10)=G(2,0);A_matrix(3,1)=-G(0,0)-G(1,0)-G(2,0);
+    A_matrix(4,4)=G(0,1);A_matrix(4,7)=G(1,1);A_matrix(4,10)=G(2,1);A_matrix(4,1)=-G(0,1)-G(1,1)-G(2,1);
+    A_matrix(5,4)=G(0,2);A_matrix(5,7)=G(1,2);A_matrix(5,10)=G(2,2);A_matrix(5,1)=-G(0,2)-G(1,2)-G(2,2);
+    A_matrix(6,5)=G(0,0);A_matrix(6,8)=G(1,0);A_matrix(6,11)=G(2,0);A_matrix(6,2)=-G(0,0)-G(1,0)-G(2,0);
+    A_matrix(7,5)=G(0,1);A_matrix(7,8)=G(1,1);A_matrix(7,11)=G(2,1);A_matrix(7,2)=-G(0,1)-G(1,1)-G(2,1);
+    A_matrix(8,5)=G(0,2);A_matrix(8,8)=G(1,2);A_matrix(8,11)=G(2,2);A_matrix(8,2)=-G(0,2)-G(1,2)-G(2,2);
+
+}
+
+void QuikDeformer::randomizeVertices(){
+
+    /* initialize random seed: */
+    srand (time(NULL));
+
+    for(int i = 0; i < numVertices; i++){
+
+        Vector3d newPoint;
+
+        double newX, newY, newZ;
+        double min, max;
+        min = 1.2;
+        max = 1.8;
+        newX = randDouble(min, max);
+        newY = randDouble(min, max);
+        newZ = randDouble(min, max);
+
+        newPoint[0] = newX;
+        newPoint[1] = newY;
+        newPoint[2] = newZ;
+
+        vertices[i] = newPoint;
+
+        //Update actual position matrix
+        (*qMatrix)((3*i) + 0) = newX;
+        (*qMatrix)((3*i) + 1) = newY;
+        (*qMatrix)((3*i) + 2) = newZ;
+    }
+
+    return;
+}
+
+double QuikDeformer::randDouble(double min, double max)
+{
+    double r = (double)rand() / (double)RAND_MAX;
+    return min + r * (max - min);
+}
+
 
 
 // runs the actual simulation and outputs the results appropriately
@@ -222,8 +492,28 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
         for (auto i = 0; i < solverIterations; i++){
 
             // Lines 4-6 : Local Step (calc p_i for each constraint C_i)
-            for(int j = 0; j < constraints.size(); j++){
+            for(int j = 0; j < constraints.size(); j++) {
+                if (printsOn == true) { cout << "Processing constraint " << j << "..." << endl; }
+
                 constraints[j]->projectConstraint(qN_1); //project the constraint based on our calculated q n+1
+
+                if (printsOn == true) {
+                    MatrixXd aMat, bMat, sMat, Dminv, Ds;
+                    Matrix3d defGrad;
+                    aMat = constraints[j]->getA();
+                    bMat = constraints[j]->getB();
+                    sMat = constraints[j]->getS();
+                    defGrad = constraints[j]->getDefGrad();
+                    Dminv = constraints[j]->getDmInv();
+                    Ds = constraints[j]->getDs();
+
+                    //cout << "A Matrix: " << endl << aMat << endl;
+                    //cout << "B Matrix: " << endl << bMat << endl;
+                    //cout << "S Matrix: " << endl << sMat << endl;
+                    cout << "Ds of constraint " << j << " : " << endl << Ds << endl;
+                    cout << "Dminv of constraint " << j << " : " << endl << Dminv << endl;
+                    cout << "F of constraint " << j << " : " << endl << defGrad << endl;
+                }
             }
 
             if(printsOn == true){cout << "local step complete" << endl;}
