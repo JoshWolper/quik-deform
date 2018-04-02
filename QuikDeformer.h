@@ -66,10 +66,37 @@ public:
                         setupMatrices(mass, initVelX, initVelY, initVelZ);
                     };
 
+    //Constructor for volumetric models that directly takes in the geometry!!
+    QuikDeformer(std::vector<Eigen::Vector3d> particles,
+                 std::vector<Eigen::Vector3i> faces,
+                 std::vector<std::vector<int>> tets,
+                 double timeStep,
+                 int solverIterations,
+                 int frameRate,
+                 double mass,
+                 double initVelX,
+                 double initVelY,
+                 double initVelZ,
+                 bool gravOn,
+                 bool volumetricOn):
+                    timeStep(timeStep),
+                    solverIterations(solverIterations),
+                    frameRate(frameRate),
+                    numVertices(0),
+                    gravityOn(gravOn),
+                    volumetric(volumetricOn)
+                    {
+                        vertices = particles;
+                        fragments = faces;
+                        tetrahedrons = tets;
+                        setupMatrices(mass, initVelX, initVelY, initVelZ);
+                    };
+
     ~QuikDeformer();
 
     int size () const { return numVertices; }
     void runSimulation(double seconds, const std::string& outputFilePath, bool printsOn);
+    void runSimulation(double seconds, const std::string& outputFilePath, bool printsOn, std::vector<std::vector<Eigen::Vector3d>>& frames); //second func for Maya version
 
     void randomizeVertices();
 
