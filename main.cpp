@@ -28,6 +28,12 @@ int main(){
     double seconds = 4; //how long to run sim
     string outputFilepath = "../Output/";
 
+    //PLANE PARAMETERS
+    double A = 1;
+    double B = 1;
+    double C = 1;
+    double D = 0;
+
     //WIND PARAMETERS
     bool windOn = false;
     double wx = 1; //wind direction
@@ -76,6 +82,22 @@ int main(){
     //string nodeFile = "../Models/cube.1.node";
     //string eleFile = "../Models/cube.1.ele";
     //string faceFile = "../Models/cube.1.face";
+
+    /* test new constructor
+    std::vector<Eigen::Vector3d> particles;
+    std::vector<Eigen::Vector3i> faces;
+    std::vector<std::vector<int>> tets;
+    particles.push_back(Eigen::Vector3d(2,3,4));
+    faces.push_back(Eigen::Vector3i(5,6,7));
+    vector<int> newTet;
+    newTet.push_back(9);
+    newTet.push_back(8);
+    newTet.push_back(7);
+    newTet.push_back(6);
+    tets.push_back(newTet);
+    QuikDeformer quikDeformer(particles, faces, tets, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
+    quikDeformer.printMatrices();
+    return 0;*/
 
     //QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
     QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);

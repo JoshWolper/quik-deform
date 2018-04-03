@@ -86,9 +86,10 @@ public:
                     gravityOn(gravOn),
                     volumetric(volumetricOn)
                     {
-                        vertices = particles;
-                        fragments = faces;
-                        tetrahedrons = tets;
+                        vertices.assign(particles.begin(), particles.end());
+                        fragments.assign(faces.begin(), faces.end());
+                        tetrahedrons.assign(tets.begin(), tets.end());
+                        numVertices = vertices.size();
                         setupMatrices(mass, initVelX, initVelY, initVelZ);
                     };
 
@@ -96,8 +97,9 @@ public:
 
     int size () const { return numVertices; }
     void runSimulation(double seconds, const std::string& outputFilePath, bool printsOn);
-    void runSimulation(double seconds, const std::string& outputFilePath, bool printsOn, std::vector<std::vector<Eigen::Vector3d>>& frames); //second func for Maya version
+    void runSimulation(double seconds, bool printsOn, std::vector<Eigen::VectorXd>& frames); //second func for Maya version
 
+    Eigen::Vector3d planeCheck(double x, double y, double z); //return true if point is above plane
     void randomizeVertices();
 
     void addPositionConstraint(double weight,  int posConstraintIndex);

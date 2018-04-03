@@ -596,7 +596,7 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
 
 }
 
-void QuikDeformer::runSimulation(double seconds, const std::string& outputFilePath, bool printsOn, std::vector<Eigen::VectorXd>& frames){
+void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eigen::VectorXd>& frames){
 
     setPrintsOn(printsOn);
 
@@ -743,6 +743,17 @@ void QuikDeformer::runSimulation(double seconds, const std::string& outputFilePa
         step = step + 1;
     }
 
+}
+
+Vector3d QuikDeformer::planeCheck(double x, double y, double z){
+
+    Vector3d newPoint = Vector3d(x, y, z);
+
+
+
+
+
+    return newPoint;
 }
 
 
