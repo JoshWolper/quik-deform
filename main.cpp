@@ -43,7 +43,7 @@ int main(){
     bool windOsc = false; //whether the wind oscillates or is constant
 
     //Weight PARAMETERS
-    double E = 5000;
+    double E = 50000;
     double nu = 0.3;
     double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
     double lame_mu = E / ((double)2 * ((double)1 + nu));
@@ -67,30 +67,56 @@ int main(){
     OBJGenerator::generateClothOBJ(objectFile, vertexDist, width, height, mode, startHeight); //make the cloth to be used
     */
 
-    //Tet with 1 tet
-    //string nodeFile = "../Models/tet.1.node";
-    //string eleFile = "../Models/tet.1.ele";
-    //string faceFile = "../Models/tet.1.face";
+    string nodeFile;
+    string eleFile;
+    string faceFile;
+    int indexBase;
 
-    //Cube with 6 tets
-    //string nodeFile = "../Models/cube.1.node";
-    //string eleFile = "../Models/cube.1.ele";
-    //string faceFile = "../Models/cube.1.face";
+    int whichObject = 4;
 
-    //Icosahedron with 16 tets
-    string nodeFile = "../Models/icosahedron.1.node";
-    string eleFile = "../Models/icosahedron.1.ele";
-    string faceFile = "../Models/icosahedron.1.face";
-
-    //Use these files for testing high poly stuff! 600 tets
-    //string nodeFile = "../tetgen1.5.1-beta1/example.1.node";
-    //string eleFile = "../tetgen1.5.1-beta1/example.1.ele";
-    //string faceFile = "../tetgen1.5.1-beta1/example.1.face";
-
-    //Sphere with 2064 tets
-    //string nodeFile = "../Models/sphere.1.node";
-    //string eleFile = "../Models/sphere.1.ele";
-    //string faceFile = "../Models/sphere.1.face";
+    if(whichObject == 0){
+        //Tet with 1 tet --> INDEX BASE IS 1
+        cout << "Processing volumetric tetrahedron model:" << endl;
+        indexBase = 1;
+        nodeFile = "../Models/tet.1.node";
+        eleFile = "../Models/tet.1.ele";
+        faceFile = "../Models/tet.1.face";
+    } else if (whichObject == 1){
+        //Cube with 6 tets --> INDEX BASE IS 1
+        cout << "Processing volumetric cube model:" << endl;
+        indexBase = 1;
+        nodeFile = "../Models/cube.1.node";
+        eleFile = "../Models/cube.1.ele";
+        faceFile = "../Models/cube.1.face";
+    } else if (whichObject == 2){
+        //Icosahedron with 16 tets --> INDEX BASE IS 0
+        cout << "Processing volumetric icosahedron model:" << endl;
+        indexBase = 0;
+        nodeFile = "../Models/icosahedron.1.node";
+        eleFile = "../Models/icosahedron.1.ele";
+        faceFile = "../Models/icosahedron.1.face";
+    } else if (whichObject == 3){
+        //Tetgen weird box shape 600 tets --> INDEX BASE IS 1
+        cout << "Processing volumetric box with hole model:" << endl;
+        indexBase = 1;
+        nodeFile = "../tetgen1.5.1-beta1/example.1.node";
+        eleFile = "../tetgen1.5.1-beta1/example.1.ele";
+        faceFile = "../tetgen1.5.1-beta1/example.1.face";
+    } else if (whichObject == 4){
+        //Sphere with 2064 tets --> INDEX BASE IS 0
+        cout << "Processing volumetric sphere model:" << endl;
+        indexBase = 0;
+        nodeFile = "../Models/sphere.1.node";
+        eleFile = "../Models/sphere.1.ele";
+        faceFile = "../Models/sphere.1.face";
+    } else{
+        cout << "Failed to choose a case so basic tetrahedron selected" << endl;
+        //Tet with 1 tet --> INDEX BASE IS 1
+        indexBase = 1;
+        nodeFile = "../Models/tet.1.node";
+        eleFile = "../Models/tet.1.ele";
+        faceFile = "../Models/tet.1.face";
+    }
 
     /* test new constructor
     std::vector<Eigen::Vector3d> particles;
@@ -109,7 +135,7 @@ int main(){
     return 0;*/
 
     //QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
-    QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
+    QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
 
     //quikDeformer.printMatrices();
 

@@ -54,7 +54,8 @@ public:
                  double initVelY,
                  double initVelZ,
                  bool gravOn,
-                 bool volumetricOn):
+                 bool volumetricOn,
+                 int indexBase):
                     timeStep(timeStep),
                     solverIterations(solverIterations),
                     frameRate(frameRate),
@@ -62,7 +63,7 @@ public:
                     gravityOn(gravOn),
                     volumetric(volumetricOn)
                     {
-                        readVolumetric(nodeFilePath, eleFilePath, faceFilePath); //setup particles, tets, and fragments
+                        readVolumetric(nodeFilePath, eleFilePath, faceFilePath, indexBase); //setup particles, tets, and fragments
                         setupMatrices(mass, initVelX, initVelY, initVelZ);
                     };
 
@@ -119,8 +120,7 @@ public:
     std::clock_t getStartTime(){return startTime; };
     double getElapsedTime(){return elapsedTime; };
 
-    // TODO: getters and setters for private variables?
-
+    Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> m_solver; //create a public variable for our solver!
 
 private:
     double timeStep;
@@ -144,13 +144,14 @@ private:
     double elapsedTime = 0;
 
     void readObj(const std::string& fileName); //setup particles and frags from object file
-    void readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath); //setup particles, tets, and fragments
+    void readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath, int indexBase); //setup particles, tets, and fragments
     void writeObj(const std::string& fileName, Eigen::VectorXd qMat) const;
     void writeBgeo(const std::string& fileName) const;
     void setupMatrices(double mass, double vx, double vy, double vz);
     void buildTriangleStrainA(MatrixXd& A_matrix, MatrixXd& G);
     void buildTetStrainA(Eigen::MatrixXd& A_matrix, Eigen::MatrixXd& G);
-    Eigen::MatrixXd solveLinearSystem(Eigen::MatrixXd sn, Eigen::MatrixXd L, Eigen::MatrixXd Ltranspose);
+    Eigen::MatrixXd solveLinearSystem(Eigen::MatrixXd sn, Eigen::MatrixXd L, Eigen::MatrixXd Ltranspose); //SLOW VERSION
+    Eigen::MatrixXd solveLinearSystem(Eigen::MatrixXd sn); //FAST VERSION
     double randDouble(double min, double max);
 };
 

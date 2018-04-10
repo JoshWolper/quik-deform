@@ -50,7 +50,7 @@ void QuikDeformer::readObj(const std::string& fileName){
     return;
 }
 
-void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath){
+void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath, int indexBase){
 
     //Open all the files and check for errors
     ifstream nodeFile, eleFile, faceFile;
@@ -89,6 +89,21 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
             ss >> currPoint(i);
         }
 
+        bool scaleAndTranslate = true;
+        if(scaleAndTranslate){
+
+            double scaleFactor = 100;
+            double dx = 0;
+            double dy = 2;
+            double dz = 0;
+
+            currPoint(0) = (currPoint(0) / scaleFactor) + dx;
+            currPoint(1) = (currPoint(1) / scaleFactor) + dy;
+            currPoint(2) = (currPoint(2) / scaleFactor) + dz;
+
+        }
+
+
         vertices.push_back(currPoint);
 
     }
@@ -111,7 +126,7 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
 
         for (int i = 0; i < 4; i++){
             ss >> x;
-            currTet.push_back(x);
+            currTet.push_back(x - indexBase); //subtract off the indexBase (0 or 1)
         }
 
         tetrahedrons.push_back(currTet);
@@ -131,11 +146,12 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
 
         Vector3i currFragment;
         ss.ignore();
-        int garbage;
+        int garbage, temp;
         ss >> garbage; //throw away first value (it's garbage)
 
         for (int i = 0; i < 3; i++){
-            ss >> currFragment(i);
+            ss >> temp;
+            currFragment(i) = temp - indexBase; //subtract off the indexBase (0 or 1)
         }
 
         fragments.push_back(currFragment);
@@ -344,11 +360,10 @@ void QuikDeformer::add3DStrainConstraints(double strain3DWeight){
         //Compute Dm
         MatrixXd Dm = MatrixXd(3,3);
 
-        int indexBase = 0;
-        int id0 = 3 * (currTet[0] - indexBase); //might have to subtract 1 if NOT 0-indexed
-        int id1 = 3 * (currTet[1] - indexBase);
-        int id2 = 3 * (currTet[2] - indexBase);
-        int id3 = 3 * (currTet[3] - indexBase);
+        int id0 = 3 * (currTet[0]); //might have to subtract 1 if NOT 0-indexed
+        int id1 = 3 * (currTet[1]);
+        int id2 = 3 * (currTet[2]);
+        int id3 = 3 * (currTet[3]);
 
         Dm(0,0) = (*qMatrix)(id1 + 0) - (*qMatrix)(id0 + 0); //top left = X1.x - X0.x
         Dm(1,0) = (*qMatrix)(id1 + 1) - (*qMatrix)(id0 + 1); //middle left = X1.y - X0.y
@@ -372,9 +387,9 @@ void QuikDeformer::add3DStrainConstraints(double strain3DWeight){
         MatrixXd sMat = MatrixXd(12, 3 * numVertices).setZero();
         for(int j = 0; j < currTet.size(); j++){
             //fill in S matrix for each index
-            sMat((3 * j + 0), (3 * (currTet[j] - indexBase) + 0)) = 1;
-            sMat((3 * j + 1), (3 * (currTet[j] - indexBase) + 1)) = 1;
-            sMat((3 * j + 2), (3 * (currTet[j] - indexBase) + 2)) = 1;
+            sMat((3 * j + 0), (3 * (currTet[j]) + 0)) = 1;
+            sMat((3 * j + 1), (3 * (currTet[j]) + 1)) = 1;
+            sMat((3 * j + 2), (3 * (currTet[j]) + 2)) = 1;
         }
         //cout << "SMatrix: " << endl << sMat << endl;
 
@@ -451,7 +466,7 @@ double QuikDeformer::randDouble(double min, double max)
 
 
 
-// runs the actual simulation and outputs the results appropriately
+// Runs our sim and outputs OBJECT FILES
 void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePath, bool printsOn) {
 
     setStartTime(std::clock()); //start the clock
@@ -467,7 +482,8 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
     vN = *vMatrix;
 
     //Precompute and prefactor term for global step
-    MatrixXd precomputedFactor = MatrixXd(numVertices, numVertices); //m by m matrix for this factor
+    MatrixXd precomputedFactor = MatrixXd(numVertices * 3, numVertices * 3); //3m by 3m matrix for this factor
+    SparseMatrix<double> m_system(numVertices*3, numVertices*3); //NEW: init sparse matrix for precomputation factor
 
     precomputedFactor = *mMatrix / (timeStep * timeStep); //first term of this factor
 
@@ -484,14 +500,14 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
 
     }
 
-    //Perform sparse (simplicialLLT?) Cholesky decomposition to get L and Ltranspose!
-    LLT<MatrixXd, Lower> lltOfA(precomputedFactor); // compute the Cholesky decomposition of A
-    MatrixXd L = lltOfA.matrixL(); // retrieve factor L  in the decomposition
-    MatrixXd Ltranspose = L.transpose();
+    //Now we must turn our precomputed factor into a sparse matrix!
+    m_system = precomputedFactor.sparseView();
 
-    //Alternatively for speed
-    //SimplicialLLT<SparseMatrix> m_solver;
-    //m_solver.compute(precomputedFactor);
+    //Prune like Fanfu does in his code, supresses values smaller than some threshold (not sure why pass 0s though)
+    m_system.prune(0,0);
+
+    //Now set up the system by having the simplicialLLT thing do cholesky!
+    m_solver.compute(m_system);
 
     //Set up some variables to deal with time
     int stepsPerFrame = (int)ceil(1 / (timeStep / (1 / (double)frameRate))); //calculate how many steps per frame we should have based on our desired frame rate and dt!
@@ -533,27 +549,7 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
             // Lines 4-6 : Local Step (calc p_i for each constraint C_i)
             #pragma omp parallel for num_threads(4)
             for(int j = 0; j < constraints.size(); j++) {
-                //if (printsOn == true) { cout << "Processing constraint " << j << "..." << endl; }
-
                 constraints[j]->projectConstraint(qN_1); //project the constraint based on our calculated q n+1
-
-                /*if (printsOn == true) {
-                    MatrixXd aMat, bMat, sMat, Dminv, Ds;
-                    Matrix3d defGrad;
-                    aMat = constraints[j]->getA();
-                    bMat = constraints[j]->getB();
-                    sMat = constraints[j]->getS();
-                    defGrad = constraints[j]->getDefGrad();
-                    Dminv = constraints[j]->getDmInv();
-                    Ds = constraints[j]->getDs();
-
-                    //cout << "A Matrix: " << endl << aMat << endl;
-                    //cout << "B Matrix: " << endl << bMat << endl;
-                    //cout << "S Matrix: " << endl << sMat << endl;
-                    cout << "Ds of constraint " << j << " : " << endl << Ds << endl;
-                    cout << "Dminv of constraint " << j << " : " << endl << Dminv << endl;
-                    cout << "F of constraint " << j << " : " << endl << defGrad << endl;
-                }*/
             }
 
             //cout << "Local Solver time: " << ( std::clock() - timeBeforeLocal ) / (double) CLOCKS_PER_SEC << " seconds" << endl;
@@ -563,7 +559,7 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
             clock_t timeBeforeGlobal = clock();
 
             // Line 7 : Global Step (solve linear system and find qN_1)
-            qN_1 = solveLinearSystem(sn, L, Ltranspose); //call this function to solve the global step!
+            qN_1 = solveLinearSystem(sn);
 
             //cout << "Global Solver time: " << ( std::clock() - timeBeforeGlobal ) / (double) CLOCKS_PER_SEC << " seconds" << endl;
 
@@ -628,12 +624,11 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
 
 }
 
+//Runs our simulation and FILLS "FRAMES" (no writes)
 void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eigen::VectorXd>& frames){
 
     setStartTime(std::clock()); //start the clock
     setPrintsOn(printsOn);
-
-    frames.clear(); //clear this vector just in case
 
     //setup variables for current value and for "next" or "n+1" value!
     VectorXd qN = VectorXd(3 * numVertices, 1);
@@ -645,7 +640,8 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
     vN = *vMatrix;
 
     //Precompute and prefactor term for global step
-    MatrixXd precomputedFactor = MatrixXd(numVertices, numVertices); //m by m matrix for this factor
+    MatrixXd precomputedFactor = MatrixXd(numVertices * 3, numVertices * 3); //3m by 3m matrix for this factor
+    SparseMatrix<double> m_system(numVertices*3, numVertices*3); //NEW: init sparse matrix for precomputation factor
 
     precomputedFactor = *mMatrix / (timeStep * timeStep); //first term of this factor
 
@@ -662,10 +658,14 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
 
     }
 
-    //Perform sparse (simplicialLLT?) Cholesky decomposition to get L and Ltranspose!
-    LLT<MatrixXd, Lower> lltOfA(precomputedFactor); // compute the Cholesky decomposition of A
-    MatrixXd L = lltOfA.matrixL(); // retrieve factor L  in the decomposition
-    MatrixXd Ltranspose = L.transpose();
+    //Now we must turn our precomputed factor into a sparse matrix!
+    m_system = precomputedFactor.sparseView();
+
+    //Prune like Fanfu does in his code, supresses values smaller than some threshold (not sure why pass 0s though)
+    m_system.prune(0,0);
+
+    //Now set up the system by having the simplicialLLT thing do cholesky!
+    m_solver.compute(m_system);
 
     //Set up some variables to deal with time
     int stepsPerFrame = (int)ceil(1 / (timeStep / (1 / (double)frameRate))); //calculate how many steps per frame we should have based on our desired frame rate and dt!
@@ -674,7 +674,11 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
 
     int numFrames = seconds * frameRate;
 
+    cout << "Simulation steps per frame: " << stepsPerFrame << endl;
+
     if(printsOn == true){cout << "Simulation steps begin: " << endl;}
+
+    //cout << "Precomputation time: " << ( std::clock() - getStartTime() ) / (double) CLOCKS_PER_SEC << " seconds" << endl;
 
     //Run the sim until we have the desired number of frames
     while(frame < numFrames){
@@ -698,37 +702,24 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
         // Lines 3-7 : solver loop
         for (auto i = 0; i < solverIterations; i++){
 
+            clock_t timeBeforeLocal = clock();
+
             // Lines 4-6 : Local Step (calc p_i for each constraint C_i)
-            #pragma omp parallel for
+            #pragma omp parallel for num_threads(4)
             for(int j = 0; j < constraints.size(); j++) {
-
-                //if (printsOn == true) { cout << "Processing constraint " << j << "..." << endl; }
-
                 constraints[j]->projectConstraint(qN_1); //project the constraint based on our calculated q n+1
-
-                /*if (printsOn == true) {
-                    MatrixXd aMat, bMat, sMat, Dminv, Ds;
-                    Matrix3d defGrad;
-                    aMat = constraints[j]->getA();
-                    bMat = constraints[j]->getB();
-                    sMat = constraints[j]->getS();
-                    defGrad = constraints[j]->getDefGrad();
-                    Dminv = constraints[j]->getDmInv();
-                    Ds = constraints[j]->getDs();
-
-                    //cout << "A Matrix: " << endl << aMat << endl;
-                    //cout << "B Matrix: " << endl << bMat << endl;
-                    //cout << "S Matrix: " << endl << sMat << endl;
-                    cout << "Ds of constraint " << j << " : " << endl << Ds << endl;
-                    cout << "Dminv of constraint " << j << " : " << endl << Dminv << endl;
-                    cout << "F of constraint " << j << " : " << endl << defGrad << endl;
-                }*/
             }
+
+            //cout << "Local Solver time: " << ( std::clock() - timeBeforeLocal ) / (double) CLOCKS_PER_SEC << " seconds" << endl;
 
             if(printsOn == true){cout << "local step complete" << endl;}
 
+            clock_t timeBeforeGlobal = clock();
+
             // Line 7 : Global Step (solve linear system and find qN_1)
-            qN_1 = solveLinearSystem(sn, L, Ltranspose); //call this function to solve the global step!
+            qN_1 = solveLinearSystem(sn);
+
+            //cout << "Global Solver time: " << ( std::clock() - timeBeforeGlobal ) / (double) CLOCKS_PER_SEC << " seconds" << endl;
 
             if(printsOn == true){cout << "global step complete" << endl;}
         }
@@ -797,21 +788,54 @@ Vector3d QuikDeformer::planeCheck(double x, double y, double z){
 
     Vector3d newPoint = Vector3d(x, y, z);
 
-
-
-
-
     return newPoint;
 }
 
+// FAST VERSION: global step. merge all projected points into a single set of points
+MatrixXd QuikDeformer::solveLinearSystem(Eigen::MatrixXd sn) {
 
-// global step. merge all projected points into a single set of points
+    clock_t globalPrecomputeTime = clock();
+
+    //First compute the right side of the expression to solve (our b term)
+    MatrixXd b = MatrixXd(numVertices * 3, 1); //3m by 1 matrix for this factor
+
+    b = (*mMatrix / (timeStep * timeStep)) * sn; //first term of this factor (notice this has sn multiplied, diff from Y!)
+
+    //Now have to iterate over all constraints to add to our b term!
+    for(int i = 0; i < constraints.size(); i++){
+
+        double w = constraints[i]->getW();
+        MatrixXd S = constraints[i]->getS();
+        MatrixXd Stranspose = S.transpose();
+        MatrixXd A = constraints[i]->getA();
+        MatrixXd Atranspose = A.transpose(); //need to do this because of the way transpose works! (does not replace original)
+        MatrixXd B = constraints[i]->getB();
+        MatrixXd p = constraints[i]->getP();
+
+        b += (w * Stranspose * Atranspose * B * p); //add term to b for this constraint
+
+    }
+
+    //cout << "Global Solver precompute time: " << ( std::clock() - globalPrecomputeTime ) / (double) CLOCKS_PER_SEC << " seconds" << endl;
+
+    clock_t beforeSolve = clock();
+
+    //Do the solve!
+    MatrixXd q = m_solver.solve(b);
+
+    //cout << "Global Solver time: " << ( std::clock() - beforeSolve ) / (double) CLOCKS_PER_SEC << " seconds" << endl;
+
+    return q;
+}
+
+
+// SLOW VERSION: global step. merge all projected points into a single set of points
 MatrixXd QuikDeformer::solveLinearSystem(Eigen::MatrixXd sn, Eigen::MatrixXd L, Eigen::MatrixXd Ltranspose) {
 
     clock_t globalPrecomputeTime = clock();
 
     //First compute the right side of the expression to solve (our b term)
-    MatrixXd b = MatrixXd(numVertices, 3); //m by m matrix for this factor
+    MatrixXd b = MatrixXd(numVertices * 3, 1); //3m by 1 matrix for this factor
 
     b = (*mMatrix / (timeStep * timeStep)) * sn; //first term of this factor (notice this has sn multiplied, diff from Y!)
 
