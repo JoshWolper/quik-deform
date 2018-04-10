@@ -61,9 +61,6 @@
     <ClInclude Include="..\quik-deform\GroundConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\quik-deform\initialize.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\quik-deform\PositionConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>

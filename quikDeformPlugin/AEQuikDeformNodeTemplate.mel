@@ -9,33 +9,29 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 	// --------------------------------------------
     editorTemplate -beginLayout "Simulation Attributes" -collapse 0;
 
+        // custom float slider for timeStep
+		editorTemplate -callCustom "timeSliderAttributeNew" "timeSliderAttributeUpdate" "timeStep";
 		// custom int slider for solverIterations
 		editorTemplate -callCustom "iterSliderAttributeNew" "iterSliderAttributeUpdate" "solverIterations";
-		// custom float slider for timeStep
-		editorTemplate -callCustom "timeSliderAttributeNew" "timeSliderAttributeUpdate" "timeStep";
-        editorTemplate -label "Frames" -addControl "framesToSimulate";
-		// custom radio buttons for frameRate
-		editorTemplate -callCustom "frameRateRadioAttributeNew" "frameRateRadioAttributeUpdate" "frameRate";
-		// custom float slider for mass
-		editorTemplate -callCustom "massSliderAttributeNew" "massSliderAttributeUpdate" "mass";
-		editorTemplate -label "Initial Point Velocity" - addControl "initialVelocity";
+        editorTemplate -label "Seconds" -addControl "secondsToSimulate";
+		editorTemplate -label "Framerate" -addControl "frameRate";
 
     editorTemplate -endLayout;
 
 	// --------------------------------------------
-	//          Constraint attributes
+	//          Object attributes
 	// --------------------------------------------
-	editorTemplate -beginLayout "Constraints" -collapse 0;
-
-		editorTemplate -label "Enable Strain Constraint" -addControl "doStrainConstraint";
-		// custom float slider for Strain Constraint Weight
-		editorTemplate -callCustom "strainSliderAttributeNew" "strainSliderAttributeUpdate" "strainConstraintWeight";
-		editorTemplate -label "Enable Volume Constraint" -addControl "doVolumeConstraint";
-		// custom float slider for Volume Constraint Weight
-		editorTemplate -callCustom "volumeSliderAttributeNew" "volumeSliderAttributeUpdate" "volumeConstraintWeight";
-		editorTemplate -label "Enable Bending Constraint" -addControl "doBendingConstraint";
-		// custom float slider for Bending Constraint Weight
-		editorTemplate -callCustom "bendingSliderAttributeNew" "bendingSliderAttributeUpdate" "bendingConstraintWeight";
+	editorTemplate -beginLayout "Object Attributes" -collapse 0;
+        
+        // custom float slider for mass
+		editorTemplate -callCustom "massSliderAttributeNew" "massSliderAttributeUpdate" "mass";
+		editorTemplate -label "Initial Object Velocity" - addControl "initialVelocity";
+        // custom radio buttons for volumetric vs thin-shell
+		editorTemplate -callCustom "volumetricRadioAttributeNew" "volumetricRadioAttributeUpdate" "volumetric";
+		 // custom float slider for youngsModulus
+		editorTemplate -callCustom "youngsModulusSliderAttributeNew" "youngsModulusSliderAttributeUpdate" "youngsModulus";
+		// custom float slider for poissonRatio
+		editorTemplate -callCustom "poissonRatioSliderAttributeNew" "poissonRatioSliderAttributeUpdate" "poissonRatio";
 
 	editorTemplate -endLayout;
 
@@ -45,9 +41,11 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 	editorTemplate -beginLayout "External Forces" -collapse 0;
 
 		editorTemplate -label "Enable Gravity" -addControl "doGravity";
-		editorTemplate -label "Gravity Force" -addControl "gravityForce";
 		editorTemplate -label "Enable Wind" -addControl "doWind";
-		editorTemplate -label "Wind Force" -addControl "windForce";
+		editorTemplate -label "Wind Direction" -addControl "windDirection";
+		// custom float slider for windMagnitude
+		editorTemplate -callCustom "windMagnitudeSliderAttributeNew" "windMagnitudeSliderAttributeUpdate" "windMagnitude";
+		editorTemplate -label "Enable Wind Oscillation" -addControl "windOscillation";
 
 	editorTemplate -endLayout;
 
@@ -74,24 +72,6 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 //     procs to define custom UI elements
 // --------------------------------------------
 
-// ----- slider for solver iterations -----
-global proc iterSliderAttributeNew( string $attrName )
-{
-	intSliderGrp 
-		-label "Solver Iterations" 
-		-field true
-		-minValue 1 
-		-maxValue 25 
-		-value 5
-		iterSlider;
-}
-
-global proc iterSliderAttributeUpdate( string $attrName )
-{
-   intSliderGrp -e -attribute $attrName iterSlider;
-}
-
-
 // ----- slider for time step -----
 global proc timeSliderAttributeNew( string $attrName )
 {
@@ -99,7 +79,9 @@ global proc timeSliderAttributeNew( string $attrName )
 		-label "Time Step" 
 		-field true
 		-minValue 0.001 
-		-maxValue 0.2 
+		-fieldMinValue 0.00001
+		-maxValue 0.1
+		-fieldMaxValue 2
 		-value 0.01
 		timeSlider;
 }
@@ -109,24 +91,22 @@ global proc timeSliderAttributeUpdate( string $attrName )
    floatSliderGrp -e -attribute $attrName timeSlider;
 }
 
-
-// ----- radio buttons for framerate -----
-global proc frameRateRadioAttributeNew( string $attrName)
+// ----- slider for solver iterations -----
+global proc iterSliderAttributeNew( string $attrName )
 {
-	radioButtonGrp
-		-label "Frame Rate"
-		-numberOfRadioButtons 2
-		-label1 "24"
-		-data1 24
-		-label2 "30"
-		-data2 30
-		-select 1
-		frameRateRadio;
+	intSliderGrp 
+		-label "Solver Iterations" 
+		-field true
+		-minValue 1 
+		-maxValue 20
+		-fieldMaxValue 100 
+		-value 5
+		iterSlider;
 }
 
-global proc frameRateRadioAttributeUpdate( string $attrName )
+global proc iterSliderAttributeUpdate( string $attrName )
 {
-   radioButtonGrp -e -attribute $attrName frameRateRadio;
+   intSliderGrp -e -attribute $attrName iterSlider;
 }
 
 // ----- slider for mass -----
@@ -136,7 +116,9 @@ global proc massSliderAttributeNew( string $attrName )
 		-label "Vertex Mass" 
 		-field true
 		-minValue 0.01 
+		-fieldMinValue 0.0001
 		-maxValue 10 
+		-fieldMaxValue 500
 		-value 1
 		massSlider;
 }
@@ -146,53 +128,82 @@ global proc massSliderAttributeUpdate( string $attrName )
    floatSliderGrp -e -attribute $attrName massSlider;
 }
 
-// ----- slider for strain constraint weight -----
-global proc strainSliderAttributeNew( string $attrName )
+
+// ----- radio buttons for volumetric -----
+global proc volumetricRadioAttributeNew( string $attrName)
+{
+	radioButtonGrp
+		-label "Simulation Type"
+		-numberOfRadioButtons 2
+		-label1 "Volumetric"
+		-data1 1
+		-label2 "Thin-shell"
+		-data2 0
+		-select 1
+		volumetricRadio;
+}
+
+global proc volumetricRadioAttributeUpdate( string $attrName )
+{
+   radioButtonGrp -e -attribute $attrName volumetricRadio;
+}
+
+
+// ----- slider for youngsModulus -----
+global proc youngsModulusSliderAttributeNew( string $attrName )
 {
 	floatSliderGrp 
-		-label "Strain Weight" 
+		-label "Young's Modulus" 
 		-field true
-		-minValue 0.001 
-		-maxValue 1 
-		-value 1
-		strainSlider;
+		-minValue 1000
+		-fieldMinValue 1
+		-maxValue 10000
+		-fieldMaxValue 1000000
+		-value 5000
+		youngsModulusSlider;
 }
 
-global proc strainSliderAttributeUpdate( string $attrName )
+global proc youngsModulusSliderAttributeUpdate( string $attrName )
 {
-   floatSliderGrp -e -attribute $attrName strainSlider;
+   floatSliderGrp -e -attribute $attrName youngsModulusSlider;
 }
 
-// ----- slider for volume constraint weight -----
-global proc volumeSliderAttributeNew( string $attrName )
+
+// ----- slider for poissonRatio -----
+global proc poissonRatioSliderAttributeNew( string $attrName )
 {
 	floatSliderGrp 
-		-label "Volume Weight" 
+		-label "Poisson Ratio" 
 		-field true
-		-minValue 0.001 
-		-maxValue 1 
-		-value 1
-		volumeSlider;
+		-minValue 0.1
+		-fieldMinValue 0.01
+		-maxValue 0.5
+		-fieldMaxValue 1
+		-value 0.3
+		poissonRatioSlider;
 }
 
-global proc volumeSliderAttributeUpdate( string $attrName )
+global proc poissonRatioSliderAttributeUpdate( string $attrName )
 {
-   floatSliderGrp -e -attribute $attrName volumeSlider;
+   floatSliderGrp -e -attribute $attrName poissonRatioSlider;
 }
 
-// ----- slider for strain constraint weight -----
-global proc bendingSliderAttributeNew( string $attrName )
+
+// ----- slider for windMagnitude -----
+global proc windMagnitudeSliderAttributeNew( string $attrName )
 {
 	floatSliderGrp 
-		-label "Bending Weight" 
+		-label "Wind Magnitude" 
 		-field true
-		-minValue 0.001 
-		-maxValue 1 
+		-minValue 0.1
+		-fieldMinValue 0.001
+		-maxValue 100
+		-fieldMaxValue 1000
 		-value 1
-		bendingSlider;
+		windMagnitudeSlider;
 }
 
-global proc bendingSliderAttributeUpdate( string $attrName )
+global proc windMagnitudeSliderAttributeUpdate( string $attrName )
 {
-   floatSliderGrp -e -attribute $attrName bendingSlider;
+   floatSliderGrp -e -attribute $attrName windMagnitudeSlider;
 }

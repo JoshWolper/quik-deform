@@ -1,6 +1,6 @@
 ﻿  QuikDeformNode.cpp
-e:\visualstudio15projects\quik-deform\quik-deform\GroundConstraint.h(32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-e:\visualstudio15projects\quik-deform\quik-deform\TriangleStrainConstraint.h(32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-QuikDeformNode.cpp(235): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-  quikDeformPlugin.vcxproj -> E:\VisualStudio15Projects\quik-deform\quikDeformPlugin\Debug\quikDeformPlugin.mll
-  quikDeformPlugin.vcxproj -> Debug\quikDeformPlugin.pdb (Full PDB)
+d:\git\quikdeform\quik-deform\quik-deform\GroundConstraint.h(32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+d:\git\quikdeform\quik-deform\quik-deform\TriangleStrainConstraint.h(32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\Git\quikDeform\quik-deform\quik-deform\QuikDeformer.h(92): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+     Creating library Debug\quikDeformPlugin.lib and object Debug\quikDeformPlugin.exp
+  quikDeformPlugin.vcxproj -> D:\Git\quikDeform\quik-deform\quikDeformPlugin\Debug\quikDeformPlugin.mll

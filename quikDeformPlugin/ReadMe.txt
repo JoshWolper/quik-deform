@@ -16,8 +16,14 @@ QuikDeformer
 
 
 Maya integration
-- figure out how to run tetgen in code and feed tetrahedrons (just vector<vector<int>>) into quikDeformer
-- figure out how to represent mesh info once computed
-	- copy the mesh and change the vertex positions 
-	- change the vertex positions of the mesh directly
+- combine mesh data with transform data - DONE
+
+- update the GUI to better reflect the parameters
 - hook up all the parameters with actual values in quikDeformer
+- dynamically add more vertices and edges to the surface of the mesh
+	- look into addPolygon function()
+- make a GUI menu in Mel to allow initial data setting
+- GUI to set point constraints
+	figure out how to get the vertex index given a selected vertex
+- GUI to set ground plane
+- compute button for the node

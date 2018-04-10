@@ -20,7 +20,7 @@ global proc setUpQuikDeformNodeSpecial(){
         createNode QuikDeformNode -n QuikDeformNode1;
         
 		connectAttr time1.outTime QuikDeformNode1.currentFrame;
-		connectAttr ($mesh + ".outMesh") QuikDeformNode1.inputMesh;
+		connectAttr ($mesh + ".worldMesh") QuikDeformNode1.inputMesh;
         connectAttr QuikDeformNode1.outputMesh QuikDeformedMesh.inMesh;
 
     } else{

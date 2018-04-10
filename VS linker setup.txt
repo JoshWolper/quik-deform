@@ -1,0 +1,21 @@
+********************************************************
+
+For easy set up of include libraries in project settings
+
+********************************************************
+
+Ethan's desktop setup
+- C/C++ additional include directories:
+	.;E:\Program Files\Autodesk\Maya2017\include;%(AdditionalIncludeDirectories);E:\VisualStudio15Projects\quik-deform;E:\VisualStudio15Projects\quik-deform\quik-deform
+- Linker additional include directories
+	E:\Program Files\Autodesk\Maya2017\lib;%(AdditionalLibraryDirectories)
+
+
+Ethan's laptop setup
+- C/C++ addition include directories
+	.;C:\Program Files\Autodesk\Maya2017\include;%(AdditionalIncludeDirectories);D:\Git\quikDeform\quik-deform;D:\Git\quikDeform\quik-deform\quik-deform
+- Linker additional include directories
+	C:\Program Files\Autodesk\Maya2017\lib;%(AdditionalLibraryDirectories)
+
+
+Josh's set up

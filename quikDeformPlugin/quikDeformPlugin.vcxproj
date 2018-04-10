@@ -29,7 +29,6 @@
     <ClInclude Include="..\quik-deform\Constraint.h" />
     <ClInclude Include="..\quik-deform\global.h" />
     <ClInclude Include="..\quik-deform\GroundConstraint.h" />
-    <ClInclude Include="..\quik-deform\initialize.h" />
     <ClInclude Include="..\quik-deform\OBJGenerator.h" />
     <ClInclude Include="..\quik-deform\PositionConstraint.h" />
     <ClInclude Include="..\quik-deform\QuikDeformer.h" />
@@ -88,7 +87,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;E:\Program Files\Autodesk\Maya2017\include;%(AdditionalIncludeDirectories);E:\VisualStudio15Projects\quik-deform;E:\VisualStudio15Projects\quik-deform\quik-deform\tetgen1.5.1-beta1;E:\VisualStudio15Projects\quik-deform\quik-deform\tetgen1.5.1-beta1\build;E:\VisualStudio15Projects\quik-deform\quik-deform</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;C:\Program Files\Autodesk\Maya2017\include;%(AdditionalIncludeDirectories);D:\Git\quikDeform\quik-deform;D:\Git\quikDeform\quik-deform\quik-deform</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>$(Configuration)\quikDeformPlugin.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
@@ -96,8 +95,8 @@
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <AdditionalOptions>/export:initializePlugin /export:uninitializePlugin %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>Foundation.lib;OpenMaya.lib;tet.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>E:\VisualStudio15Projects\quik-deform\quik-deform\tetgen1.5.1-beta1\build;E:\VisualStudio15Projects\quik-deform\quik-deform\tetgen1.5.1-beta1;E:\Program Files\Autodesk\Maya2017\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Foundation.lib;OpenMaya.lib;tetGenCompile.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\Autodesk\Maya2017\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <OutputFile>$(Configuration)\quikDeformPlugin.mll</OutputFile>
       <ImportLibrary>$(Configuration)\quikDeformPlugin.lib</ImportLibrary>
       <ProgramDatabaseFile>$(Configuration)\quikDeformPlugin.pdb</ProgramDatabaseFile>
