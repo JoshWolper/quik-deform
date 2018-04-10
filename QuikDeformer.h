@@ -16,7 +16,7 @@
 #include "TetStrainConstraint.h"
 #include "TriangleStrainConstraint.h"
 #include "SVD.h"
-//#include <omp.h>
+#include "/usr/local/Cellar/gcc/7.3.0_1/lib/gcc/7/gcc/x86_64-apple-darwin15.6.0/7.3.0/include/omp.h"
 
 class QuikDeformer {
 public:
@@ -113,6 +113,11 @@ public:
 
     void setPrintsOn(bool printStatus){ printsOn = printStatus; };
     bool getPrintsOn(){ return printsOn; };
+    void setStartTime(std::clock_t start){ startTime = start; };
+    void setElapsedTime(double diff){ elapsedTime = diff; };
+
+    std::clock_t getStartTime(){return startTime; };
+    double getElapsedTime(){return elapsedTime; };
 
     // TODO: getters and setters for private variables?
 
@@ -134,6 +139,9 @@ private:
     Eigen::VectorXd* fExtMatrix;
     Eigen::MatrixXd* mMatrix;
     Eigen::MatrixXd* invMassMatrix;
+
+    clock_t startTime;
+    double elapsedTime = 0;
 
     void readObj(const std::string& fileName); //setup particles and frags from object file
     void readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath); //setup particles, tets, and fragments

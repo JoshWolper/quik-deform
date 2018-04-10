@@ -1487,6 +1487,8 @@ TriangleStrainConstraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/TriangleStrainConstraint.h
 SVD.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.h
+/usr/local/Cellar/gcc/7.3.0_1/lib/gcc/7/gcc/x86_64-apple-darwin15.6.0/7.3.0/include/omp.h
+-
 
 /Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.cpp
 SVD.h
@@ -1547,4 +1549,6 @@ chrono
 -
 OBJGenerator.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/OBJGenerator.h
+
+/usr/local/Cellar/gcc/7.3.0_1/lib/gcc/7/gcc/x86_64-apple-darwin15.6.0/7.3.0/include/omp.h
 

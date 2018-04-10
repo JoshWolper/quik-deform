@@ -20,10 +20,11 @@ void TetStrainConstraint::projectConstraint(Eigen::VectorXd qN_1){
     MatrixXd Ds = MatrixXd(3,3).setZero();
     std::vector<int> currTet = getIndeces();
 
-    int id0 = 3 * (currTet[0] - 1); //might have to subtract 1 if NOT 0-indexed
-    int id1 = 3 * (currTet[1] - 1);
-    int id2 = 3 * (currTet[2] - 1);
-    int id3 = 3 * (currTet[3] - 1);
+    int indexBase = 0;
+    int id0 = 3 * (currTet[0] - indexBase); //might have to subtract 1 if NOT 0-indexed
+    int id1 = 3 * (currTet[1] - indexBase);
+    int id2 = 3 * (currTet[2] - indexBase);
+    int id3 = 3 * (currTet[3] - indexBase);
 
     Ds(0,0) = qN_1(id1 + 0) - qN_1(id0 + 0); //top left = X1.x - X0.x
     Ds(1,0) = qN_1(id1 + 1) - qN_1(id0 + 1); //middle left = X1.y - X0.y

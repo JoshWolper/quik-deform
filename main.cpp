@@ -15,10 +15,10 @@ using namespace std;
 int main(){
 
     //SIM PARAMETERS
-    double h = 1e-4; //timestep
+    double h = 1e-2; //timestep
     int iter = 5; // solverIterations
     double mass = 1; //mass of each point
-    int fr = 60; // frame rate
+    int fr = 24; // frame rate
     double vx = 0;
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
@@ -43,7 +43,7 @@ int main(){
     bool windOsc = false; //whether the wind oscillates or is constant
 
     //Weight PARAMETERS
-    double E = 500000;
+    double E = 5000;
     double nu = 0.3;
     double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
     double lame_mu = E / ((double)2 * ((double)1 + nu));
@@ -67,21 +67,30 @@ int main(){
     OBJGenerator::generateClothOBJ(objectFile, vertexDist, width, height, mode, startHeight); //make the cloth to be used
     */
 
-    /* Use these files for testing high poly stuff! 600 tets
-    string nodeFile = "../tetgen1.5.1-beta1/example.1.node";
-    string eleFile = "../tetgen1.5.1-beta1/example.1.ele";
-    string faceFile = "../tetgen1.5.1-beta1/example.1.face";
-    */
-
     //Tet with 1 tet
-    string nodeFile = "../Models/tet.1.node";
-    string eleFile = "../Models/tet.1.ele";
-    string faceFile = "../Models/tet.1.face";
+    //string nodeFile = "../Models/tet.1.node";
+    //string eleFile = "../Models/tet.1.ele";
+    //string faceFile = "../Models/tet.1.face";
 
     //Cube with 6 tets
     //string nodeFile = "../Models/cube.1.node";
     //string eleFile = "../Models/cube.1.ele";
     //string faceFile = "../Models/cube.1.face";
+
+    //Icosahedron with 16 tets
+    string nodeFile = "../Models/icosahedron.1.node";
+    string eleFile = "../Models/icosahedron.1.ele";
+    string faceFile = "../Models/icosahedron.1.face";
+
+    //Use these files for testing high poly stuff! 600 tets
+    //string nodeFile = "../tetgen1.5.1-beta1/example.1.node";
+    //string eleFile = "../tetgen1.5.1-beta1/example.1.ele";
+    //string faceFile = "../tetgen1.5.1-beta1/example.1.face";
+
+    //Sphere with 2064 tets
+    //string nodeFile = "../Models/sphere.1.node";
+    //string eleFile = "../Models/sphere.1.ele";
+    //string faceFile = "../Models/sphere.1.face";
 
     /* test new constructor
     std::vector<Eigen::Vector3d> particles;
@@ -102,7 +111,7 @@ int main(){
     //QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
     QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
 
-    quikDeformer.printMatrices();
+    //quikDeformer.printMatrices();
 
     //------ADD POSITION CONSTRAINTS------//
     //int posConstraintIndex = 0;

@@ -1075,6 +1075,7 @@ CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o: ../SVD.h
 CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o: ../TetStrainConstraint.h
 CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o: ../TriangleStrainConstraint.h
 CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o: ../global.h
+CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o: /usr/local/Cellar/gcc/7.3.0_1/lib/gcc/7/gcc/x86_64-apple-darwin15.6.0/7.3.0/include/omp.h
 
 CMakeFiles/QUIKDEFORM.dir/SVD.cpp.o: ../Eigen/Cholesky
 CMakeFiles/QUIKDEFORM.dir/SVD.cpp.o: ../Eigen/Core
@@ -1939,4 +1940,5 @@ CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../TetStrainConstraint.h
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../TriangleStrainConstraint.h
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../global.h
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../main.cpp
+CMakeFiles/QUIKDEFORM.dir/main.cpp.o: /usr/local/Cellar/gcc/7.3.0_1/lib/gcc/7/gcc/x86_64-apple-darwin15.6.0/7.3.0/include/omp.h
 
