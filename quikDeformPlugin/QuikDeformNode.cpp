@@ -16,6 +16,7 @@ void getMeshData(const MFnMesh& mesh,
 	std::vector<Eigen::Vector3d>& tetVertices,
 	std::vector<Eigen::Vector3i>& tetTriangles,
 	std::vector<std::vector<int>>& tetTetrahedrons,
+	double tetVolume,
 	bool printVals) {
 
 	// reset all input containers
@@ -88,7 +89,12 @@ void getMeshData(const MFnMesh& mesh,
 		p->vertexlist[2] = originalTriangles[i][2];
 	}
 
-	tetrahedralize("pq", &tetInput, &tetOutput);
+	std::string tetCmd = "pqa" + std::to_string(tetVolume);
+	char* cmd = new char[tetCmd.length() + 1];
+	strcpy(cmd, tetCmd.c_str());
+	tetrahedralize(cmd, &tetInput, &tetOutput);
+	//tetrahedralize("pq", &tetInput, &tetOutput);
+	delete[] cmd;
 
 	if (printVals) {
 		MGlobal::displayInfo(std::string("finish tetgen test with " + std::to_string(tetOutput.numberofpoints) + " points and "
@@ -170,6 +176,7 @@ MObject QuikDeformNode::frameRate;
 MObject QuikDeformNode::currentFrame;
 
 // object attributes
+MObject QuikDeformNode::tetVolume;
 MObject QuikDeformNode::mass;
 MObject QuikDeformNode::initialVelocity;
 MObject QuikDeformNode::volumetric;
@@ -214,6 +221,7 @@ MStatus QuikDeformNode::initialize() {
 	QuikDeformNode::frameRate = numAttr.create("frameRate", "fr", MFnNumericData::kInt, 24);
 	QuikDeformNode::currentFrame = numAttr.create("currentFrame", "cf", MFnNumericData::kInt, 1);
 	// object attributes
+	QuikDeformNode::tetVolume = numAttr.create("tetVolume", "tv", MFnNumericData::kDouble, 1.0);
 	QuikDeformNode::mass = numAttr.create("mass", "m", MFnNumericData::kDouble, 1.0);
 	QuikDeformNode::initialVelocity = numAttr.createPoint("initialVelocity", "iv");
 	QuikDeformNode::volumetric = numAttr.create("volumetric", "v", MFnNumericData::kBoolean, 1);
@@ -238,6 +246,7 @@ MStatus QuikDeformNode::initialize() {
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::frameRate));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::currentFrame));
 	// object attributes
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::tetVolume));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::mass));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::initialVelocity));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::volumetric));
@@ -261,6 +270,7 @@ MStatus QuikDeformNode::initialize() {
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::frameRate, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::currentFrame, QuikDeformNode::outputMesh));
 	// object attributes
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::tetVolume, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::mass, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::initialVelocity, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::volumetric, QuikDeformNode::outputMesh));
@@ -279,6 +289,7 @@ MStatus QuikDeformNode::initialize() {
 
 MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	MStatus returnStatus;
+
 	// ---------------------------------------
 	// step 1: get all input attributes from the node
 	// ---------------------------------------
@@ -290,6 +301,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	MDataHandle currentFrameData = data.inputValue(currentFrame);
 
 	// get object attributes
+	MDataHandle tetVolumeData = data.inputValue(tetVolume);
 	MDataHandle massData = data.inputValue(mass);
 	MDataHandle initialVelocityData = data.inputValue(initialVelocity);
 	MDataHandle volumetricData = data.inputValue(volumetric);
@@ -311,8 +323,9 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	newConfiguration.secondsToSimulate = secondsToSimulateData.asInt();
 	newConfiguration.frameRate = frameRateData.asInt();
 	// object attributes
+	newConfiguration.tetVolume = tetVolumeData.asDouble();
 	newConfiguration.mass = massData.asDouble();
-	newConfiguration.initialVelocity = initialVelocityData.asFloatVector(); // TODO need to test if this works
+	newConfiguration.initialVelocity = initialVelocityData.asFloatVector();
 	newConfiguration.volumetric = volumetricData.asBool();
 	newConfiguration.youngsModulus = youngsModulusData.asDouble();
 	newConfiguration.poissonRatio = poissonRatioData.asDouble();
@@ -355,7 +368,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 
 		// tetrahedralize the original mesh
 		getMeshData((MFnMesh)originaObj, originalVertices, originalTriangles,
-			tetVertices, tetTriangles, tetTetrahedrons, printVals);
+			tetVertices, tetTriangles, tetTetrahedrons, currentConfiguration.tetVolume, printVals);
 
 		if (printVals) {
 			MGlobal::displayInfo(std::string("original mesh data:").c_str());
@@ -387,9 +400,9 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 
 		// ----- run QuikDeformer to get the computed frames -----
 		if (quikDeformer != nullptr) { delete quikDeformer; }
-
+		/*
 		quikDeformer = new QuikDeformer(
-			tetVertices, tetTriangles, tetTetrahedrons, 
+			tetVertices, tetTriangles, tetTetrahedrons,
 			currentConfiguration.timeStep,
 			currentConfiguration.solverIterations,
 			currentConfiguration.frameRate,
@@ -400,14 +413,14 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			currentConfiguration.doGravity,
 			currentConfiguration.volumetric);
 
-		if (true) { 
+		if (currentConfiguration.volumetric) {
 			// go through mesh and find all tets, add a constraint for each one!
-			quikDeformer->add3DStrainConstraints(tetStrainWeight); 
+			quikDeformer->add3DStrainConstraints(tetStrainWeight);
 		}
 		else {
 			// TODO: thin shelled triangle constraint
 		}
-		
+
 
 		std::vector<Eigen::VectorXd> tempFrames; // temp holder of computed frames
 		quikDeformer->runSimulation(currentConfiguration.secondsToSimulate, false, tempFrames);
@@ -426,6 +439,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		double timeElapsed = omp_get_wtime() - computeStart;;
 		std::string timeDiff = "computation took " + std::to_string(timeElapsed) + " seconds";
 		MGlobal::displayInfo(timeDiff.c_str());
+		*/
 	}
 	else {
 		MGlobal::displayInfo(std::string("no need to recompute").c_str());
@@ -446,7 +460,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	int currentFrame = currentFrameData.asInt();
 	int totalFrames = currentConfiguration.frameRate * currentConfiguration.secondsToSimulate;
 	if (currentFrame <= totalFrames) {
-		newMesh.setPoints(computedFrames[currentFrame - 1]);
+		//newMesh.setPoints(computedFrames[currentFrame - 1]);
 		newMesh.setObject(newOutputObj);
 		outputMeshData.set(newOutputObj);
 

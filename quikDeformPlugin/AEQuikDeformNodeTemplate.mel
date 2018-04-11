@@ -24,6 +24,8 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 	// --------------------------------------------
 	editorTemplate -beginLayout "Object Attributes" -collapse 0;
         
+		// custom float slider for tetVolume
+		editorTemplate -callCustom "tetVolumeAttributeNew" "tetVolumeAttributeUpdate" "tetVolume";
         // custom float slider for mass
 		editorTemplate -callCustom "massSliderAttributeNew" "massSliderAttributeUpdate" "mass";
 		editorTemplate -label "Initial Object Velocity" - addControl "initialVelocity";
@@ -111,6 +113,28 @@ global proc iterSliderAttributeUpdate( string $attrName )
 {
    connectControl iterSlider $attrName;
 }
+
+
+// ----- slider for tetVolume -----
+global proc tetVolumeAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Tetrahedra Max Volume" 
+		-field true
+		-minValue 0.1 
+		-fieldMinValue 0.001
+		-maxValue 10
+		-fieldMaxValue 1000
+		-value 1.0
+		tetVolumeSlider;
+	connectControl tetVolumeSlider $attrName;
+}
+
+global proc tetVolumeAttributeUpdate( string $attrName )
+{
+   connectControl tetVolumeSlider $attrName;
+}
+
 
 // ----- slider for mass -----
 global proc massSliderAttributeNew( string $attrName )

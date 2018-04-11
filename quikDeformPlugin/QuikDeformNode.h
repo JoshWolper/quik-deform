@@ -47,6 +47,7 @@ struct QuikDeformNodeIO {
 	int frameRate;
 
 	// object attributes
+	double tetVolume;
 	double mass;
 	MVector initialVelocity;
 	bool volumetric;
@@ -68,6 +69,7 @@ struct QuikDeformNodeIO {
 			secondsToSimulate == rhs.secondsToSimulate &&
 			frameRate == rhs.frameRate &&
 			// object 
+			tetVolume == rhs.tetVolume &&
 			mass == rhs.mass &&
 			initialVelocity == rhs.initialVelocity &&
 			volumetric == rhs.volumetric &&
@@ -91,6 +93,7 @@ struct QuikDeformNodeIO {
 			"\niter is " + std::to_string(solverIterations) +
 			"\nsec is " + std::to_string(secondsToSimulate) +
 			"\nframerate is " + std::to_string(frameRate) +
+			"\ntetVolume is " + std::to_string(tetVolume) +
 			"\nmass is " + std::to_string(mass) +
 			"\ninitialVelocity is " + std::to_string(initialVelocity[0]) + ", " +
 			std::to_string(initialVelocity[1]) + ", " +
@@ -124,6 +127,7 @@ public:
 	static MObject currentFrame;
 	
 	// object attributes
+	static MObject tetVolume;
 	static MObject mass;
 	static MObject initialVelocity;
 	static MObject volumetric; // if we're doing volumetric or thin-shell simulation TODO: make this into an enum
