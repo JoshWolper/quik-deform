@@ -25,6 +25,7 @@
 #include <maya/MPointArray.h>
 #include <maya/MItMeshPolygon.h>
 #include <maya/MVector.h>
+#include <maya/MFloatVector.h>
 
 // QuikDeform header files
 #include <Eigen\Eigen>

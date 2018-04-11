@@ -102,19 +102,19 @@ void getMeshData(const MFnMesh& mesh,
 												 tetOutput.pointlist[i * 3 + 1],
 												 tetOutput.pointlist[i * 3 + 2]));
 	}
-	// get triangles, fixed so that index starts at 1
+	// get triangles
 	for (int i = 0; i < tetOutput.numberoftrifaces; i++) {
-		tetTriangles.emplace_back(Eigen::Vector3i(tetOutput.trifacelist[i * 3] + 1,
-												  tetOutput.trifacelist[i * 3 + 1] + 1,
-												  tetOutput.trifacelist[i * 3 + 2] + 1));
+		tetTriangles.emplace_back(Eigen::Vector3i(tetOutput.trifacelist[i * 3],
+												  tetOutput.trifacelist[i * 3 + 1],
+												  tetOutput.trifacelist[i * 3 + 2]));
 	}
-	// get tetrahedrons, fixed so that index starts at 1
+	// get tetrahedrons
 	for (int i = 0; i < tetOutput.numberoftetrahedra; i++) {
 		std::vector<int> tetrahedron;
-		tetrahedron.push_back(tetOutput.tetrahedronlist[i * 4] + 1);
-		tetrahedron.push_back(tetOutput.tetrahedronlist[i * 4 + 1] + 1);
-		tetrahedron.push_back(tetOutput.tetrahedronlist[i * 4 + 2] + 1);
-		tetrahedron.push_back(tetOutput.tetrahedronlist[i * 4 + 3] + 1);
+		tetrahedron.push_back(tetOutput.tetrahedronlist[i * 4]);
+		tetrahedron.push_back(tetOutput.tetrahedronlist[i * 4 + 1]);
+		tetrahedron.push_back(tetOutput.tetrahedronlist[i * 4 + 2]);
+		tetrahedron.push_back(tetOutput.tetrahedronlist[i * 4 + 3]);
 		tetTetrahedrons.push_back(tetrahedron);
 	}
 }
@@ -254,24 +254,24 @@ MStatus QuikDeformNode::initialize() {
 	// link created attributes 
 	// ---------------------------------------
 	// simulation attributes
-	attributeAffects(QuikDeformNode::inputMesh, QuikDeformNode::outputMesh); // TODO: is this changing the output mesh as intended?
-	attributeAffects(QuikDeformNode::timeStep, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::solverIterations, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::secondsToSimulate, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::frameRate, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::currentFrame, QuikDeformNode::outputMesh);
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::inputMesh, QuikDeformNode::outputMesh)); // TODO: is this changing the output mesh as intended?
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::timeStep, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::solverIterations, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::secondsToSimulate, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::frameRate, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::currentFrame, QuikDeformNode::outputMesh));
 	// object attributes
-	attributeAffects(QuikDeformNode::mass, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::initialVelocity, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::volumetric, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::youngsModulus, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::poissonRatio, QuikDeformNode::outputMesh);
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::mass, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::initialVelocity, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::volumetric, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::youngsModulus, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::poissonRatio, QuikDeformNode::outputMesh));
 	// external forces
-	attributeAffects(QuikDeformNode::doGravity, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::doWind, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::windDirection, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::windMagnitude, QuikDeformNode::outputMesh);
-	attributeAffects(QuikDeformNode::windOscillation, QuikDeformNode::outputMesh);
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::doGravity, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::doWind, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::windDirection, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::windMagnitude, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::windOscillation, QuikDeformNode::outputMesh));
 
 	return MS::kSuccess;
 }
@@ -312,7 +312,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	newConfiguration.frameRate = frameRateData.asInt();
 	// object attributes
 	newConfiguration.mass = massData.asDouble();
-	newConfiguration.initialVelocity = initialVelocityData.asVector(); // TODO need to test if this works
+	newConfiguration.initialVelocity = initialVelocityData.asFloatVector(); // TODO need to test if this works
 	newConfiguration.volumetric = volumetricData.asBool();
 	newConfiguration.youngsModulus = youngsModulusData.asDouble();
 	newConfiguration.poissonRatio = poissonRatioData.asDouble();
@@ -327,6 +327,10 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	// step 2: recompute output if needed
 	// ---------------------------------------
 	double computeStart = omp_get_wtime();
+	MGlobal::displayInfo(std::string("compute function called. printing current config").c_str());
+	MGlobal::displayInfo(currentConfiguration.print().c_str());
+	MGlobal::displayInfo(std::string("compute function called. printing new config").c_str());
+	MGlobal::displayInfo(newConfiguration.print().c_str());
 
 	// compute output if we've never computed quikDeformer before or if an input attribute change
 	if (quikDeformer == nullptr || currentConfiguration != newConfiguration ) { 
@@ -373,8 +377,8 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		bool windOsc = false; //whether the wind oscillates or is constant
 
 		//Weight PARAMETERS
-		double E = 5002;
-		double nu = 0.3;
+		double E = currentConfiguration.youngsModulus;
+		double nu = currentConfiguration.poissonRatio;
 		double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
 		double lame_mu = E / ((double)2 * ((double)1 + nu));
 
@@ -384,16 +388,17 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		// ----- run QuikDeformer to get the computed frames -----
 		if (quikDeformer != nullptr) { delete quikDeformer; }
 
-		MGlobal::displayInfo(currentConfiguration.print().c_str());
-
 		quikDeformer = new QuikDeformer(
 			tetVertices, tetTriangles, tetTetrahedrons, 
-			0.01,
-			5,
-			24,
-			1,
-			0,0,0,
-			true, true);
+			currentConfiguration.timeStep,
+			currentConfiguration.solverIterations,
+			currentConfiguration.frameRate,
+			currentConfiguration.mass,
+			currentConfiguration.initialVelocity[0],
+			currentConfiguration.initialVelocity[1],
+			currentConfiguration.initialVelocity[2],
+			currentConfiguration.doGravity,
+			currentConfiguration.volumetric);
 
 		if (true) { 
 			// go through mesh and find all tets, add a constraint for each one!
@@ -405,7 +410,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		
 
 		std::vector<Eigen::VectorXd> tempFrames; // temp holder of computed frames
-		quikDeformer->runSimulation(5, false, tempFrames);
+		quikDeformer->runSimulation(currentConfiguration.secondsToSimulate, false, tempFrames);
 
 		// parse the output frames into maya data
 		// TODO: what happens when only secondsToSimulate changes?
@@ -421,6 +426,9 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		double timeElapsed = omp_get_wtime() - computeStart;;
 		std::string timeDiff = "computation took " + std::to_string(timeElapsed) + " seconds";
 		MGlobal::displayInfo(timeDiff.c_str());
+	}
+	else {
+		MGlobal::displayInfo(std::string("no need to recompute").c_str());
 	}
 
 	// ---------------------------------------
