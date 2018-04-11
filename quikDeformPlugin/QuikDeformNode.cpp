@@ -176,6 +176,7 @@ MObject QuikDeformNode::frameRate;
 MObject QuikDeformNode::currentFrame;
 
 // object attributes
+MObject QuikDeformNode::keepMesh;
 MObject QuikDeformNode::tetVolume;
 MObject QuikDeformNode::mass;
 MObject QuikDeformNode::initialVelocity;
@@ -221,6 +222,7 @@ MStatus QuikDeformNode::initialize() {
 	QuikDeformNode::frameRate = numAttr.create("frameRate", "fr", MFnNumericData::kInt, 24);
 	QuikDeformNode::currentFrame = numAttr.create("currentFrame", "cf", MFnNumericData::kInt, 1);
 	// object attributes
+	QuikDeformNode::keepMesh = numAttr.create("keepMesh", "kp", MFnNumericData::kBoolean, 1);
 	QuikDeformNode::tetVolume = numAttr.create("tetVolume", "tv", MFnNumericData::kDouble, 1.0);
 	QuikDeformNode::mass = numAttr.create("mass", "m", MFnNumericData::kDouble, 1.0);
 	QuikDeformNode::initialVelocity = numAttr.createPoint("initialVelocity", "iv");
@@ -246,6 +248,7 @@ MStatus QuikDeformNode::initialize() {
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::frameRate));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::currentFrame));
 	// object attributes
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::keepMesh));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::tetVolume));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::mass));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::initialVelocity));
@@ -270,6 +273,7 @@ MStatus QuikDeformNode::initialize() {
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::frameRate, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::currentFrame, QuikDeformNode::outputMesh));
 	// object attributes
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::keepMesh, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::tetVolume, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::mass, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::initialVelocity, QuikDeformNode::outputMesh));
@@ -288,6 +292,7 @@ MStatus QuikDeformNode::initialize() {
 
 
 MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
+	bool printVals = false;
 	MStatus returnStatus;
 
 	// ---------------------------------------
@@ -301,6 +306,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	MDataHandle currentFrameData = data.inputValue(currentFrame);
 
 	// get object attributes
+	MDataHandle keepMeshData = data.inputValue(keepMesh);
 	MDataHandle tetVolumeData = data.inputValue(tetVolume);
 	MDataHandle massData = data.inputValue(mass);
 	MDataHandle initialVelocityData = data.inputValue(initialVelocity);
@@ -323,6 +329,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	newConfiguration.secondsToSimulate = secondsToSimulateData.asInt();
 	newConfiguration.frameRate = frameRateData.asInt();
 	// object attributes
+	newConfiguration.keepMesh = keepMeshData.asBool();
 	newConfiguration.tetVolume = tetVolumeData.asDouble();
 	newConfiguration.mass = massData.asDouble();
 	newConfiguration.initialVelocity = initialVelocityData.asFloatVector();
@@ -340,10 +347,14 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	// step 2: recompute output if needed
 	// ---------------------------------------
 	double computeStart = omp_get_wtime();
-	MGlobal::displayInfo(std::string("compute function called. printing current config").c_str());
-	MGlobal::displayInfo(currentConfiguration.print().c_str());
-	MGlobal::displayInfo(std::string("compute function called. printing new config").c_str());
-	MGlobal::displayInfo(newConfiguration.print().c_str());
+
+	if (printVals){
+		MGlobal::displayInfo(std::string("compute function called. printing current config").c_str());
+		MGlobal::displayInfo(currentConfiguration.print().c_str());
+		MGlobal::displayInfo(std::string("compute function called. printing new config").c_str());
+		MGlobal::displayInfo(newConfiguration.print().c_str());
+	}
+	
 
 	// compute output if we've never computed quikDeformer before or if an input attribute change
 	if (quikDeformer == nullptr || currentConfiguration != newConfiguration ) { 
@@ -364,7 +375,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		std::vector<Eigen::Vector3d> tetVertices;
 		std::vector<Eigen::Vector3i> tetTriangles;
 		std::vector<std::vector<int>> tetTetrahedrons;
-		bool printVals = true;
+		
 
 		// tetrahedralize the original mesh
 		getMeshData((MFnMesh)originaObj, originalVertices, originalTriangles,
@@ -379,6 +390,43 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			printVertices(tetVertices);
 			printTriangles(tetTriangles);
 			printTetrahedrons(tetTetrahedrons);
+		}
+
+		// make a new mesh as the originalObj if keepMesh if false
+		if (!currentConfiguration.keepMesh) {
+			MFnMeshData dataCreator;
+			MObject newObj = dataCreator.create();
+
+			// set up the input values to make a new mesh with
+			MPointArray vertexArray;
+			MIntArray polygonCounts;
+			MIntArray polygonConnects;
+			for (auto i = 0; i < tetVertices.size(); i++) {
+				vertexArray.append(tetVertices[i][0], tetVertices[i][1], tetVertices[i][2]);
+			}
+			for (auto i = 0; i < tetTriangles.size(); i++) {
+				polygonCounts.append(3);
+				polygonConnects.append(tetTriangles[i][2]); // reverse order to get the right surface normal
+				polygonConnects.append(tetTriangles[i][1]);
+				polygonConnects.append(tetTriangles[i][0]);
+			}
+				
+			// make the new mesh
+			MFnMesh newMesh;
+			newMesh.create(vertexArray.length(), polygonCounts.length(), vertexArray, polygonCounts, polygonConnects, newObj);
+
+			// fix vertex normal for newMesh
+			for (auto j = 0; j < tetTriangles.size(); j++) {
+				MVector p1(vertexArray[tetTriangles[j][2]]);
+				MVector p2(vertexArray[tetTriangles[j][1]]);
+				MVector p3(vertexArray[tetTriangles[j][0]]);
+				MVector surfaceNormal = (p2 - p1) ^ (p3 - p1);
+				newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][2]);
+				newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][1]);
+				newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][0]);
+			}
+
+			originaObj = newObj;
 		}
 
 		//WIND PARAMETERS
@@ -405,8 +453,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			tetVertices, tetTriangles, tetTetrahedrons,
 			currentConfiguration.timeStep,
 			currentConfiguration.solverIterations,
-			//currentConfiguration.frameRate,
-			1,
+			currentConfiguration.frameRate,
 			currentConfiguration.mass,
 			currentConfiguration.initialVelocity[0],
 			currentConfiguration.initialVelocity[1],
@@ -415,7 +462,6 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			currentConfiguration.volumetric);
 
 		if (currentConfiguration.volumetric) {
-			// go through mesh and find all tets, add a constraint for each one!
 			quikDeformer->add3DStrainConstraints(tetStrainWeight);
 		}
 		else {
@@ -424,55 +470,19 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 
 
 		std::vector<Eigen::VectorXd> tempFrames; // temp holder of computed frames
-		//quikDeformer->runSimulation(currentConfiguration.secondsToSimulate, false, tempFrames);
-		quikDeformer->runSimulation(1, false, tempFrames);
+		quikDeformer->runSimulation(currentConfiguration.secondsToSimulate, false, tempFrames);
 
 		// parse the output frames into maya data
 		// TODO: what happens when only secondsToSimulate changes?
 		computedFrames.clear();
 		for (auto i = 0u; i < tempFrames.size(); i++) {
 			MPointArray array;
-			for (auto j = 0; j < tetVertices.size(); j++) {
+			// only copy over vertices for the mesh that we're currently using
+			auto vertexNumber = currentConfiguration.keepMesh ? originalVertices.size() : tetVertices.size();
+			for (auto j = 0; j < vertexNumber; j++) {
 				array.append(tempFrames[i][j * 3], tempFrames[i][j * 3 + 1], tempFrames[i][j * 3 + 2]);
 			}
 			computedFrames.push_back(array);
-		}
-
-		computedObjs.clear();
-		MFnMeshData dataCreator;
-		for (auto i = 0u; i < tempFrames.size(); i++) {
-			MPointArray vertexArray;
-			MIntArray polygonCounts;
-			MIntArray polygonConnects;
-			for (auto j = 0; j < tetVertices.size(); j++) {
-				vertexArray.append(tempFrames[i][j * 3], tempFrames[i][j * 3 + 1], tempFrames[i][j * 3 + 2]);
-			}
-			// TODO: optimize this so you're not remaking the mesh for every frame
-			for (auto j = 0; j < tetTriangles.size(); j++) {
-				polygonCounts.append(3);
-				polygonConnects.append(tetTriangles[j][2]); // reverse order to get the right surface normal
-				polygonConnects.append(tetTriangles[j][1]);
-				polygonConnects.append(tetTriangles[j][0]);
-			}
-
-			int numVerticies = vertexArray.length();
-			int numPolygons = polygonCounts.length();
-			MObject newObj = dataCreator.create();
-			MFnMesh newMesh;
-			newMesh.create(numVerticies, numPolygons, vertexArray, polygonCounts, polygonConnects, newObj);
-
-			// fix vertex normal for newMesh
-			for (auto j = 0; j < tetTriangles.size(); j++) {
-				MVector p1(vertexArray[tetTriangles[j][2]]);
-				MVector p2(vertexArray[tetTriangles[j][1]]);
-				MVector p3(vertexArray[tetTriangles[j][0]]);
-				MVector surfaceNormal = (p2 - p1) ^ (p3 - p1);
-				newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][2]);
-				newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][1]);
-				newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][0]);
-			}
-
-			computedObjs.push_back(newObj);
 		}
 
 		double timeElapsed = omp_get_wtime() - computeStart;;
@@ -480,7 +490,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		MGlobal::displayInfo(timeDiff.c_str());
 		
 	}
-	else {
+	else if (printVals){
 		MGlobal::displayInfo(std::string("no need to recompute").c_str());
 	}
 
@@ -490,22 +500,21 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 
 	// create output data
 	MDataHandle outputMeshData = data.outputValue(outputMesh);
-	//MFnMeshData dataCreator;
-	//MObject newOutputObj = dataCreator.create();
-	//MFnMesh newMesh;
-	//newMesh.copy(originaObj, newOutputObj);
+	MFnMeshData dataCreator;
+	MObject newOutputObj = dataCreator.create();
+	MFnMesh newMesh;
+	newMesh.copy(originaObj, newOutputObj);
 
 	// update output
 	int currentFrame = currentFrameData.asInt();
 	int totalFrames = currentConfiguration.frameRate * currentConfiguration.secondsToSimulate;
 	if (currentFrame <= totalFrames) {
-		//newMesh.setPoints(computedFrames[currentFrame - 1]);
-		//newMesh.setObject(newOutputObj);
-		//outputMeshData.set(newOutputObj);
-		outputMeshData.set(computedObjs[currentFrame - 1]);
+		newMesh.setPoints(computedFrames[currentFrame - 1]);
+		newMesh.setObject(newOutputObj);
+		outputMeshData.set(newOutputObj);
 		data.setClean(plug);
 	}
-	else {
+	else if (printVals) {
 		MGlobal::displayInfo(std::string("can't showing frame " + std::to_string(currentFrame) + ", because it is over limit. Please recompute.").c_str());
 	} 
 

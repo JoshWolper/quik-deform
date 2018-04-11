@@ -24,6 +24,7 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 	// --------------------------------------------
 	editorTemplate -beginLayout "Object Attributes" -collapse 0;
         
+		editorTemplate -label "Keep Original Mesh" -addControl "keepMesh";
 		// custom float slider for tetVolume
 		editorTemplate -callCustom "tetVolumeAttributeNew" "tetVolumeAttributeUpdate" "tetVolume";
         // custom float slider for mass

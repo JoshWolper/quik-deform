@@ -47,6 +47,7 @@ struct QuikDeformNodeIO {
 	int frameRate;
 
 	// object attributes
+	bool keepMesh;
 	double tetVolume;
 	double mass;
 	MVector initialVelocity;
@@ -69,6 +70,7 @@ struct QuikDeformNodeIO {
 			secondsToSimulate == rhs.secondsToSimulate &&
 			frameRate == rhs.frameRate &&
 			// object 
+			keepMesh == rhs.keepMesh &&
 			tetVolume == rhs.tetVolume &&
 			mass == rhs.mass &&
 			initialVelocity == rhs.initialVelocity &&
@@ -127,6 +129,7 @@ public:
 	static MObject currentFrame;
 	
 	// object attributes
+	static MObject keepMesh; // whether we want to keep the original mesh or use tetgen's mesh
 	static MObject tetVolume;
 	static MObject mass;
 	static MObject initialVelocity;
@@ -148,6 +151,5 @@ private:
 	QuikDeformer* quikDeformer;
 	MObject originaObj;
 	std::vector<MPointArray> computedFrames;
-	std::vector<MObject> computedObjs;
 	QuikDeformNodeIO currentConfiguration;
 };
