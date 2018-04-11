@@ -148,5 +148,6 @@ private:
 	QuikDeformer* quikDeformer;
 	MObject originaObj;
 	std::vector<MPointArray> computedFrames;
+	std::vector<MObject> computedObjs;
 	QuikDeformNodeIO currentConfiguration;
 };
