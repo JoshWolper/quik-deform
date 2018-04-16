@@ -25,21 +25,15 @@ int main(){
     bool gravityOn = true;
     bool printsOn = false;
     bool volumetric = true; //whether this is a thin shell or volumetric
-    double seconds = 4; //how long to run sim
+    double seconds = 10; //how long to run sim
     string outputFilepath = "../Output/";
 
-    //PLANE PARAMETERS
-    double A = 1;
-    double B = 1;
-    double C = 1;
-    double D = 0;
-
     //WIND PARAMETERS
-    bool windOn = false;
+    bool windOn = true;
     double wx = 1; //wind direction
     double wy = 0;
     double wz = 0;
-    double windMag = 1.5; //wind magnitude
+    double windMag = 4; //wind magnitude
     bool windOsc = false; //whether the wind oscillates or is constant
 
     //Weight PARAMETERS
@@ -50,7 +44,6 @@ int main(){
 
     double tetStrainWeight = 2 * lame_mu;
     double volumeWeight = 3 * lame_lambda;
-
 
     cout << "Strain Weight is: " << tetStrainWeight << endl;
 
@@ -134,8 +127,26 @@ int main(){
     quikDeformer.printMatrices();
     return 0;*/
 
+    //Define some collision planes
+    vector<Vector3d> pCenters;
+    vector<double> pLengths;
+    vector<double> pWidths;
+    vector<Vector3d> pNormals;
+
+    //---------DEFINE COLLISION PLANES------------//
+    //Plane centers
+    pCenters.push_back(Vector3d(0,0,0)); //ground plane
+    pCenters.push_back(Vector3d(5,0,0)); //right wall plane (90 deg)
+
+    //Plane normals
+    pNormals.push_back(Vector3d(0,1,0));
+    pNormals.push_back(Vector3d(-1,0,0));
+
+
+    //---------CONSTRUCT SIMULATOR-----------//
+
     //QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
-    QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
+    QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, pCenters, pLengths, pWidths, pNormals, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
 
     //quikDeformer.printMatrices();
 
@@ -160,10 +171,12 @@ int main(){
 
 
     //-------RANDOMIZE VERTICES TEST----------//
+
     //quikDeformer.randomizeVertices();
 
 
     //---------RUN SIMULATION--------------//
+
     //Run the simulation!
     quikDeformer.runSimulation(seconds, outputFilepath, printsOn);
 

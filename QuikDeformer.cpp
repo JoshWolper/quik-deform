@@ -1,9 +1,12 @@
 #include "QuikDeformer.h"
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
+#include <math.h> /*acos*/
 
 using namespace Eigen;
 using namespace std;
+
+#define PI 3.14159265
 
 // Destructor
 QuikDeformer::~QuikDeformer(){
@@ -569,18 +572,24 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
         if(printsOn == true){cout << "lines 3-7 complete" << endl;}
 
         //Ground Collision Checks and Corrections
+        Vector3d inputPoint, outputPoint;
         for(int i = 0; i < numVertices; i++){ //check each position for y < 0
 
-            double yVal = qN_1(3*i + 1);
+            //Calculate the indeces
+            int id0 = 3*i + 0;
+            int id1 = 3*i + 1;
+            int id2 = 3*i + 2;
 
-            if(yVal < 0){
+            //Construct input, and use function to get output
+            inputPoint = Vector3d(qN_1(id0), qN_1(id1), qN_1(id2));
+            outputPoint = planeCollision(inputPoint);
 
-                qN_1(3*i + 1) = 0;
-
-            }
+            //Assign output points to our position matrix!
+            qN_1(id0) = outputPoint[0];
+            qN_1(id1) = outputPoint[1];
+            qN_1(id2) = outputPoint[2];
 
         }
-
 
         // Line 9: vn+1 = (qn+1 - qn) / h
         vN_1 = (qN_1 - qN) / timeStep;
@@ -727,15 +736,22 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
         if(printsOn == true){cout << "lines 3-7 complete" << endl;}
 
         //Ground Collision Checks and Corrections
+        Vector3d inputPoint, outputPoint;
         for(int i = 0; i < numVertices; i++){ //check each position for y < 0
 
-            double yVal = qN_1(3*i + 1);
+            //Calculate the indeces
+            int id0 = 3*i + 0;
+            int id1 = 3*i + 1;
+            int id2 = 3*i + 2;
 
-            if(yVal < 0){
+            //Construct input, and use function to get output
+            inputPoint = Vector3d(qN_1(id0), qN_1(id1), qN_1(id2));
+            outputPoint = planeCollision(inputPoint);
 
-                qN_1(3*i + 1) = 0;
-
-            }
+            //Assign output points to our position matrix!
+            qN_1(id0) = outputPoint[0];
+            qN_1(id1) = outputPoint[1];
+            qN_1(id2) = outputPoint[2];
 
         }
 
@@ -784,9 +800,75 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
 
 }
 
-Vector3d QuikDeformer::planeCheck(double x, double y, double z){
+Vector3d QuikDeformer::planeCollision(Eigen::Vector3d p){
 
-    Vector3d newPoint = Vector3d(x, y, z);
+    Vector3d newPoint = Vector3d(p[0], p[1], p[2]); //set new point to be the input point by default
+    Vector3d rayP, center, normal, adjustment;
+    double numerator, denom, temp, angle, multiplier;
+
+    //Iterate over every plane, check if above/below, if below adjust the newPoint!
+    for(int i = 0; i < planeCenters.size(); i++){
+
+        center = planeCenters[i];
+        normal = planeNormals[i].normalized();
+
+        //cout << "Center: " << center << endl;
+        //cout << "Normal: " << normal << endl;
+        //cout << "Point: " << p << endl;
+
+        rayP = p - center; //ray from center to input point p
+
+        numerator = normal.dot(rayP);
+        denom = normal.norm() * rayP.norm();
+
+        temp = numerator/denom;
+
+        //Clamp to range of -1 to 1
+        if(temp < -1){
+            temp = -1;
+        } else if(temp > 1){
+            temp = 1;
+        }
+
+        angle = acos(temp) * 180.0 / PI;
+
+        //cout << "Angle: " << angle << endl;
+
+        if((angle > 90.0) && (angle < 270)){
+            //point BELOW plane, must fix
+            adjustment = normal.normalized(); //get the normal and normalize it
+
+            //Determine what the "angle from plane" is
+            if(angle < 180){
+                angle = angle - 90;
+
+            } else if (angle == 180){
+                angle = 90; //so sin is 1
+            } else{
+                angle = 270 - angle;
+            }
+
+            multiplier = sin(angle * (PI / 180.0)) * rayP.norm();
+
+            //cout << "Angle: " << angle << endl;
+            //cout << "Norm: " << rayP.norm() << endl;
+            //cout << "Multiplier: " << multiplier << endl;
+
+            adjustment[0] = adjustment[0] * multiplier;
+            adjustment[1] = adjustment[1] * multiplier;
+            adjustment[2] = adjustment[2] * multiplier;
+
+            newPoint = newPoint + adjustment; //update point to be moved up to surface
+
+        }
+        else{
+            //point above plane, all good just continue loop!
+            continue;
+        }
+
+    }
+
+    //cout << "New point: " << newPoint << endl;
 
     return newPoint;
 }

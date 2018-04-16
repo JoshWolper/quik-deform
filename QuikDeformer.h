@@ -22,6 +22,10 @@ class QuikDeformer {
 public:
     // Constructor for object files
     QuikDeformer(const std::string& objFilePath,
+                 const std::vector<Eigen::Vector3d> pCenters,
+                 const std::vector<double> pLengths,
+                 const std::vector<double> pWidths,
+                 const std::vector<Eigen::Vector3d> pNormals,
                  double timeStep,
                  int solverIterations,
                  int frameRate,
@@ -36,7 +40,11 @@ public:
                     frameRate(frameRate),
                     numVertices(0),
                     gravityOn(gravOn),
-                    volumetric(volumetricOn)
+                    volumetric(volumetricOn),
+                    planeCenters(pCenters),
+                    planeLengths(pLengths),
+                    planeWidths(pWidths),
+                    planeNormals(pNormals)
                     {
                         readObj(objFilePath); //setup particles and fragments
                         setupMatrices(mass, initVelX, initVelY, initVelZ);
@@ -46,6 +54,10 @@ public:
     QuikDeformer(const std::string& nodeFilePath,
                  const std::string& eleFilePath,
                  const std::string& faceFilePath,
+                 const std::vector<Eigen::Vector3d> pCenters,
+                 const std::vector<double> pLengths,
+                 const std::vector<double> pWidths,
+                 const std::vector<Eigen::Vector3d> pNormals,
                  double timeStep,
                  int solverIterations,
                  int frameRate,
@@ -61,7 +73,11 @@ public:
                     frameRate(frameRate),
                     numVertices(0),
                     gravityOn(gravOn),
-                    volumetric(volumetricOn)
+                    volumetric(volumetricOn),
+                    planeCenters(pCenters),
+                    planeLengths(pLengths),
+                    planeWidths(pWidths),
+                    planeNormals(pNormals)
                     {
                         readVolumetric(nodeFilePath, eleFilePath, faceFilePath, indexBase); //setup particles, tets, and fragments
                         setupMatrices(mass, initVelX, initVelY, initVelZ);
@@ -71,6 +87,10 @@ public:
     QuikDeformer(std::vector<Eigen::Vector3d> particles,
                  std::vector<Eigen::Vector3i> faces,
                  std::vector<std::vector<int>> tets,
+                 const std::vector<Eigen::Vector3d> pCenters,
+                 const std::vector<double> pLengths,
+                 const std::vector<double> pWidths,
+                 const std::vector<Eigen::Vector3d> pNormals,
                  double timeStep,
                  int solverIterations,
                  int frameRate,
@@ -85,7 +105,11 @@ public:
                     frameRate(frameRate),
                     numVertices(0),
                     gravityOn(gravOn),
-                    volumetric(volumetricOn)
+                    volumetric(volumetricOn),
+                    planeCenters(pCenters),
+                    planeLengths(pLengths),
+                    planeWidths(pWidths),
+                    planeNormals(pNormals)
                     {
                         vertices.assign(particles.begin(), particles.end());
                         fragments.assign(faces.begin(), faces.end());
@@ -100,7 +124,7 @@ public:
     void runSimulation(double seconds, const std::string& outputFilePath, bool printsOn);
     void runSimulation(double seconds, bool printsOn, std::vector<Eigen::VectorXd>& frames); //second func for Maya version
 
-    Eigen::Vector3d planeCheck(double x, double y, double z); //return true if point is above plane
+    Eigen::Vector3d planeCollision(Eigen::Vector3d p); //return true if point is above plane
     void randomizeVertices();
 
     void addPositionConstraint(double weight,  int posConstraintIndex);
@@ -122,7 +146,15 @@ public:
 
     Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> m_solver; //create a public variable for our solver!
 
+    //Plane Collision variables
+    std::vector<Eigen::Vector3d> planeCenters;
+    std::vector<double> planeWidths;
+    std::vector<double> planeLengths;
+    std::vector<Eigen::Vector3d> planeNormals;
+
 private:
+
+    //Simulation Variables
     double timeStep;
     int solverIterations;
     int frameRate;
@@ -140,6 +172,7 @@ private:
     Eigen::MatrixXd* mMatrix;
     Eigen::MatrixXd* invMassMatrix;
 
+    //Timers
     clock_t startTime;
     double elapsedTime = 0;
 
