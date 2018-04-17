@@ -106,7 +106,6 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
 
         }
 
-
         vertices.push_back(currPoint);
 
     }
@@ -294,18 +293,34 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
 
         Vector3i currTriangle = fragments[i];
 
-        //Compute Dm
+        //Compute DmHat for triangle
+        MatrixXd DmHat = MatrixXd(3,2);
+
+        int id0 = 3 * currTriangle[0];
+        int id1 = 3 * currTriangle[1];
+        int id2 = 3 * currTriangle[2];
+
+        DmHat(0,0) = (*qMatrix)(id1 + 0) - (*qMatrix)(id0 + 0); //top left = X1.x - X0.x
+        DmHat(1,0) = (*qMatrix)(id1 + 1) - (*qMatrix)(id0 + 1); //middle left = X1.y - X0.y
+        DmHat(2,0) = (*qMatrix)(id1 + 2) - (*qMatrix)(id0 + 2); //bottom left = X1.z - X0.z
+
+        DmHat(0,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //top right = X2.x - X0.x
+        DmHat(1,1) = (*qMatrix)(id2 + 1) - (*qMatrix)(id0 + 1); //middle right = X2.y - X0.y
+        DmHat(2,1) = (*qMatrix)(id2 + 2) - (*qMatrix)(id0 + 2); //bottom right = X2.z - X0.z
+
+        cout << "DmHat: \n" << DmHat << endl;
+
+        //Now take the QR decomposition of DmHat
+        ColPivHouseholderQR<MatrixXd> QRDecomp(DmHat);
+        MatrixXd R = QRDecomp.matrixQR().triangularView<Upper>(); //grab the R matrix (upper triangular)
+        cout << "R: \n" << R << endl;
+
+        //Set Dm as the top 2x2 of R! (throw out the zeros in third row)
         MatrixXd Dm = MatrixXd(2,2);
-
-        int id0 = 3 * (currTriangle[0] - 1);
-        int id1 = 3 * (currTriangle[1] - 1);
-        int id2 = 3 * (currTriangle[2] - 1);
-
-        Dm(0,0) = (*qMatrix)(id1 + 0) - (*qMatrix)(id0 + 0); //top left = X1.x - X0.x
-        Dm(1,0) = (*qMatrix)(id1 + 1) - (*qMatrix)(id0 + 1); //bottom left = X1.y - X0.y
-
-        Dm(0,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //top right = X2.x - X0.x
-        Dm(1,1) = (*qMatrix)(id2 + 1) - (*qMatrix)(id0 + 1); //bottom right = X2.y - X0.y
+        Dm(0,0) = R(0,0); //top left
+        Dm(1,0) = R(1,0); //bottom left
+        Dm(0,1) = R(0,1); // top right
+        Dm(1,1) = R(1,1); //bottom right
 
         MatrixXd Dminv = Dm.inverse();
 
@@ -314,26 +329,26 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
         //cout << "Dm for triangle " << i << " :" << endl << Dm << endl;
 
         //SET S MATRIX
-        MatrixXd sMat = MatrixXd(9, 3 * numVertices).setZero();
+        MatrixXd sMat = MatrixXd(9, 3 * numVertices).setZero(); //9 by 3m
         for(int j = 0; j < currTriangle.size(); j++){
             //fill in S matrix for each index
-            sMat((3 * j + 0), (3 * (currTriangle[j] - 1) + 0)) = 1;
-            sMat((3 * j + 1), (3 * (currTriangle[j] - 1) + 1)) = 1;
-            sMat((3 * j + 2), (3 * (currTriangle[j] - 1) + 2)) = 1;
+            sMat((3 * j + 0), (3 * (currTriangle[j] + 0))) = 1;
+            sMat((3 * j + 1), (3 * (currTriangle[j] + 1))) = 1;
+            sMat((3 * j + 2), (3 * (currTriangle[j] + 2))) = 1;
         }
         //cout << "SMatrix: " << endl << sMat << endl;
 
         //SET BP MATRIX (okay to init to all zero)
-        VectorXd Bp = VectorXd(9,1).setZero();
+        VectorXd Bp = VectorXd(6,1).setZero(); //6 by 1
 
         //SET A MATRIX
-        MatrixXd aMat = MatrixXd(9,12).setZero();
-        buildTetStrainA(aMat, Dminv); //build aMat
+        MatrixXd aMat = MatrixXd(6,9).setZero();
+        buildTriangleStrainA(aMat, Dminv); //build aMat from DmInv!
 
-        //Set B = Identity (9 by 9)
-        Eigen::MatrixXd bMat = Eigen::MatrixXd(9, 9).setIdentity(); //identity since what we are passing for p is actually Bp
+        //Set B = Identity (6 by 6)
+        Eigen::MatrixXd bMat = Eigen::MatrixXd(6, 6).setIdentity(); //identity since what we are passing for p is actually Bp
 
-        //constraints.push_back(new TetStrainConstraint(strain3DWeight, sMat, Bp, aMat, bMat, currTet, volume, Dminv));
+        //TODO: constraints.push_back(new TetStrainConstraint(strain3DWeight, sMat, Bp, aMat, bMat, currTet, volume, Dminv));
 
         cout << "Finished triangle " << i << " :" << endl;
 
@@ -341,13 +356,24 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
 
 }
 
+//Build A matrix from DmInverse (as G)
 void QuikDeformer::buildTriangleStrainA(MatrixXd& A_matrix, MatrixXd& G){
 
     A_matrix.setZero();
-    A_matrix(0,2)=G(0,0);A_matrix(0,4)=G(1,0);A_matrix(0,0)=-G(0,0)-G(1,0);
-    A_matrix(1,2)=G(0,1);A_matrix(1,4)=G(1,1);A_matrix(1,0)=-G(0,1)-G(1,1);
-    A_matrix(2,3)=G(0,0);A_matrix(2,5)=G(1,0);A_matrix(2,1)=-G(0,0)-G(1,0);
-    A_matrix(3,3)=G(0,1);A_matrix(3,5)=G(1,1);A_matrix(3,1)=-G(0,1)-G(1,1);
+    double g, h, i, j;
+    g = G(0,0); //top left of G
+    h = G(0,1); //top right of G
+    i = G(1,0); //bottom left of G
+    j = G(1,1); //bottom right of G
+
+    A_matrix(0,0) = -g - i;    A_matrix(0,3) = g;    A_matrix(0,6) = i; //defines the three entries in row one of A
+    A_matrix(1,0) = -h - j;    A_matrix(1,3) = h;    A_matrix(1,6) = j;
+
+    A_matrix(2,1) = -g - i;    A_matrix(2,4) = g;    A_matrix(2,7) = i; //defines the three entries in row three of A
+    A_matrix(3,1) = -h - j;    A_matrix(3,4) = h;    A_matrix(3,7) = j;
+
+    A_matrix(4,2) = -g - i;    A_matrix(4,5) = g;    A_matrix(4,8) = i; //defines the entries in row five of A
+    A_matrix(5,2) = -h - j;    A_matrix(5,5) = h;    A_matrix(5,8) = j;
 
     return;
 }

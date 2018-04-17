@@ -24,12 +24,12 @@ int main(){
     double vz = 0;
     bool gravityOn = true;
     bool printsOn = false;
-    bool volumetric = true; //whether this is a thin shell or volumetric
+    bool volumetric = false; //whether this is a thin shell or volumetric
     double seconds = 10; //how long to run sim
     string outputFilepath = "../Output/";
 
     //WIND PARAMETERS
-    bool windOn = true;
+    bool windOn = false;
     double wx = 1; //wind direction
     double wy = 0;
     double wz = 0;
@@ -43,14 +43,15 @@ int main(){
     double lame_mu = E / ((double)2 * ((double)1 + nu));
 
     double tetStrainWeight = 2 * lame_mu;
+    double triangleStrainWeight = tetStrainWeight;
     double volumeWeight = 3 * lame_lambda;
 
     cout << "Strain Weight is: " << tetStrainWeight << endl;
 
-    string objectFile = "../Models/tetrahedron.obj";
+    //string objectFile = "../Models/tetrahedron.obj";
     //string objectFile = "../Models/cube.obj";
 
-    /* //Uncomment this chunk if we want to use the cloth generator to make our input object file!
+    //Uncomment this chunk if we want to use the cloth generator to make our input object file!
     string objectFile = "../Models/cloth.obj";
     double vertexDist = 0.5;
     int width = 5;
@@ -58,14 +59,13 @@ int main(){
     OBJGeneratorMode mode = OBJGeneratorMode::vertical;
     double startHeight = 3;
     OBJGenerator::generateClothOBJ(objectFile, vertexDist, width, height, mode, startHeight); //make the cloth to be used
-    */
 
     string nodeFile;
     string eleFile;
     string faceFile;
     int indexBase;
 
-    int whichObject = 4;
+    int whichObject = -1;
 
     if(whichObject == 0){
         //Tet with 1 tet --> INDEX BASE IS 1
@@ -111,21 +111,7 @@ int main(){
         faceFile = "../Models/tet.1.face";
     }
 
-    /* test new constructor
-    std::vector<Eigen::Vector3d> particles;
-    std::vector<Eigen::Vector3i> faces;
-    std::vector<std::vector<int>> tets;
-    particles.push_back(Eigen::Vector3d(2,3,4));
-    faces.push_back(Eigen::Vector3i(5,6,7));
-    vector<int> newTet;
-    newTet.push_back(9);
-    newTet.push_back(8);
-    newTet.push_back(7);
-    newTet.push_back(6);
-    tets.push_back(newTet);
-    QuikDeformer quikDeformer(particles, faces, tets, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
-    quikDeformer.printMatrices();
-    return 0;*/
+    //---------DEFINE COLLISION PLANES------------//
 
     //Define some collision planes
     vector<Vector3d> pCenters;
@@ -133,7 +119,6 @@ int main(){
     vector<double> pWidths;
     vector<Vector3d> pNormals;
 
-    //---------DEFINE COLLISION PLANES------------//
     //Plane centers
     pCenters.push_back(Vector3d(0,0,0)); //ground plane
     pCenters.push_back(Vector3d(5,0,0)); //right wall plane (90 deg)
@@ -142,43 +127,63 @@ int main(){
     pNormals.push_back(Vector3d(0,1,0));
     pNormals.push_back(Vector3d(-1,0,0));
 
+    //---------CONSTRUCT AND RUN SIMULATOR-----------//
 
-    //---------CONSTRUCT SIMULATOR-----------//
+    if(volumetric){
 
-    //QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
-    QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, pCenters, pLengths, pWidths, pNormals, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
+        //---------CONSTRUCTOR--------//
+        QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, pCenters, pLengths, pWidths, pNormals, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
 
-    //quikDeformer.printMatrices();
+        //------PRINT MATRICES-------//
+        //quikDeformer.printMatrices();
 
-    //------ADD POSITION CONSTRAINTS------//
-    //int posConstraintIndex = 0;
-    //double posConstraintW = 100000;
-    //quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
+        //-----ADD STRAIN CONSTRAINTS-------//
+        quikDeformer.add3DStrainConstraints(tetStrainWeight);
 
-    //posConstraintIndex = 5;
-    //posConstraintW = 100000;
-    //quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
+        //------ADD POSITION CONSTRAINTS------//
+        //int posConstraintIndex = 0;
+        //double posConstraintW = 100000;
+        //quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
 
+        //------ADD WIND EFFECTS--------------//
+        if(windOn){
+            quikDeformer.addWind(wx, wy, wz, windMag, windOsc);
+        }
 
-    //------ADD STRAIN CONSTRAINTS--------//
-    if(volumetric) { quikDeformer.add3DStrainConstraints(tetStrainWeight); }//go through mesh and find all tets, add a constraint for each one!
+        //-------RANDOMIZE VERTICES TEST----------//
+        //quikDeformer.randomizeVertices();
 
+        //---------RUN SIMULATION--------------//
+        quikDeformer.runSimulation(seconds, outputFilepath, printsOn);
 
-    //------ADD WIND EFFECTS--------------//
-    if(windOn){
-        quikDeformer.addWind(wx, wy, wz, windMag, windOsc);
     }
+    else if(!volumetric){
 
+        //---------CONSTRUCTOR--------//
+        QuikDeformer quikDeformer(objectFile, pCenters, pLengths, pWidths, pNormals, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
 
-    //-------RANDOMIZE VERTICES TEST----------//
+        //------PRINT MATRICES-------//
+        //quikDeformer.printMatrices();
 
-    //quikDeformer.randomizeVertices();
+        //-----ADD STRAIN CONSTRAINTS-------//
+        quikDeformer.add2DStrainConstraints(triangleStrainWeight);
 
+        //------ADD POSITION CONSTRAINTS------//
+        //int posConstraintIndex = 0;
+        //double posConstraintW = 100000;
+        //quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
 
-    //---------RUN SIMULATION--------------//
+        //------ADD WIND EFFECTS--------------//
+        if(windOn){
+            quikDeformer.addWind(wx, wy, wz, windMag, windOsc);
+        }
 
-    //Run the simulation!
-    quikDeformer.runSimulation(seconds, outputFilepath, printsOn);
+        //-------RANDOMIZE VERTICES TEST----------//
+        //quikDeformer.randomizeVertices();
+
+        //---------RUN SIMULATION--------------//
+        quikDeformer.runSimulation(seconds, outputFilepath, printsOn);
+    }
 
     return 0;
 }

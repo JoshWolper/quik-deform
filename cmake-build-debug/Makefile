@@ -285,6 +285,33 @@ TetStrainConstraint.cpp.s:
 	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.s
 .PHONY : TetStrainConstraint.cpp.s
 
+TriangleStrainConstraint.o: TriangleStrainConstraint.cpp.o
+
+.PHONY : TriangleStrainConstraint.o
+
+# target to build an object file
+TriangleStrainConstraint.cpp.o:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o
+.PHONY : TriangleStrainConstraint.cpp.o
+
+TriangleStrainConstraint.i: TriangleStrainConstraint.cpp.i
+
+.PHONY : TriangleStrainConstraint.i
+
+# target to preprocess a source file
+TriangleStrainConstraint.cpp.i:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.i
+.PHONY : TriangleStrainConstraint.cpp.i
+
+TriangleStrainConstraint.s: TriangleStrainConstraint.cpp.s
+
+.PHONY : TriangleStrainConstraint.s
+
+# target to generate assembly for a file
+TriangleStrainConstraint.cpp.s:
+	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.s
+.PHONY : TriangleStrainConstraint.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -339,6 +366,9 @@ help:
 	@echo "... TetStrainConstraint.o"
 	@echo "... TetStrainConstraint.i"
 	@echo "... TetStrainConstraint.s"
+	@echo "... TriangleStrainConstraint.o"
+	@echo "... TriangleStrainConstraint.i"
+	@echo "... TriangleStrainConstraint.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

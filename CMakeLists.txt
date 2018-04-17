@@ -17,6 +17,23 @@ if (OPENMP_FOUND)
     set (CMAKE_C_COMPILER /usr/local/bin/gcc-7)
 endif()
 
-set(SOURCE_FILES main.cpp SVD.h SVD.cpp global.h QuikDeformer.h QuikDeformer.cpp Constraint.h PositionConstraint.h PositionConstraint.cpp GroundConstraint.cpp GroundConstraint.h OBJGenerator.cpp OBJGenerator.h TetStrainConstraint.cpp TetStrainConstraint.h)
+set(SOURCE_FILES
+        main.cpp
+        SVD.h
+        SVD.cpp
+        global.h
+        QuikDeformer.h
+        QuikDeformer.cpp
+        Constraint.h
+        PositionConstraint.h
+        PositionConstraint.cpp
+        GroundConstraint.cpp
+        GroundConstraint.h
+        OBJGenerator.cpp
+        OBJGenerator.h
+        TetStrainConstraint.cpp
+        TetStrainConstraint.h
+        TriangleStrainConstraint.cpp
+        TriangleStrainConstraint.h)
 
 add_executable(QUIKDEFORM ${SOURCE_FILES})

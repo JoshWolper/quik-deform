@@ -121,6 +121,12 @@
 		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.h">
 			<Option target="QUIKDEFORM"/>
 		</Unit>
+		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/TriangleStrainConstraint.cpp">
+			<Option target="QUIKDEFORM"/>
+		</Unit>
+		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/TriangleStrainConstraint.h">
+			<Option target="QUIKDEFORM"/>
+		</Unit>
 		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/global.h">
 			<Option target="QUIKDEFORM"/>
 		</Unit>
