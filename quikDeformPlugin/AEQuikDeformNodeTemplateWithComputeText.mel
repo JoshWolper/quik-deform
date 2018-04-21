@@ -1,0 +1,280 @@
+// guide found here: http://danostrov.com/2012/10/27/intro-to-aetemplates/
+// another guide: http://www.chadvernon.com/blog/resources/maya-api-programming/attribute-editor-templates/
+
+
+global proc AEQuikDeformNodeTemplate( string $nodeName )
+{
+    editorTemplate -beginScrollLayout;
+ 
+	editorTemplate -callCustom "simulateButtonNew" "simulateButtonUpdate";
+ 
+	// --------------------------------------------
+	//          Simulation attributes
+	// --------------------------------------------
+    editorTemplate -beginLayout "Simulation Attributes" -collapse 0;
+
+        // custom float slider for timeStep
+		editorTemplate -callCustom "timeSliderAttributeNew" "timeSliderAttributeUpdate" "timeStep";
+		// custom int slider for solverIterations
+		editorTemplate -callCustom "iterSliderAttributeNew" "iterSliderAttributeUpdate" "solverIterations";
+        editorTemplate -label "Seconds" -addControl "secondsToSimulate" "setSimulateText";
+		editorTemplate -label "Framerate" -addControl "frameRate" "setSimulateText";
+
+    editorTemplate -endLayout;
+
+	// --------------------------------------------
+	//          Object attributes
+	// --------------------------------------------
+	editorTemplate -beginLayout "Object Attributes" -collapse 0;
+        
+		editorTemplate -label "Keep Original Mesh" -addControl "keepMesh" "setSimulateText";
+		// custom float slider for tetVolume
+		editorTemplate -callCustom "tetVolumeAttributeNew" "tetVolumeAttributeUpdate" "tetVolume";
+        // custom float slider for mass
+		editorTemplate -callCustom "massSliderAttributeNew" "massSliderAttributeUpdate" "mass";
+		editorTemplate -label "Initial Object Velocity" - addControl "initialVelocity" "setSimulateText";
+        // custom radio buttons for volumetric vs thin-shell
+		editorTemplate -callCustom "volumetricRadioAttributeNew" "volumetricRadioAttributeUpdate" "volumetric";
+		 // custom float slider for youngsModulus
+		editorTemplate -callCustom "youngsModulusSliderAttributeNew" "youngsModulusSliderAttributeUpdate" "youngsModulus";
+		// custom float slider for poissonRatio
+		editorTemplate -callCustom "poissonRatioSliderAttributeNew" "poissonRatioSliderAttributeUpdate" "poissonRatio";
+
+	editorTemplate -endLayout;
+
+	// --------------------------------------------
+	//          External Forces attributes
+	// --------------------------------------------
+	editorTemplate -beginLayout "External Forces" -collapse 0;
+
+		editorTemplate -label "Enable Gravity" -addControl "doGravity" "setSimulateText";
+		editorTemplate -label "Enable Wind" -addControl "doWind" "setSimulateText";
+		editorTemplate -label "Wind Direction" -addControl "windDirection" "setSimulateText";
+		// custom float slider for windMagnitude
+		editorTemplate -callCustom "windMagnitudeSliderAttributeNew" "windMagnitudeSliderAttributeUpdate" "windMagnitude";
+		editorTemplate -label "Enable Wind Oscillation" -addControl "windOscillation" "setSimulateText";
+
+	editorTemplate -endLayout;
+
+	// --------------------------------------------
+	//          Other attributes
+	// --------------------------------------------
+	// Create an "Extras" section and also add controls for any
+	// attributes we have not explicitly mentioned.
+    editorTemplate -addExtraControls;
+
+    editorTemplate -endScrollLayout;
+
+	// Tell the attribute editor not to display the attributes we don't care about.
+	editorTemplate -suppress "caching";
+	editorTemplate -suppress "nodeState";
+	editorTemplate -suppress "frozen";
+	editorTemplate -suppress "inputMesh";
+	editorTemplate -suppress "outputMesh";
+	editorTemplate -suppress "currentFrame";
+	editorTemplate -suppress "doCompute";
+}
+
+
+// --------------------------------------------
+//     procs to define custom UI elements
+// --------------------------------------------
+
+// ----- slider for time step -----
+global proc timeSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Time Step" 
+		-field true
+		-minValue 0.001 
+		-fieldMinValue 0.00001
+		-maxValue 0.1
+		-fieldMaxValue 2
+		-value 0.01
+		-changeCommand "setSimulateText"
+		timeSlider;
+	connectControl timeSlider $attrName;
+}
+
+global proc timeSliderAttributeUpdate( string $attrName )
+{
+   connectControl timeSlider $attrName;
+}
+
+// ----- slider for solver iterations -----
+global proc iterSliderAttributeNew( string $attrName )
+{
+	intSliderGrp 
+		-label "Solver Iterations" 
+		-field true
+		-minValue 1 
+		-maxValue 20
+		-fieldMaxValue 100 
+		-value 5
+		-changeCommand "setSimulateText"
+		iterSlider;
+	connectControl iterSlider $attrName;
+}
+
+global proc iterSliderAttributeUpdate( string $attrName )
+{
+   connectControl iterSlider $attrName;
+}
+
+
+// ----- slider for tetVolume -----
+global proc tetVolumeAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Tetrahedra Max Volume" 
+		-field true
+		-minValue 0.1 
+		-fieldMinValue 0.001
+		-maxValue 10
+		-fieldMaxValue 1000
+		-value 1.0
+		-changeCommand "setSimulateText"
+		tetVolumeSlider;
+	connectControl tetVolumeSlider $attrName;
+}
+
+global proc tetVolumeAttributeUpdate( string $attrName )
+{
+   connectControl tetVolumeSlider $attrName;
+}
+
+
+// ----- slider for mass -----
+global proc massSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Vertex Mass" 
+		-field true
+		-minValue 0.01 
+		-fieldMinValue 0.0001
+		-maxValue 10 
+		-fieldMaxValue 500
+		-value 1
+		-changeCommand "setSimulateText"
+		massSlider;
+	connectControl massSlider $attrName;
+}
+
+global proc massSliderAttributeUpdate( string $attrName )
+{
+   connectControl massSlider $attrName;
+}
+
+
+// ----- radio buttons for volumetric -----
+global proc volumetricRadioAttributeNew( string $attrName)
+{
+	radioButtonGrp
+		-label "Simulation Type"
+		-numberOfRadioButtons 2
+		-label1 "Volumetric"
+		-data1 1
+		-label2 "Thin-shell"
+		-data2 0
+		-select 1
+		-changeCommand "setSimulateText"
+		volumetricRadio;
+	connectControl volumetricRadio $attrName;
+}
+
+global proc volumetricRadioAttributeUpdate( string $attrName )
+{
+   connectControl volumetricRadio $attrName;
+}
+
+
+// ----- slider for youngsModulus -----
+global proc youngsModulusSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Young's Modulus" 
+		-field true
+		-minValue 1000
+		-fieldMinValue 1
+		-maxValue 10000
+		-fieldMaxValue 1000000
+		-value 5000
+		-changeCommand "setSimulateText"
+		youngsModulusSlider;
+	connectControl youngsModulusSlider $attrName;
+}
+
+global proc youngsModulusSliderAttributeUpdate( string $attrName )
+{
+   connectControl youngsModulusSlider $attrName;
+}
+
+
+// ----- slider for poissonRatio -----
+global proc poissonRatioSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Poisson Ratio" 
+		-field true
+		-minValue 0.1
+		-fieldMinValue 0.01
+		-maxValue 0.5
+		-fieldMaxValue 1
+		-value 0.3
+		-changeCommand "setSimulateText"
+		poissonRatioSlider;
+	connectControl poissonRatioSlider $attrName;
+}
+
+global proc poissonRatioSliderAttributeUpdate( string $attrName )
+{
+   connectControl poissonRatioSlider $attrName;
+}
+
+
+// ----- slider for windMagnitude -----
+global proc windMagnitudeSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Wind Magnitude" 
+		-field true
+		-minValue 0.1
+		-fieldMinValue 0.001
+		-maxValue 100
+		-fieldMaxValue 1000
+		-value 1
+		-changeCommand "setSimulateText"
+		windMagnitudeSlider;
+	connectControl windMagnitudeSlider $attrName;
+}
+
+global proc windMagnitudeSliderAttributeUpdate( string $attrName )
+{
+   connectControl windMagnitudeSlider $attrName;
+}
+
+
+// ----- button for compute -----
+global proc simulateButtonNew()
+{
+	rowLayout -numberOfColumns 2
+			- columnAlign2 "right" "left"
+			- columnAttach2 "both" "both";
+			text -label "" simulateText;
+			button -label "Compute Simulation" -command "simulateButtonCmd" simulateButton;
+}
+
+global proc simulateButtonUpdate()
+{}
+
+global proc simulateButtonCmd()
+{
+	setAttr "QuikDeformNode1.doCompute" true;
+	text -edit -label "Computation Complete" simulateText;
+}
+
+global proc setSimulateText()
+{
+	text -edit -label "*Please Recompute*" simulateText;
+}
+
