@@ -5,6 +5,8 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 {
     editorTemplate -beginScrollLayout;
  
+	editorTemplate -callCustom "simulateButtonNew" "simulateButtonUpdate";
+ 
 	// --------------------------------------------
 	//          Simulation attributes
 	// --------------------------------------------
@@ -239,4 +241,27 @@ global proc windMagnitudeSliderAttributeNew( string $attrName )
 global proc windMagnitudeSliderAttributeUpdate( string $attrName )
 {
    connectControl windMagnitudeSlider $attrName;
+}
+
+
+// ----- button for compute -----
+global proc simulateButtonNew()
+{
+	rowLayout -numberOfColumns 2
+		- columnAlign2 "right" "left"
+		- columnAttach2 "both" "both";
+		text -label "" simulateText;
+		button -label "Simulate" -command "buttonTest" simulateButton;
+}
+
+global proc simulateButtonUpdate()
+{
+	print "update called\n";
+	text -edit -label "*Re-Simulation Needed*" simulateText;
+}
+
+global proc buttonTest()
+{
+	print "button pressed\n";
+	text -edit -label "Simulation Complete" simulateText;
 }
