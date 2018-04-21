@@ -39,6 +39,7 @@ Maya integration
 		- if an item in the viewport is selected, you can add it with the add button
 	- feed vertex index data and plane data into C++
 
+- allow creating multiple quikDeformNodes (smart naming)
 - save data when saving Maya scene 
 	nAttr.setStorable(true)?
 - subdivision slider

@@ -166,6 +166,7 @@ void printTetrahedrons(const std::vector<std::vector<int>>& tetrahedrons) {
 // ---------------------------------------
 // initialize attributes 
 // ---------------------------------------
+MObject QuikDeformNode::doCompute;
 // simulation attributes
 MObject QuikDeformNode::inputMesh;
 MObject QuikDeformNode::outputMesh;
@@ -213,6 +214,7 @@ MStatus QuikDeformNode::initialize() {
 	// ---------------------------------------
 	// create all attributes 
 	// ---------------------------------------
+	QuikDeformNode::doCompute = numAttr.create("doCompute", "dc", MFnNumericData::kBoolean, 1);
 	// simulation attributes
 	QuikDeformNode::inputMesh = typedAttr.create("inputMesh", "im", MFnData::kMesh);
 	QuikDeformNode::outputMesh = typedAttr.create("outputMesh", "om", MFnData::kMesh);
@@ -239,6 +241,7 @@ MStatus QuikDeformNode::initialize() {
 	// ---------------------------------------
 	// add all created attributes 
 	// ---------------------------------------
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::doCompute));
 	// simulation attributes
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::inputMesh));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::outputMesh));
@@ -265,13 +268,17 @@ MStatus QuikDeformNode::initialize() {
 	// ---------------------------------------
 	// link created attributes 
 	// ---------------------------------------
+	// recomputes the outputMesh
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::doCompute, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::currentFrame, QuikDeformNode::outputMesh));
+	/*
 	// simulation attributes
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::inputMesh, QuikDeformNode::outputMesh)); // TODO: is this changing the output mesh as intended?
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::timeStep, QuikDeformNode::outputMesh));
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::inputMesh, QuikDeformNode::outputMesh)); 
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::solverIterations, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::secondsToSimulate, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::frameRate, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::currentFrame, QuikDeformNode::outputMesh));
+	
 	// object attributes
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::keepMesh, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::tetVolume, QuikDeformNode::outputMesh));
@@ -286,218 +293,207 @@ MStatus QuikDeformNode::initialize() {
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::windDirection, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::windMagnitude, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::windOscillation, QuikDeformNode::outputMesh));
+	*/
 
 	return MS::kSuccess;
 }
 
 
 MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
-	bool printVals = false;
 	MStatus returnStatus;
 
-	// ---------------------------------------
-	// step 1: get all input attributes from the node
-	// ---------------------------------------
-	// get simulation attributes
-	MDataHandle timeStepData = data.inputValue(timeStep);
-	MDataHandle solverIterationsData = data.inputValue(solverIterations);
-	MDataHandle secondsToSimulateData = data.inputValue(secondsToSimulate);
-	MDataHandle frameRateData = data.inputValue(frameRate);
-	MDataHandle currentFrameData = data.inputValue(currentFrame);
+	// if doCompute is true, then recompute everything based on input
+	MDataHandle doComputeData = data.inputValue(doCompute);
+	bool doComputation = doComputeData.asBool();
+	if (doComputation) {
+		// ---------------------------------------
+		// get all input attributes from the node
+		// ---------------------------------------
+		// get simulation attributes
+		MDataHandle timeStepData = data.inputValue(timeStep);
+		MDataHandle solverIterationsData = data.inputValue(solverIterations);
+		MDataHandle secondsToSimulateData = data.inputValue(secondsToSimulate);
+		MDataHandle frameRateData = data.inputValue(frameRate);
 
-	// get object attributes
-	MDataHandle keepMeshData = data.inputValue(keepMesh);
-	MDataHandle tetVolumeData = data.inputValue(tetVolume);
-	MDataHandle massData = data.inputValue(mass);
-	MDataHandle initialVelocityData = data.inputValue(initialVelocity);
-	MDataHandle volumetricData = data.inputValue(volumetric);
-	MDataHandle youngsModulusData = data.inputValue(youngsModulus);
-	MDataHandle poissonRatioData = data.inputValue(poissonRatio);
+		// get object attributes
+		MDataHandle keepMeshData = data.inputValue(keepMesh);
+		MDataHandle tetVolumeData = data.inputValue(tetVolume);
+		MDataHandle massData = data.inputValue(mass);
+		MDataHandle initialVelocityData = data.inputValue(initialVelocity);
+		MDataHandle volumetricData = data.inputValue(volumetric);
+		MDataHandle youngsModulusData = data.inputValue(youngsModulus);
+		MDataHandle poissonRatioData = data.inputValue(poissonRatio);
 
-	// get external forces attributes
-	MDataHandle doGravityData = data.inputValue(doGravity);
-	MDataHandle doWindData = data.inputValue(doWind);
-	MDataHandle windDirectionData = data.inputValue(windDirection);
-	MDataHandle windMagnitudeData = data.inputValue(windMagnitude);
-	MDataHandle windOscillationData = data.inputValue(windOscillation);
+		// get external forces attributes
+		MDataHandle doGravityData = data.inputValue(doGravity);
+		MDataHandle doWindData = data.inputValue(doWind);
+		MDataHandle windDirectionData = data.inputValue(windDirection);
+		MDataHandle windMagnitudeData = data.inputValue(windMagnitude);
+		MDataHandle windOscillationData = data.inputValue(windOscillation);
 
-	// set up the newConfiguration
-	QuikDeformNodeIO newConfiguration;
-	// simulation attributes
-	newConfiguration.timeStep = timeStepData.asDouble();
-	newConfiguration.solverIterations = solverIterationsData.asInt();
-	newConfiguration.secondsToSimulate = secondsToSimulateData.asInt();
-	newConfiguration.frameRate = frameRateData.asInt();
-	// object attributes
-	newConfiguration.keepMesh = keepMeshData.asBool();
-	newConfiguration.tetVolume = tetVolumeData.asDouble();
-	newConfiguration.mass = massData.asDouble();
-	newConfiguration.initialVelocity = initialVelocityData.asFloatVector();
-	newConfiguration.volumetric = volumetricData.asBool();
-	newConfiguration.youngsModulus = youngsModulusData.asDouble();
-	newConfiguration.poissonRatio = poissonRatioData.asDouble();
-	// external force attributes
-	newConfiguration.doGravity = doGravityData.asBool();
-	newConfiguration.doWind = doWindData.asBool();
-	newConfiguration.windDirection = windDirectionData.asVector().normal();
-	newConfiguration.windMagnitude = windMagnitudeData.asDouble();
-	newConfiguration.windOscillation = windOscillationData.asBool();
+		// set up the newConfiguration
+		QuikDeformNodeIO newConfiguration;
+		// simulation attributes
+		newConfiguration.timeStep = timeStepData.asDouble();
+		newConfiguration.solverIterations = solverIterationsData.asInt();
+		newConfiguration.secondsToSimulate = secondsToSimulateData.asInt();
+		newConfiguration.frameRate = frameRateData.asInt();
+		// object attributes
+		newConfiguration.keepMesh = keepMeshData.asBool();
+		newConfiguration.tetVolume = tetVolumeData.asDouble();
+		newConfiguration.mass = massData.asDouble();
+		newConfiguration.initialVelocity = initialVelocityData.asFloatVector();
+		newConfiguration.volumetric = volumetricData.asBool();
+		newConfiguration.youngsModulus = youngsModulusData.asDouble();
+		newConfiguration.poissonRatio = poissonRatioData.asDouble();
+		// external force attributes
+		newConfiguration.doGravity = doGravityData.asBool();
+		newConfiguration.doWind = doWindData.asBool();
+		newConfiguration.windDirection = windDirectionData.asVector().normal();
+		newConfiguration.windMagnitude = windMagnitudeData.asDouble();
+		newConfiguration.windOscillation = windOscillationData.asBool();
 
-	// ---------------------------------------
-	// step 2: recompute output if needed
-	// ---------------------------------------
-	double computeStart = omp_get_wtime();
+		// ---------------------------------------
+		// step 2: recompute output if newInput is different
+		// ---------------------------------------
+		double computeStart = omp_get_wtime();
 
-	if (printVals){
-		MGlobal::displayInfo(std::string("compute function called. printing current config").c_str());
-		MGlobal::displayInfo(currentConfiguration.print().c_str());
-		MGlobal::displayInfo(std::string("compute function called. printing new config").c_str());
-		MGlobal::displayInfo(newConfiguration.print().c_str());
-	}
-	
+		// compute output if we've never computed quikDeformer before or if an input attribute change
+		if (quikDeformer == nullptr || currentConfiguration != newConfiguration) {
+			MGlobal::displayInfo(std::string("recomputing everything").c_str());
 
-	// compute output if we've never computed quikDeformer before or if an input attribute change
-	if (quikDeformer == nullptr || currentConfiguration != newConfiguration ) { 
-		MGlobal::displayInfo(std::string("recomputing everything").c_str());
+			// TODO: what happens when the originalMesh is the only thing changed?
+			// TODO: rotation kind of messes up the world matrix thing. try it without world Mesh again
+			MDataHandle inputMeshData = data.inputValue(inputMesh);
+			originaObj = inputMeshData.asMeshTransformed();
+			currentConfiguration = newConfiguration;
 
-		// TODO: what happens when the originalMesh is the only thing changed?
-		// TODO: rotation kind of messes up the world matrix thing. try it without world Mesh again
-		MDataHandle inputMeshData = data.inputValue(inputMesh);
-		originaObj = inputMeshData.asMeshTransformed();
-		currentConfiguration = newConfiguration;
+			// ----- get data from the mesh and tetrahedralize it -----
+			// original vertices and triangles from the Maya mesh
+			std::vector<Eigen::Vector3d> originalVertices;
+			std::vector<Eigen::Vector3i> originalTriangles;
 
-		// ----- get data from the mesh and tetrahedralize it -----
-		// original vertices and triangles from the Maya mesh
-		std::vector<Eigen::Vector3d> originalVertices;
-		std::vector<Eigen::Vector3i> originalTriangles;
+			// tetgen generated vertices, triangles and tetrahedrons
+			std::vector<Eigen::Vector3d> tetVertices;
+			std::vector<Eigen::Vector3i> tetTriangles;
+			std::vector<std::vector<int>> tetTetrahedrons;
 
-		// tetgen generated vertices, triangles and tetrahedrons
-		std::vector<Eigen::Vector3d> tetVertices;
-		std::vector<Eigen::Vector3i> tetTriangles;
-		std::vector<std::vector<int>> tetTetrahedrons;
-		
 
-		// tetrahedralize the original mesh
-		getMeshData((MFnMesh)originaObj, originalVertices, originalTriangles,
-			tetVertices, tetTriangles, tetTetrahedrons, currentConfiguration.tetVolume, printVals);
+			// tetrahedralize the original mesh
+			getMeshData((MFnMesh)originaObj, originalVertices, originalTriangles,
+				tetVertices, tetTriangles, tetTetrahedrons, currentConfiguration.tetVolume, false);
 
-		if (printVals) {
-			MGlobal::displayInfo(std::string("original mesh data:").c_str());
-			printVertices(originalVertices);
-			printTriangles(originalTriangles);
+			// make a new mesh as the originalObj if keepMesh if false
+			if (!currentConfiguration.keepMesh) {
+				MFnMeshData dataCreator;
+				MObject newObj = dataCreator.create();
 
-			MGlobal::displayInfo(std::string("tetgen mesh data:").c_str());
-			printVertices(tetVertices);
-			printTriangles(tetTriangles);
-			printTetrahedrons(tetTetrahedrons);
-		}
+				// set up the input values to make a new mesh with
+				MPointArray vertexArray;
+				MIntArray polygonCounts;
+				MIntArray polygonConnects;
+				for (auto i = 0; i < tetVertices.size(); i++) {
+					vertexArray.append(tetVertices[i][0], tetVertices[i][1], tetVertices[i][2]);
+				}
+				for (auto i = 0; i < tetTriangles.size(); i++) {
+					polygonCounts.append(3);
+					polygonConnects.append(tetTriangles[i][2]); // reverse order to get the right surface normal
+					polygonConnects.append(tetTriangles[i][1]);
+					polygonConnects.append(tetTriangles[i][0]);
+				}
 
-		// make a new mesh as the originalObj if keepMesh if false
-		if (!currentConfiguration.keepMesh) {
-			MFnMeshData dataCreator;
-			MObject newObj = dataCreator.create();
+				// make the new mesh
+				MFnMesh newMesh;
+				newMesh.create(vertexArray.length(), polygonCounts.length(), vertexArray, polygonCounts, polygonConnects, newObj);
 
-			// set up the input values to make a new mesh with
-			MPointArray vertexArray;
-			MIntArray polygonCounts;
-			MIntArray polygonConnects;
-			for (auto i = 0; i < tetVertices.size(); i++) {
-				vertexArray.append(tetVertices[i][0], tetVertices[i][1], tetVertices[i][2]);
-			}
-			for (auto i = 0; i < tetTriangles.size(); i++) {
-				polygonCounts.append(3);
-				polygonConnects.append(tetTriangles[i][2]); // reverse order to get the right surface normal
-				polygonConnects.append(tetTriangles[i][1]);
-				polygonConnects.append(tetTriangles[i][0]);
-			}
-				
-			// make the new mesh
-			MFnMesh newMesh;
-			newMesh.create(vertexArray.length(), polygonCounts.length(), vertexArray, polygonCounts, polygonConnects, newObj);
+				// fix vertex normal for newMesh
+				for (auto j = 0; j < tetTriangles.size(); j++) {
+					MVector p1(vertexArray[tetTriangles[j][2]]);
+					MVector p2(vertexArray[tetTriangles[j][1]]);
+					MVector p3(vertexArray[tetTriangles[j][0]]);
+					MVector surfaceNormal = (p2 - p1) ^ (p3 - p1);
+					newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][2]);
+					newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][1]);
+					newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][0]);
+				}
 
-			// fix vertex normal for newMesh
-			for (auto j = 0; j < tetTriangles.size(); j++) {
-				MVector p1(vertexArray[tetTriangles[j][2]]);
-				MVector p2(vertexArray[tetTriangles[j][1]]);
-				MVector p3(vertexArray[tetTriangles[j][0]]);
-				MVector surfaceNormal = (p2 - p1) ^ (p3 - p1);
-				newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][2]);
-				newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][1]);
-				newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][0]);
+				originaObj = newObj;
 			}
 
-			originaObj = newObj;
-		}
+			//WIND PARAMETERS
+			bool windOn = false;
+			double wx = 1; //wind direction
+			double wy = 0;
+			double wz = 0;
+			double windMag = 1.5; //wind magnitude
+			bool windOsc = false; //whether the wind oscillates or is constant
 
-		//WIND PARAMETERS
-		bool windOn = false;
-		double wx = 1; //wind direction
-		double wy = 0;
-		double wz = 0;
-		double windMag = 1.5; //wind magnitude
-		bool windOsc = false; //whether the wind oscillates or is constant
+								  //Weight PARAMETERS
+			double E = currentConfiguration.youngsModulus;
+			double nu = currentConfiguration.poissonRatio;
+			double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
+			double lame_mu = E / ((double)2 * ((double)1 + nu));
 
-		//Weight PARAMETERS
-		double E = currentConfiguration.youngsModulus;
-		double nu = currentConfiguration.poissonRatio;
-		double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
-		double lame_mu = E / ((double)2 * ((double)1 + nu));
+			double tetStrainWeight = 2 * lame_mu;
+			double volumeWeight = 3 * lame_lambda;
 
-		double tetStrainWeight = 2 * lame_mu;
-		double volumeWeight = 3 * lame_lambda;
+			// ----- run QuikDeformer to get the computed frames -----
+			if (quikDeformer != nullptr) { delete quikDeformer; }
 
-		// ----- run QuikDeformer to get the computed frames -----
-		if (quikDeformer != nullptr) { delete quikDeformer; }
-		
-		quikDeformer = new QuikDeformer(
-			tetVertices, tetTriangles, tetTetrahedrons,
-			currentConfiguration.timeStep,
-			currentConfiguration.solverIterations,
-			currentConfiguration.frameRate,
-			currentConfiguration.mass,
-			currentConfiguration.initialVelocity[0],
-			currentConfiguration.initialVelocity[1],
-			currentConfiguration.initialVelocity[2],
-			currentConfiguration.doGravity,
-			currentConfiguration.volumetric);
+			quikDeformer = new QuikDeformer(
+				tetVertices, tetTriangles, tetTetrahedrons,
+				currentConfiguration.timeStep,
+				currentConfiguration.solverIterations,
+				currentConfiguration.frameRate,
+				currentConfiguration.mass,
+				currentConfiguration.initialVelocity[0],
+				currentConfiguration.initialVelocity[1],
+				currentConfiguration.initialVelocity[2],
+				currentConfiguration.doGravity,
+				currentConfiguration.volumetric);
 
-		if (currentConfiguration.volumetric) {
-			quikDeformer->add3DStrainConstraints(tetStrainWeight);
+			if (currentConfiguration.volumetric) {
+				quikDeformer->add3DStrainConstraints(tetStrainWeight);
+			}
+			else {
+				// TODO: thin shelled triangle constraint
+			}
+
+
+			std::vector<Eigen::VectorXd> tempFrames; // temp holder of computed frames
+			quikDeformer->runSimulation(currentConfiguration.secondsToSimulate, false, tempFrames);
+
+			// parse the output frames into maya data
+			// TODO: what happens when only secondsToSimulate changes?
+			computedFrames.clear();
+			for (auto i = 0u; i < tempFrames.size(); i++) {
+				MPointArray array;
+				// only copy over vertices for the mesh that we're currently using
+				auto vertexNumber = currentConfiguration.keepMesh ? originalVertices.size() : tetVertices.size();
+				for (auto j = 0; j < vertexNumber; j++) {
+					array.append(tempFrames[i][j * 3], tempFrames[i][j * 3 + 1], tempFrames[i][j * 3 + 2]);
+				}
+				computedFrames.push_back(array);
+			}
+
+			double timeElapsed = omp_get_wtime() - computeStart;;
+			std::string timeDiff = "Computation complete. Time elapsed: " + std::to_string(timeElapsed) + " seconds";
+			MGlobal::displayInfo(timeDiff.c_str());
+
+			
 		}
 		else {
-			// TODO: thin shelled triangle constraint
+			MGlobal::displayInfo("Input is the same. No recomputation needed.");
 		}
 
-
-		std::vector<Eigen::VectorXd> tempFrames; // temp holder of computed frames
-		quikDeformer->runSimulation(currentConfiguration.secondsToSimulate, false, tempFrames);
-
-		// parse the output frames into maya data
-		// TODO: what happens when only secondsToSimulate changes?
-		computedFrames.clear();
-		for (auto i = 0u; i < tempFrames.size(); i++) {
-			MPointArray array;
-			// only copy over vertices for the mesh that we're currently using
-			auto vertexNumber = currentConfiguration.keepMesh ? originalVertices.size() : tetVertices.size();
-			for (auto j = 0; j < vertexNumber; j++) {
-				array.append(tempFrames[i][j * 3], tempFrames[i][j * 3 + 1], tempFrames[i][j * 3 + 2]);
-			}
-			computedFrames.push_back(array);
-		}
-
-		double timeElapsed = omp_get_wtime() - computeStart;;
-		std::string timeDiff = "computation took " + std::to_string(timeElapsed) + " seconds";
-		MGlobal::displayInfo(timeDiff.c_str());
-		
-	}
-	else if (printVals){
-		MGlobal::displayInfo(std::string("no need to recompute").c_str());
+		// don't forget to switch off doCompute
+		doComputeData.set(false);
 	}
 
-	// ---------------------------------------
-	// step 3: get the appropriate frame 
-	// ---------------------------------------
 
+	// ----------------------------------------------------
+	// step 3: update the mesh according to currentFrame
+	// ----------------------------------------------------
 	// create output data
 	MDataHandle outputMeshData = data.outputValue(outputMesh);
 	MFnMeshData dataCreator;
@@ -506,16 +502,17 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	newMesh.copy(originaObj, newOutputObj);
 
 	// update output
-	int currentFrame = currentFrameData.asInt();
+	MDataHandle currentFrameData = data.inputValue(currentFrame);
+	int frameToDisplay = currentFrameData.asInt();
 	int totalFrames = currentConfiguration.frameRate * currentConfiguration.secondsToSimulate;
-	if (currentFrame <= totalFrames) {
-		newMesh.setPoints(computedFrames[currentFrame - 1]);
+	if (frameToDisplay <= totalFrames) {
+		newMesh.setPoints(computedFrames[frameToDisplay - 1]);
 		newMesh.setObject(newOutputObj);
 		outputMeshData.set(newOutputObj);
 		data.setClean(plug);
 	}
-	else if (printVals) {
-		MGlobal::displayInfo(std::string("can't showing frame " + std::to_string(currentFrame) + ", because it is over limit. Please recompute.").c_str());
+	else {
+		MGlobal::displayInfo(std::string("can't showing frame " + std::to_string(frameToDisplay) + ", because it has not been computed yet.").c_str());
 	} 
 
 	return MStatus::kSuccess;

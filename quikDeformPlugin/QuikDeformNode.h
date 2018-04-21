@@ -119,6 +119,7 @@ public:
 	static void* creator();
 	static MStatus initialize();
 
+	static MObject doCompute;
 	// simulation attributes
 	static MObject inputMesh;
 	static MObject outputMesh;
