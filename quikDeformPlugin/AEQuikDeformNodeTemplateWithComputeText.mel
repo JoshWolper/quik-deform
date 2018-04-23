@@ -17,8 +17,8 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 		editorTemplate -callCustom "timeSliderAttributeNew" "timeSliderAttributeUpdate" "timeStep";
 		// custom int slider for solverIterations
 		editorTemplate -callCustom "iterSliderAttributeNew" "iterSliderAttributeUpdate" "solverIterations";
-        editorTemplate -label "Seconds" -addControl "secondsToSimulate" "setSimulateText";
-		editorTemplate -label "Framerate" -addControl "frameRate" "setSimulateText";
+        editorTemplate -label "Seconds" -addControl "secondsToSimulate" `text -edit -label "*Please Recompute*" simulateText`;
+		editorTemplate -label "Framerate" -addControl "frameRate" `text -edit -label "*Please Recompute*" simulateText`;
 
     editorTemplate -endLayout;
 
@@ -27,12 +27,12 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 	// --------------------------------------------
 	editorTemplate -beginLayout "Object Attributes" -collapse 0;
         
-		editorTemplate -label "Keep Original Mesh" -addControl "keepMesh" "setSimulateText";
+		editorTemplate -label "Keep Original Mesh" -addControl "keepMesh" `text -edit -label "*Please Recompute*" simulateText`;
 		// custom float slider for tetVolume
 		editorTemplate -callCustom "tetVolumeAttributeNew" "tetVolumeAttributeUpdate" "tetVolume";
         // custom float slider for mass
 		editorTemplate -callCustom "massSliderAttributeNew" "massSliderAttributeUpdate" "mass";
-		editorTemplate -label "Initial Object Velocity" - addControl "initialVelocity" "setSimulateText";
+		editorTemplate -label "Initial Object Velocity" - addControl "initialVelocity" `text -edit -label "*Please Recompute*" simulateText`;
         // custom radio buttons for volumetric vs thin-shell
 		editorTemplate -callCustom "volumetricRadioAttributeNew" "volumetricRadioAttributeUpdate" "volumetric";
 		 // custom float slider for youngsModulus
@@ -47,12 +47,12 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 	// --------------------------------------------
 	editorTemplate -beginLayout "External Forces" -collapse 0;
 
-		editorTemplate -label "Enable Gravity" -addControl "doGravity" "setSimulateText";
-		editorTemplate -label "Enable Wind" -addControl "doWind" "setSimulateText";
-		editorTemplate -label "Wind Direction" -addControl "windDirection" "setSimulateText";
+		editorTemplate -label "Enable Gravity" -addControl "doGravity" `text -edit -label "*Please Recompute*" simulateText`;
+		editorTemplate -label "Enable Wind" -addControl "doWind" `text -edit -label "*Please Recompute*" simulateText`;
+		editorTemplate -label "Wind Direction" -addControl "windDirection" `text -edit -label "*Please Recompute*" simulateText`;
 		// custom float slider for windMagnitude
 		editorTemplate -callCustom "windMagnitudeSliderAttributeNew" "windMagnitudeSliderAttributeUpdate" "windMagnitude";
-		editorTemplate -label "Enable Wind Oscillation" -addControl "windOscillation" "setSimulateText";
+		editorTemplate -label "Enable Wind Oscillation" -addControl "windOscillation" "`text -edit -label "*Please Recompute*" simulateText`;
 
 	editorTemplate -endLayout;
 
@@ -273,8 +273,4 @@ global proc simulateButtonCmd()
 	text -edit -label "Computation Complete" simulateText;
 }
 
-global proc setSimulateText()
-{
-	text -edit -label "*Please Recompute*" simulateText;
-}
 

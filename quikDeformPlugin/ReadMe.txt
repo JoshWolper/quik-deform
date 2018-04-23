@@ -21,12 +21,12 @@ Maya integration
 - hook up GUI with quikDeformer and recompute everytime a value changes - DONE
 - add tetGen's a slider to GUI - DONE
 - dynamically add more vertices and edges to the surface of the mesh - DONE
+- compute button for the node - DONE
+	works for multiple QuikDeformNodes
+	"need to recompute" text that shows up when you change inputs - DONE but has bugs so not using atm
+- set point constraints in attribute editor
+- 
 
-- compute button for the node (MUST HAVE otherwise sliders are useless)
-	have a textfield that reads an attribute that says "need to compute"
-	whenever compute runs, just check if config changed. if so, display the "need to compute" textfield
-	whenever the compute button is clicked, run the simulation based on current configuration
-	https://stackoverflow.com/questions/49631282/how-to-add-command-button-to-maya-aetemplate
 - make a GUI menu in Mel to allow initial data setting
 	- should have all the data fields
 		sim, obj, external force attributes
@@ -46,6 +46,8 @@ Maya integration
 	dynamically change a to allow subdivisions
 - progress bar?
 	https://help.autodesk.com/cloudhelp/2017/ENU/Maya-Tech-Docs/CommandsPython/progressBar.html
+	https://help.autodesk.com/cloudhelp/2017/ENU/Maya-Tech-Docs/Commands/show.html?componentBox.html&cat=Windows
+	progress bar mel command
 
 
 // Maya documentation

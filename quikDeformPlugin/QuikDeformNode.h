@@ -26,15 +26,14 @@
 #include <maya/MItMeshPolygon.h>
 #include <maya/MVector.h>
 #include <maya/MFloatVector.h>
+#include <maya/MFnStringArrayData.h>
 
 // QuikDeform header files
 #include <Eigen\Eigen>
 #include <tetgen.h>
-#include "global.h"
 #include "QuikDeformer.h"
 
 // stl and other header files
-#include <iostream>
 #include <string>
 
 
@@ -54,6 +53,7 @@ struct QuikDeformNodeIO {
 	bool volumetric;
 	double youngsModulus;
 	double poissonRatio;
+	string positionConstraints;
 
 	// external force
 	bool doGravity;
@@ -77,6 +77,7 @@ struct QuikDeformNodeIO {
 			volumetric == rhs.volumetric &&
 			youngsModulus == rhs.youngsModulus &&
 			poissonRatio == rhs.poissonRatio &&
+			positionConstraints == rhs.positionConstraints &&
 			// external forces
 			doGravity == rhs.doGravity &&
 			doWind == rhs.doWind &&
@@ -137,6 +138,7 @@ public:
 	static MObject volumetric; // if we're doing volumetric or thin-shell simulation TODO: make this into an enum
 	static MObject youngsModulus;
 	static MObject poissonRatio;
+	static MObject positionConstraints;
 
 	// external forces attributes
 	static MObject doGravity;

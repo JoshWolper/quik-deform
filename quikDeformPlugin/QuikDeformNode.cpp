@@ -1,5 +1,7 @@
 #include "QuikDeformNode.h"
-
+#include "global.h"
+#include <istream>
+#include <iostream>
 
 // macro for checking errors
 #define McheckErr(stat,msg)			\
@@ -184,6 +186,7 @@ MObject QuikDeformNode::initialVelocity;
 MObject QuikDeformNode::volumetric;
 MObject QuikDeformNode::youngsModulus;
 MObject QuikDeformNode::poissonRatio;
+MObject QuikDeformNode::positionConstraints;
 
 // external force attributes
 MObject QuikDeformNode::doGravity;
@@ -231,6 +234,7 @@ MStatus QuikDeformNode::initialize() {
 	QuikDeformNode::volumetric = numAttr.create("volumetric", "v", MFnNumericData::kBoolean, 1);
 	QuikDeformNode::youngsModulus = numAttr.create("youngsModulus", "E", MFnNumericData::kDouble, 5000);
 	QuikDeformNode::poissonRatio = numAttr.create("poissonRatio", "nu", MFnNumericData::kDouble, 0.3);
+	QuikDeformNode::positionConstraints = typedAttr.create("positionConstraints", "pcs", MFnData::kString);
 	// external forces attributes
 	QuikDeformNode::doGravity = numAttr.create("doGravity", "dg", MFnNumericData::kBoolean, 1);
 	QuikDeformNode::doWind = numAttr.create("doWind", "dw", MFnNumericData::kBoolean, 0);
@@ -258,6 +262,7 @@ MStatus QuikDeformNode::initialize() {
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::volumetric));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::youngsModulus));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::poissonRatio));
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::positionConstraints));
 	// external forces attributes
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::doGravity));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::doWind));
@@ -323,6 +328,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		MDataHandle volumetricData = data.inputValue(volumetric);
 		MDataHandle youngsModulusData = data.inputValue(youngsModulus);
 		MDataHandle poissonRatioData = data.inputValue(poissonRatio);
+		MDataHandle positionConstraintsData = data.inputValue(positionConstraints);
 
 		// get external forces attributes
 		MDataHandle doGravityData = data.inputValue(doGravity);
@@ -346,6 +352,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		newConfiguration.volumetric = volumetricData.asBool();
 		newConfiguration.youngsModulus = youngsModulusData.asDouble();
 		newConfiguration.poissonRatio = poissonRatioData.asDouble();
+		newConfiguration.positionConstraints = positionConstraintsData.asString().asChar();
 		// external force attributes
 		newConfiguration.doGravity = doGravityData.asBool();
 		newConfiguration.doWind = doWindData.asBool();
@@ -358,6 +365,10 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		// ---------------------------------------
 		double computeStart = omp_get_wtime();
 
+		//MGlobal::displayInfo("current position constraint");
+		//MGlobal::displayInfo(currentConfiguration.positionConstraints.c_str());
+		//MGlobal::displayInfo("new position constraint");
+		//MGlobal::displayInfo(newConfiguration.positionConstraints.c_str());
 		// compute output if we've never computed quikDeformer before or if an input attribute change
 		if (quikDeformer == nullptr || currentConfiguration != newConfiguration) {
 			MGlobal::displayInfo(std::string("recomputing everything").c_str());
@@ -452,11 +463,24 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 				currentConfiguration.doGravity,
 				currentConfiguration.volumetric);
 
+			// add strain constraints
 			if (currentConfiguration.volumetric) {
 				quikDeformer->add3DStrainConstraints(tetStrainWeight);
 			}
 			else {
 				// TODO: thin shelled triangle constraint
+			}
+
+			// add position constraints
+			if (currentConfiguration.positionConstraints != "") {
+				std::stringstream ss(currentConfiguration.positionConstraints);
+				std::string indexString;
+				while(std::getline(ss, indexString, ',')){
+					if (indexString != "") {
+						int index = std::stoi(indexString);
+						quikDeformer->addPositionConstraint(100000, index);
+					}
+				}
 			}
 
 

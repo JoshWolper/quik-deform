@@ -42,7 +42,9 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 		editorTemplate -callCustom "youngsModulusSliderAttributeNew" "youngsModulusSliderAttributeUpdate" "youngsModulus";
 		// custom float slider for poissonRatio
 		editorTemplate -callCustom "poissonRatioSliderAttributeNew" "poissonRatioSliderAttributeUpdate" "poissonRatio";
-
+		// custom textScrollList for positionConstraints
+		editorTemplate -callCustom "positionConstraintTextScrollNew" "positionConstraintTextScrollUpdate";
+		
 	editorTemplate -endLayout;
 
 	// --------------------------------------------
@@ -76,6 +78,7 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 	editorTemplate -suppress "outputMesh";
 	editorTemplate -suppress "currentFrame";
 	editorTemplate -suppress "doCompute";
+	editorTemplate -suppress "positionConstraints";
 }
 
 
@@ -258,6 +261,175 @@ global proc simulateButtonNew()
 global proc simulateButtonUpdate()
 {}
 
-global proc simulateButtonCmd(){
-	setAttr "QuikDeformNode1.doCompute" true;
+global proc simulateButtonCmd()
+{
+	string $targetNode = getSelectedQuikDeformNode();
+	setAttr ($targetNode + ".doCompute") true;
+}
+
+
+// ----- textScrollList for positionConstraint with helper functions -----
+global proc positionConstraintTextScrollNew()
+{
+	rowLayout 
+        - numberOfColumns 2
+        - columnAlign2 "right" "left"
+    	- columnAttach2 "both" "both";
+    	text -label "Position Constraints";
+			columnLayout;
+				textScrollList 
+					-numberOfRows 6
+					-allowMultiSelection true 
+					-width 200
+					-height 60
+					positionConstraintTextScroll;
+				rowLayout 
+					-numberOfColumns 2
+					-columnAlign2 "left" "left"
+					-columnWidth2 80 80;
+					button 
+						-label "Add"
+						-command "addPositionConstraintCmd" ;
+					button 
+						-label "Remove"
+						-command "removePositionConstraintCmd" ;
+				
+}
+
+global proc positionConstraintTextScrollUpdate()
+{}
+
+
+// add the indices currently selected
+global proc addPositionConstraintCmd()
+{
+    // get selected items
+    string $selection[] = `ls -selection`; 
+    string $indices[] = extractVertexIndices($selection);
+    
+    // add the index if it doesn't already exist in the textScrollList
+    string $allItems[] = `textScrollList -query -allItems positionConstraintTextScroll`;
+    for ($index in $indices){
+        if (!containsItem($allItems, $index)){
+            textScrollList -edit -append $index positionConstraintTextScroll;
+            textScrollList -edit -deselectAll positionConstraintTextScroll;
+            textScrollList -edit -selectItem $index positionConstraintTextScroll;
+        }
+    }
+	
+	// update the underlying attributes of the node
+	string $everyItem[] = `textScrollList -query -allItems positionConstraintTextScroll`;
+	setPositionConstraintAttr($everyItem);
+}
+
+// delete the indices currently selected
+global proc removePositionConstraintCmd()
+{
+    string $selected[] = `textScrollList -query -selectItem positionConstraintTextScroll`;
+    for ($item in $selected){
+        textScrollList -edit -removeItem $item positionConstraintTextScroll;
+    }
+	
+	// update the underlying attributes of the node
+	string $everyItem[]  = `textScrollList -query -allItems positionConstraintTextScroll`;
+	setPositionConstraintAttr($everyItem);
+}
+
+
+// ----- helper functions used by the UI -----
+
+// get the selected or last-created QuikDeformNode
+global proc string getSelectedQuikDeformNode(){
+	string $selections[] = `ls -sl`;  // get the current selection
+	if (`size($selections)` > 0){
+		// if selected node is a QuikDeformNode, return it right away
+		string $doComputeAttr[] = `listAttr -string "doCompute" $selections[0]`;
+		if (`size($doComputeAttr)` > 0){
+			return $selections[0];
+		}
+		
+		// if selected node is a face/vertex/etc., get the parent node
+		string $parent = $selections[0];
+		string $dot = `match ".[a-z]+\\[[0-9]+" $selections[0]`;
+		if ($dot != ""){
+			string $buffer[];
+			tokenize $selections[0] "." $buffer;
+			$parent = $buffer[0];
+		}
+		
+		// return the QuikDeformNode related to the selected node 
+		string $shapeNodes[] = `listRelatives -s $parent`;   // get the related shape node
+		string $quikDeformNode[] = `listConnections -type "QuikDeformNode" $shapeNodes[0]`;   // get the connected QuikDeformNode 
+		if (`size($quikDeformNode)` > 0){
+			return $quikDeformNode[0];
+		}
+	}
+	
+	// else no node or no QuikDeformNode is selected, just return the latest QuikDeformNode created
+	string $allNodes[] = `ls -type "QuikDeformNode"`;
+	int $size = `size($allNodes)`;
+	if ($size > 0){
+		return $allNodes[$size - 1];
+	}
+	else{
+		print "No valid QuikDeformNode can be found";
+		return "";
+	}
+}
+
+
+// check if a target string exists in a string array
+global proc int containsItem(string $allItems[], string $target)
+{
+    for ($str in $allItems) {
+        if ($str == $target){
+            return 1;
+        }
+    }
+    
+    return 0;
+}
+
+// takes in a list of selected items, extract and return the vertex indices
+global proc string[] extractVertexIndices(string $selected[])
+{
+    string $indices[];
+    for ($item in $selected){
+        // make sure this item contains vertex information
+        string $vertexInfo = `match "\\.vtx\\[[0-9]*:*[0-9]*\\]$" $item`;
+        if ($vertexInfo != ""){
+            // check if the vertex info contains a colon
+            string $colonInfo = `match "[0-9]+:[0-9]+" $vertexInfo`;
+            if ($colonInfo == ""){
+                // no colon, just extract and add the number from vertexInfo
+                $indices[`size($indices)`] = `match "[0-9]+" $vertexInfo`;
+            }
+            else{
+                // has colon, extract and add all numbers from vertexInfo
+                string $buffer[];
+                tokenize $colonInfo ":" $buffer;
+                int $index1 = $buffer[0];
+                int $index2 = $buffer[1];
+                int $iter;
+                for ($iter = $index1; $iter <= $index2; $iter++){
+                    $indices[`size($indices)`] = (string)$iter;
+                }
+            }
+        }
+    }
+    
+    return $indices;
+}
+
+
+// take in a list of vertices and set the selected QuikDeformNode's attribute
+global proc setPositionConstraintAttr( string $vertices[] ){
+	string $vertexString;
+	for ($vertex in $vertices){
+		$vertexString += $vertex + ",";
+	}
+	print ("about to add string: " + $vertexString);
+	
+	string $targetNode = getSelectedQuikDeformNode();
+	setAttr ($targetNode + ".positionConstraints") -type "string" $vertexString;
 }
