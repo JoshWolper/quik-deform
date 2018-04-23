@@ -315,7 +315,7 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
         MatrixXd Q = QRDecomp.householderQ();
 
         if(abs(Q.determinant() - 1) >= 1e-5){
-            cout << "Correcting Q and R for DmHat QR Error: det(Q) \n" << endl;
+            //cout << "Correcting Q and R for DmHat QR Error: det(Q) \n" << endl;
             Q.col(1) *= -1;
             R(1,1) *= -1;
         }

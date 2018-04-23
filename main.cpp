@@ -30,11 +30,11 @@ int main(){
     double wx = 1; //wind direction
     double wy = 0;
     double wz = 0;
-    double windMag = 4; //wind magnitude
+    double windMag = 30; //wind magnitude
     bool windOsc = false; //whether the wind oscillates or is constant
 
     //Weight PARAMETERS
-    double E = 500;
+    double E = 700;
     double nu = 0.3;
     double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
     double lame_mu = E / ((double)2 * ((double)1 + nu));
@@ -55,7 +55,7 @@ int main(){
     int whichObject = 5;
     bool gravityOn = true;
     bool volumetric = false; //whether this is a thin shell or volumetric
-    bool windOn = false;
+    bool windOn = true;
 
     if(whichObject == 0){
         //Tet with 1 tet --> INDEX BASE IS 1
@@ -177,13 +177,13 @@ int main(){
         quikDeformer.add2DStrainConstraints(triangleStrainWeight);
 
         //------ADD POSITION CONSTRAINTS------//
-        int posConstraintIndex = 0; //0 for top left corner of cloth
         double posConstraintW = 100000;
-        quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
-
-        posConstraintIndex = 10; //5 because it's the top right corner of the cloth
-        posConstraintW = 100000;
-        quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
+        quikDeformer.addPositionConstraint(posConstraintW, 0);
+        quikDeformer.addPositionConstraint(posConstraintW, 22);
+        quikDeformer.addPositionConstraint(posConstraintW, 44);
+        quikDeformer.addPositionConstraint(posConstraintW, 66);
+        quikDeformer.addPositionConstraint(posConstraintW, 88);
+        quikDeformer.addPositionConstraint(posConstraintW, 110);
 
         //------ADD WIND EFFECTS--------------//
         if(windOn){
