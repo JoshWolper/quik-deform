@@ -1533,6 +1533,8 @@ Eigen/Eigen
 /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Eigen
 Constraint.h
 /Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h
+SVD.h
+/Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.h
 vector
 -
 iostream

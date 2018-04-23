@@ -7,39 +7,31 @@
 
 #include "Eigen/Eigen"
 #include "Constraint.h"
+#include "SVD.h"
 #include <vector>
 #include <iostream>
 
 class TriangleStrainConstraint : public Constraint{
 public:
     TriangleStrainConstraint(double weight,
-                     Eigen::MatrixXd sMatrix,
-                     Eigen::VectorXd p,
-                     std::vector<int> indeces,
-                     double floorVal)
+                        Eigen::MatrixXd sMatrix,
+                        Eigen::VectorXd p,
+                        Eigen::MatrixXd aMatrix,
+                        Eigen::MatrixXd bMatrix,
+                        std::vector<int> indeces,
+                        double area,
+                        Eigen::MatrixXd dminv)
     {
-
         //Set our variables
-        setW(weight);
+        setW(weight * area); //now when we multiply by weight we are actually multiplying by weight * area!! Which is correct I think
         setS(sMatrix);
         setP(p);
-
-        floorY = floorVal;
-
+        setArea(area); //store area
         setIndeces(indeces);
-
-        //Now set A and B = I_dim
-        int dim = 3 * indeces.size();
-        Eigen::MatrixXd I = Eigen::MatrixXd(dim, dim).setIdentity();
-
-        setA(I);
-        setB(I);
-
+        setA(aMatrix);
+        setB(bMatrix);
+        setDmInv(dminv);
     };
-
-    double floorY;
-    void setFloor(double floor){floorY = floor;};
-    double getFloor(){ return floorY; };
 
     ~TriangleStrainConstraint(){};
 
@@ -49,6 +41,5 @@ public:
 private:
 
 };
-
 
 #endif //QUIKDEFORM_TRIANGLESTRAINCONSTRAINT_H

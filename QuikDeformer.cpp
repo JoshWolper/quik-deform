@@ -18,7 +18,9 @@ QuikDeformer::~QuikDeformer(){
 }
 
 // Function to read a given object file, fill a matrix q that is m X 3, and return the number of points total
-void QuikDeformer::readObj(const std::string& fileName){
+void QuikDeformer::readObj(const std::string& fileName, int indexBase){
+
+    int temp;
 
     ifstream inputfile;
     inputfile.open(fileName);
@@ -41,7 +43,8 @@ void QuikDeformer::readObj(const std::string& fileName){
             Vector3i currFragment;
             ss.ignore();
             for (int i = 0; i < 3; i++){
-                ss >> currFragment(i);
+                ss >> temp;
+                currFragment(i) = temp - indexBase; //subtract off the indexBase (0 or 1)
             }
             fragments.push_back(currFragment);
         }
@@ -92,7 +95,7 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
             ss >> currPoint(i);
         }
 
-        bool scaleAndTranslate = true;
+        bool scaleAndTranslate = false;
         if(scaleAndTranslate){
 
             double scaleFactor = 100;
@@ -170,10 +173,8 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
     cout << "Num tets: " << tetrahedrons.size() << endl;
     cout << "Num fragments: " << fragments.size() << endl;
 
-
     return;
 }
-
 
 
 // function called after readObj to construct the matrices we need
@@ -252,7 +253,7 @@ void QuikDeformer::addPositionConstraint(double weight, int posConstraintIndex){
     sMatrix(1, (3 * posConstraintIndex + 1)) = 1;
     sMatrix(2, (3 * posConstraintIndex + 2)) = 1;
 
-    cout << "sMatrix is: " << endl << sMatrix << endl;
+    //cout << "sMatrix is: " << endl << sMatrix << endl;
 
     constraints.push_back(new PositionConstraint(weight, sMatrix, p));
 
@@ -294,7 +295,7 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
         Vector3i currTriangle = fragments[i];
 
         //Compute DmHat for triangle
-        MatrixXd DmHat = MatrixXd(3,2);
+        MatrixXd DmHat = MatrixXd(3,2).setZero();
 
         int id0 = 3 * currTriangle[0];
         int id1 = 3 * currTriangle[1];
@@ -308,15 +309,55 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
         DmHat(1,1) = (*qMatrix)(id2 + 1) - (*qMatrix)(id0 + 1); //middle right = X2.y - X0.y
         DmHat(2,1) = (*qMatrix)(id2 + 2) - (*qMatrix)(id0 + 2); //bottom right = X2.z - X0.z
 
-        cout << "DmHat: \n" << DmHat << endl;
-
         //Now take the QR decomposition of DmHat
-        ColPivHouseholderQR<MatrixXd> QRDecomp(DmHat);
+        HouseholderQR<MatrixXd> QRDecomp(DmHat);
         MatrixXd R = QRDecomp.matrixQR().triangularView<Upper>(); //grab the R matrix (upper triangular)
-        cout << "R: \n" << R << endl;
+        MatrixXd Q = QRDecomp.householderQ();
+
+        if(abs(Q.determinant() - 1) >= 1e-5){
+            cout << "Correcting Q and R for DmHat QR Error: det(Q) \n" << endl;
+            Q.col(1) *= -1;
+            R(1,1) *= -1;
+        }
+
+        /*/------------------------------------//
+        //CHECK THAT QR Decomp IS CORRECT!!!
+        Eigen::MatrixXd I3 = Eigen::MatrixXd(3, 3).setIdentity();
+        MatrixXd temp33 = MatrixXd(3,3);
+        MatrixXd temp32 = MatrixXd(3,2);
+        temp33 = Q * Q.transpose() - I3;
+        temp32 = Q*R - DmHat;
+        if(temp33(0,0) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(0,1) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(0,2) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(1,0) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(1,1) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(1,2) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(2,0) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(2,1) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(2,2) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp32(0,0) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(temp32(0,1) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(temp32(1,0) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(temp32(1,1) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(temp32(2,0) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(temp32(2,1) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(abs(Q.determinant() - 1) >= 1e-5){
+            cout << "DmHat QR ERROR: det(Q) \n" << endl;
+        }
+        if(R(1,0) >= 1e-5){
+            cout << "DmHat QR ERROR: R(1,0) \n" << endl;
+        }
+        if(R(2,0) >= 1e-5){
+            cout << "DmHat QR ERROR: R(2,0) \n" << endl;
+        }
+        if(R(2,1) >= 1e-5){
+            cout << "DmHat QR ERROR: R(2,1) \n" << endl;
+        }
+        //------------------------------------/*/
 
         //Set Dm as the top 2x2 of R! (throw out the zeros in third row)
-        MatrixXd Dm = MatrixXd(2,2);
+        MatrixXd Dm = MatrixXd(2,2).setZero();
         Dm(0,0) = R(0,0); //top left
         Dm(1,0) = R(1,0); //bottom left
         Dm(0,1) = R(0,1); // top right
@@ -324,19 +365,16 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
 
         MatrixXd Dminv = Dm.inverse();
 
-        double area = Dm.determinant() * 0.5;
-
-        //cout << "Dm for triangle " << i << " :" << endl << Dm << endl;
+        double area = abs(Dm.determinant()) * 0.5;
 
         //SET S MATRIX
         MatrixXd sMat = MatrixXd(9, 3 * numVertices).setZero(); //9 by 3m
-        for(int j = 0; j < currTriangle.size(); j++){
+        for(int j = 0; j < 3; j++){
             //fill in S matrix for each index
-            sMat((3 * j + 0), (3 * (currTriangle[j] + 0))) = 1;
-            sMat((3 * j + 1), (3 * (currTriangle[j] + 1))) = 1;
-            sMat((3 * j + 2), (3 * (currTriangle[j] + 2))) = 1;
+            sMat((3 * j + 0), (3 * currTriangle[j] + 0)) = 1;
+            sMat((3 * j + 1), (3 * currTriangle[j] + 1)) = 1;
+            sMat((3 * j + 2), (3 * currTriangle[j] + 2)) = 1;
         }
-        //cout << "SMatrix: " << endl << sMat << endl;
 
         //SET BP MATRIX (okay to init to all zero)
         VectorXd Bp = VectorXd(6,1).setZero(); //6 by 1
@@ -348,9 +386,26 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
         //Set B = Identity (6 by 6)
         Eigen::MatrixXd bMat = Eigen::MatrixXd(6, 6).setIdentity(); //identity since what we are passing for p is actually Bp
 
-        //TODO: constraints.push_back(new TetStrainConstraint(strain3DWeight, sMat, Bp, aMat, bMat, currTet, volume, Dminv));
+        //Form currTriangle into an int vector
+        vector<int> triIndeces;
+        triIndeces.push_back(currTriangle[0]);
+        triIndeces.push_back(currTriangle[1]);
+        triIndeces.push_back(currTriangle[2]);
 
-        cout << "Finished triangle " << i << " :" << endl;
+        /*
+        cout << "Weight: " << strain2DWeight << endl;
+        cout << "sMat: \n" << sMat << endl;
+        cout << "Bp: \n" << Bp << endl;
+        cout << "aMat: \n" << aMat << endl;
+        cout << "bMat: \n" << bMat << endl;
+        cout << "area: " << area << endl;
+        cout << "Dminv: \n" << Dminv << endl;
+        cout << "DmHat: \n" << DmHat << endl;
+        */
+
+        constraints.push_back(new TriangleStrainConstraint(strain2DWeight, sMat, Bp, aMat, bMat, triIndeces, area, Dminv));
+
+        //cout << "Finished triangle " << i << " :" << endl;
 
     }
 
@@ -408,7 +463,7 @@ void QuikDeformer::add3DStrainConstraints(double strain3DWeight){
 
         MatrixXd Dminv = Dm.inverse();
 
-        double volume = Dm.determinant() / 6.0;
+        double volume = abs(Dm.determinant()) / 6.0;
 
         //cout << "Dm for tet " << i << " :" << endl << Dm << endl;
 
@@ -416,9 +471,9 @@ void QuikDeformer::add3DStrainConstraints(double strain3DWeight){
         MatrixXd sMat = MatrixXd(12, 3 * numVertices).setZero();
         for(int j = 0; j < currTet.size(); j++){
             //fill in S matrix for each index
-            sMat((3 * j + 0), (3 * (currTet[j]) + 0)) = 1;
-            sMat((3 * j + 1), (3 * (currTet[j]) + 1)) = 1;
-            sMat((3 * j + 2), (3 * (currTet[j]) + 2)) = 1;
+            sMat((3 * j + 0), (3 * currTet[j] + 0)) = 1;
+            sMat((3 * j + 1), (3 * currTet[j] + 1)) = 1;
+            sMat((3 * j + 2), (3 * currTet[j] + 2)) = 1;
         }
         //cout << "SMatrix: " << endl << sMat << endl;
 
@@ -578,6 +633,7 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
             // Lines 4-6 : Local Step (calc p_i for each constraint C_i)
             #pragma omp parallel for num_threads(4)
             for(int j = 0; j < constraints.size(); j++) {
+                //cout << "Solving constraint " << j << endl;
                 constraints[j]->projectConstraint(qN_1); //project the constraint based on our calculated q n+1
             }
 

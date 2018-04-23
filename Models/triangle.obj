@@ -1,0 +1,7 @@
+# cloth obj file with vertexDist of 0.5. mesh is 1 across and 1 down.
+
+v  2 1 0
+v  1 3 0
+v  4 2 0
+
+f  1  2  3

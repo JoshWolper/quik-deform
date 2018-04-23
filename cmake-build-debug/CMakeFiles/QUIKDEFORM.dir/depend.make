@@ -1931,8 +1931,10 @@ CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o: ../Eigen/src/plugins/C
 CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o: ../Eigen/src/plugins/CommonCwiseUnaryOps.h
 CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o: ../Eigen/src/plugins/MatrixCwiseBinaryOps.h
 CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o: ../Eigen/src/plugins/MatrixCwiseUnaryOps.h
+CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o: ../SVD.h
 CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o: ../TriangleStrainConstraint.cpp
 CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o: ../TriangleStrainConstraint.h
+CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o: ../global.h
 
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../Constraint.h
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o: ../Eigen/Cholesky

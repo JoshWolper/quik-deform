@@ -1932,8 +1932,10 @@ CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/src/plugins/CommonCwiseUnaryOps.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/src/plugins/MatrixCwiseBinaryOps.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/src/plugins/MatrixCwiseUnaryOps.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/SVD.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/TriangleStrainConstraint.cpp
  /Users/joshwolper/Desktop/quik-deform/quik-deform/TriangleStrainConstraint.h
+ /Users/joshwolper/Desktop/quik-deform/quik-deform/global.h
 CMakeFiles/QUIKDEFORM.dir/main.cpp.o
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h
  /Users/joshwolper/Desktop/quik-deform/quik-deform/Eigen/Cholesky

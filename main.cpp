@@ -16,20 +16,17 @@ int main(){
 
     //SIM PARAMETERS
     double h = 1e-2; //timestep
-    int iter = 5; // solverIterations
+    int iter = 1; // solverIterations
     double mass = 1; //mass of each point
     int fr = 24; // frame rate
     double vx = 0;
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
-    bool gravityOn = true;
     bool printsOn = false;
-    bool volumetric = false; //whether this is a thin shell or volumetric
-    double seconds = 10; //how long to run sim
+    double seconds = 3; //how long to run sim
     string outputFilepath = "../Output/";
 
     //WIND PARAMETERS
-    bool windOn = false;
     double wx = 1; //wind direction
     double wy = 0;
     double wz = 0;
@@ -37,7 +34,7 @@ int main(){
     bool windOsc = false; //whether the wind oscillates or is constant
 
     //Weight PARAMETERS
-    double E = 50000;
+    double E = 500;
     double nu = 0.3;
     double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
     double lame_mu = E / ((double)2 * ((double)1 + nu));
@@ -48,24 +45,17 @@ int main(){
 
     cout << "Strain Weight is: " << tetStrainWeight << endl;
 
-    //string objectFile = "../Models/tetrahedron.obj";
-    //string objectFile = "../Models/cube.obj";
-
-    //Uncomment this chunk if we want to use the cloth generator to make our input object file!
-    string objectFile = "../Models/cloth.obj";
-    double vertexDist = 0.5;
-    int width = 5;
-    int height = 5;
-    OBJGeneratorMode mode = OBJGeneratorMode::vertical;
-    double startHeight = 3;
-    OBJGenerator::generateClothOBJ(objectFile, vertexDist, width, height, mode, startHeight); //make the cloth to be used
-
+    string objectFile;
     string nodeFile;
     string eleFile;
     string faceFile;
     int indexBase;
 
-    int whichObject = -1;
+    //CHANGE THESE TWO PARAMS WHEN CHANGING MODELS!!!
+    int whichObject = 5;
+    bool gravityOn = true;
+    bool volumetric = false; //whether this is a thin shell or volumetric
+    bool windOn = false;
 
     if(whichObject == 0){
         //Tet with 1 tet --> INDEX BASE IS 1
@@ -102,7 +92,25 @@ int main(){
         nodeFile = "../Models/sphere.1.node";
         eleFile = "../Models/sphere.1.ele";
         faceFile = "../Models/sphere.1.face";
-    } else{
+    } else if(whichObject == 5) {
+        cout << "Processing cloth model:" << endl;
+        indexBase = 1;
+        objectFile = "../Models/cloth.obj";
+        double vertexDist = 0.5;
+        int width = 10;
+        int height = 10;
+        OBJGeneratorMode mode = OBJGeneratorMode::vertical;
+        double startHeight = 10;
+        OBJGenerator::generateClothOBJ(objectFile, vertexDist, width, height, mode, startHeight); //make the cloth to be used
+    } else if(whichObject == 6){
+        cout << "Processing single triangle model:" << endl;
+        indexBase = 1;
+        objectFile = "../Models/triangle.obj";
+    } else if(whichObject == 7){
+        cout << "Processing square model (2 tris):" << endl;
+        indexBase = 1;
+        objectFile = "../Models/square.obj";
+    } else {
         cout << "Failed to choose a case so basic tetrahedron selected" << endl;
         //Tet with 1 tet --> INDEX BASE IS 1
         indexBase = 1;
@@ -121,11 +129,11 @@ int main(){
 
     //Plane centers
     pCenters.push_back(Vector3d(0,0,0)); //ground plane
-    pCenters.push_back(Vector3d(5,0,0)); //right wall plane (90 deg)
+    //pCenters.push_back(Vector3d(5,0,0)); //right wall plane (90 deg)
 
     //Plane normals
     pNormals.push_back(Vector3d(0,1,0));
-    pNormals.push_back(Vector3d(-1,0,0));
+    //pNormals.push_back(Vector3d(-1,0,0));
 
     //---------CONSTRUCT AND RUN SIMULATOR-----------//
 
@@ -160,7 +168,7 @@ int main(){
     else if(!volumetric){
 
         //---------CONSTRUCTOR--------//
-        QuikDeformer quikDeformer(objectFile, pCenters, pLengths, pWidths, pNormals, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric);
+        QuikDeformer quikDeformer(objectFile, pCenters, pLengths, pWidths, pNormals, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
 
         //------PRINT MATRICES-------//
         //quikDeformer.printMatrices();
@@ -169,9 +177,13 @@ int main(){
         quikDeformer.add2DStrainConstraints(triangleStrainWeight);
 
         //------ADD POSITION CONSTRAINTS------//
-        //int posConstraintIndex = 0;
-        //double posConstraintW = 100000;
-        //quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
+        int posConstraintIndex = 0; //0 for top left corner of cloth
+        double posConstraintW = 100000;
+        quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
+
+        posConstraintIndex = 10; //5 because it's the top right corner of the cloth
+        posConstraintW = 100000;
+        quikDeformer.addPositionConstraint(posConstraintW, posConstraintIndex);
 
         //------ADD WIND EFFECTS--------------//
         if(windOn){
