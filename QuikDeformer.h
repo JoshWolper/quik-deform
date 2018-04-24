@@ -133,8 +133,6 @@ public:
     void add2DStrainConstraints(double strain2DWeight);
     void add3DStrainConstraints(double strain3DWeight);
 
-    void addWind(double wx, double wy, double wz, double windMag, bool windOsc);
-
     void printMatrices() const;
 
     void setPrintsOn(bool printStatus){ printsOn = printStatus; };
@@ -152,6 +150,17 @@ public:
     std::vector<double> planeWidths;
     std::vector<double> planeLengths;
     std::vector<Eigen::Vector3d> planeNormals;
+
+    //Wind stuff
+    void addWind(double wx, double wy, double wz, double windMag, bool windOsc, double oscAmp, double period);
+    void updateWind();
+    bool windOscillates = false;
+    double windX = 0;
+    double windY = 0;
+    double windZ = 0;
+    double windMagnitude = 0;
+    double oscillationAmplitude = 0;
+    double windPeriod = 0;
 
 private:
 

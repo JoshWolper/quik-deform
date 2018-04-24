@@ -23,15 +23,17 @@ int main(){
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
     bool printsOn = false;
-    double seconds = 3; //how long to run sim
+    double seconds = 10; //how long to run sim
     string outputFilepath = "../Output/";
 
     //WIND PARAMETERS
     double wx = 1; //wind direction
     double wy = 0;
     double wz = 0;
-    double windMag = 30; //wind magnitude
-    bool windOsc = false; //whether the wind oscillates or is constant
+    double windMag = 10; //wind magnitude
+    double windAmp = 1;
+    double windPeriod = 0.5;
+    bool windOsc = true; //whether the wind oscillates or is constant
 
     //Weight PARAMETERS
     double E = 700;
@@ -55,7 +57,7 @@ int main(){
     int whichObject = 5;
     bool gravityOn = true;
     bool volumetric = false; //whether this is a thin shell or volumetric
-    bool windOn = true;
+    bool windOn = false;
 
     if(whichObject == 0){
         //Tet with 1 tet --> INDEX BASE IS 1
@@ -155,7 +157,7 @@ int main(){
 
         //------ADD WIND EFFECTS--------------//
         if(windOn){
-            quikDeformer.addWind(wx, wy, wz, windMag, windOsc);
+            quikDeformer.addWind(wx, wy, wz, windMag, windOsc, windAmp, windPeriod);
         }
 
         //-------RANDOMIZE VERTICES TEST----------//
@@ -179,15 +181,20 @@ int main(){
         //------ADD POSITION CONSTRAINTS------//
         double posConstraintW = 100000;
         quikDeformer.addPositionConstraint(posConstraintW, 0);
+        quikDeformer.addPositionConstraint(posConstraintW, 11);
         quikDeformer.addPositionConstraint(posConstraintW, 22);
+        quikDeformer.addPositionConstraint(posConstraintW, 33);
         quikDeformer.addPositionConstraint(posConstraintW, 44);
+        quikDeformer.addPositionConstraint(posConstraintW, 55);
         quikDeformer.addPositionConstraint(posConstraintW, 66);
+        quikDeformer.addPositionConstraint(posConstraintW, 77);
         quikDeformer.addPositionConstraint(posConstraintW, 88);
+        quikDeformer.addPositionConstraint(posConstraintW, 99);
         quikDeformer.addPositionConstraint(posConstraintW, 110);
 
         //------ADD WIND EFFECTS--------------//
         if(windOn){
-            quikDeformer.addWind(wx, wy, wz, windMag, windOsc);
+            quikDeformer.addWind(wx, wy, wz, windMag, windOsc, windAmp, windPeriod);
         }
 
         //-------RANDOMIZE VERTICES TEST----------//

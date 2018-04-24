@@ -225,13 +225,47 @@ void QuikDeformer::printMatrices() const {
     cout << "Our inverse mass matrix is: " << endl << *invMassMatrix << endl;
 }
 
-void QuikDeformer::addWind(double wx, double wy, double wz, double windMag, bool windOsc){
+void QuikDeformer::addWind(double wx, double wy, double wz, double windMag, bool windOsc, double oscAmp, double period){
 
     for(int i = 0; i < numVertices; i++){
 
         (*fExtMatrix)((3*i) + 0) += (wx * windMag);
         (*fExtMatrix)((3*i) + 1) += (wy * windMag); //update the forces to include wind effects in the specified direction and magnitude
         (*fExtMatrix)((3*i) + 2) += (wz * windMag);
+
+    }
+
+    //Set variables
+    windX = wx;
+    windY = wy;
+    windZ = wz;
+    windMagnitude = windMag;
+    windOscillates = windOsc;
+    oscillationAmplitude = oscAmp;
+    windPeriod = period;
+
+}
+
+void QuikDeformer::updateWind(){
+
+    //assumes we have windOsc ON, thus all params should be set!
+    //start by grabbing the current elapsed time since wind started
+    double elapsedTime = ( std::clock() - getStartTime() ) / (double) CLOCKS_PER_SEC;
+
+    //Use function f(t) = A * sin( t / period )
+    double func = oscillationAmplitude * sin(elapsedTime / windPeriod);
+
+
+    //THIS ASSUMES THAT GRAVITY IS BASICALLY ALWAYS THE ONLY POSSIBLE FORCE (OTHER THAN WIND)!!!
+    for(int i = 0; i < numVertices; i++){
+
+        (*fExtMatrix)((3*i) + 0) = (windX * windMagnitude) + func;
+        (*fExtMatrix)((3*i) + 1) = (windY * windMagnitude) + func;
+        (*fExtMatrix)((3*i) + 2) = (windZ * windMagnitude) + func;
+
+        if(gravityOn){
+            (*fExtMatrix)((3*i) + 1) -= 9.81; //add gravity if need be
+        }
 
     }
 
@@ -707,6 +741,11 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
 
         }
 
+        //UPDATE WIND IF NEEDED
+        if(windOscillates){
+            updateWind();
+        }
+
         step = step + 1;
     }
 
@@ -872,6 +911,11 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
 
             frame = frame + 1; //update frame
 
+        }
+
+        //UPDATE WIND IF NEEDED
+        if(windOscillates) {
+            updateWind();
         }
 
         step = step + 1;
