@@ -44,6 +44,8 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 		editorTemplate -callCustom "poissonRatioSliderAttributeNew" "poissonRatioSliderAttributeUpdate" "poissonRatio";
 		// custom textScrollList for positionConstraints
 		editorTemplate -callCustom "positionConstraintTextScrollNew" "positionConstraintTextScrollUpdate";
+		// custom button (and pop up window) for groundConstraints
+		editorTemplate -callCustom "groundConstraintsButtonNew" "groundConstraintsButtonUpdate";
 		
 	editorTemplate -endLayout;
 
@@ -272,27 +274,25 @@ global proc simulateButtonCmd()
 global proc positionConstraintTextScrollNew()
 {
 	rowLayout 
-        - numberOfColumns 2
-        - columnAlign2 "right" "left"
-    	- columnAttach2 "both" "both";
+        - numberOfColumns 3
+        - columnAlign3 "right" "left" "center"
+    	- columnAttach3 "both" "both" "both"
+		- columnWidth3 145 180 60;
     	text -label "Position Constraints";
-			columnLayout;
-				textScrollList 
-					-numberOfRows 6
-					-allowMultiSelection true 
-					-width 200
-					-height 60
-					positionConstraintTextScroll;
-				rowLayout 
-					-numberOfColumns 2
-					-columnAlign2 "left" "left"
-					-columnWidth2 80 80;
-					button 
-						-label "Add"
-						-command "addPositionConstraintCmd" ;
-					button 
-						-label "Remove"
-						-command "removePositionConstraintCmd" ;
+		textScrollList 
+			-numberOfRows 6
+			-allowMultiSelection true 
+			-height 60
+			positionConstraintTextScroll;
+		columnLayout -rowSpacing 5;
+			button 
+				-label "Add"
+				-width 60
+				-command "addPositionConstraintCmd" ;
+			button 
+				-label "Remove"
+				-width 60
+				-command "removePositionConstraintCmd" ;
 				
 }
 
@@ -336,10 +336,116 @@ global proc removePositionConstraintCmd()
 }
 
 
-// ----- helper functions used by the UI -----
+// ----- button for groundConstraints -----
+global proc groundConstraintsButtonNew()
+{
+	rowLayout 
+        - numberOfColumns 2
+        - columnAlign2 "right" "left"
+    	- columnAttach2 "both" "both";
+		text -label "Ground Constraints";
+		button -label "Customize" -width 100 -command "showGroundConstraintsWindow" groundConstraintButton;
+}
+
+global proc groundConstraintsButtonUpdate()
+{}
+
+global proc showGroundConstraintsWindow()
+{
+	window 
+	-title "Customize Ground Constraints"
+	-width 260;
+		columnLayout 
+			-rowSpacing 10
+			-columnAlign "center" 
+			-columnAttach "both" 10
+			-width 260;
+			text 
+				-label "Showing Ground Constraints for:"
+				-align "left"
+				-width 260;
+			text 
+				-label "node1" 
+				-width 260
+				nodeNameText;
+			textScrollList 
+				-numberOfRows 6
+				-allowMultiSelection true 
+				-width 240
+				-height 60
+				-selectCommand "selectGroundPlanes"
+				groundConstraintTextScroll;
+			rowLayout 
+				-numberOfColumns 2
+				-columnAlign2 "left" "left"
+				-columnWidth2 120 120
+				-width 240;
+				button 
+					-label "Add"
+					-width 115
+					-command "addGroundConstraintCmd" ;
+				button 
+					-label "Remove"
+					-width 115
+					-command "removeGroundConstraintCmd" ;
+				setParent ..;
+			text
+				-label "**please make sure only non-slanted \nplanes are selected as ground constraints**"
+				-width 260;
+	showWindow;
+	
+	// TODO: need to read Attr from node and get info to populate the textScrollList
+}
+
+// add the currently selected plane
+global proc addGroundConstraintCmd() 
+{
+    // get selected items
+    string $selection[] = `ls -selection`; 
+    
+    // add the objects
+    string $allItems[] = `textScrollList -query -allItems groundConstraintTextScroll`;
+    for ($object in $selection){
+        // make sure the object is a non-slanted plane
+        float $center[] = `objectCenter -gl $object`;
+        float $normal[] = getPlaneNormal($object);
+        if ($normal[0] == 0 && $normal[1] == 0 && $normal[2] == 0){
+            print ("Error: " + $object + " is not a non-slanted plane");
+        }
+        // make sure the object is not already in the textSrollList
+        else if (!containsItem($allItems, $object)){
+            textScrollList -edit -append $object groundConstraintTextScroll;
+            textScrollList -edit -deselectAll groundConstraintTextScroll;
+            textScrollList -edit -selectItem $object groundConstraintTextScroll;
+        }
+    }
+	
+	// update the underlying attributes of the node
+	string $everyItem[] = `textScrollList -query -allItems groundConstraintTextScroll`;
+	setGroundConstraintAttr($everyItem);
+}
+
+// delete the indices currently selected
+global proc removeGroundConstraintCmd()
+{
+    string $selected[] = `textScrollList -query -selectItem groundConstraintTextScroll`;
+    for ($item in $selected){
+        textScrollList -edit -removeItem $item groundConstraintTextScroll;
+    }
+	
+	// update the underlying attributes of the node
+	string $everyItem[] = `textScrollList -query -allItems groundConstraintTextScroll`;
+	setGroundConstraintAttr($everyItem);
+}
+
+
+// --------------------------------------------
+//     helper functions
+// --------------------------------------------
 
 // get the selected or last-created QuikDeformNode
-global proc string getSelectedQuikDeformNode(){
+global proc string getSelectedQuikDeformNode()
+{
 	string $selections[] = `ls -sl`;  // get the current selection
 	if (`size($selections)` > 0){
 		// if selected node is a QuikDeformNode, return it right away
@@ -422,6 +528,85 @@ global proc string[] extractVertexIndices(string $selected[])
 }
 
 
+// selects the selected items
+global proc selectGroundPlanes(){
+    string $selected[] = `textScrollList -query -selectItem groundConstraintTextScroll`;
+    select -r $selected;
+}
+
+// returns the surface normal of the plane.
+// returns 0,0,0 if plane is slanted or not a plane at all
+global proc float[] getPlaneNormal( string $plane ){
+    string $faces[] = `polyInfo -fn $plane`;
+    float $answer[] = {0,0,0};
+
+    for ($face in $faces) {
+        string $buffer[];
+        $numTokens = `tokenize $face " " $buffer`;
+        
+        // Get the face number
+        string $strFaceNum = $buffer[1];
+        $strFaceNum = substring($strFaceNum, 1, size($strFaceNum)-1);
+        int $faceNum = $strFaceNum;
+        
+        // Get the local normal vector of each face
+        float $axis[] = {(float)$buffer[2], (float)$buffer[3], (float)$buffer[4] };
+        
+        // Combine the local normal with the object's matrix to get it's 
+        // normal in world space
+        float $transform[] = `xform -q -m -ws $plane`;
+        float $worldAxis[] = pointMatrixMult( $axis, $transform );
+        
+        // if worldAxis is close enough to 0 just make it 0
+        if (equivalentTol(0, $worldAxis[0], 0.0001) == 1){
+            $worldAxis[0] = 0;
+        }
+        if (equivalentTol(0, $worldAxis[1], 0.0001) == 1){
+            $worldAxis[1] = 0;
+        }
+        if (equivalentTol(0, $worldAxis[2], 0.0001) == 1){
+            $worldAxis[2] = 0;
+        }
+        
+        // set the answer array if it's empty
+        if ($answer[0] == 0 && $answer[1] == 0 && $answer[2] == 0)
+        {
+            $answer[0] = $worldAxis[0];
+            $answer[1] = $worldAxis[1];
+            $answer[2] = $worldAxis[2];
+        }
+         // make sure the world normals is non-slanted and match up with others
+        if (checkValidNormal($worldAxis) == 0 ||
+            $answer[0] != $worldAxis[0] ||
+            $answer[1] != $worldAxis[1] ||
+            $answer[2] != $worldAxis[2]) 
+        {
+            $answer[0] = 0;
+            $answer[1] = 0;
+            $answer[2] = 0;
+            break;
+        }
+    }
+    
+    return $answer;
+}
+
+// check if the input normal is non-slanted
+global proc int checkValidNormal( float $normal[] ){    
+    if ($normal[0] != 0 && $normal[1] == 0 && $normal[2] == 0){
+        return 1;
+    }
+    if ($normal[0] == 0 && $normal[1] != 0 && $normal[2] == 0){
+        return 1;
+    }
+    if ($normal[0] == 0 && $normal[1] == 0 && $normal[2] != 0){
+        return 1;
+    }
+    
+    return 0;
+}
+
+
 // take in a list of vertices and set the selected QuikDeformNode's attribute
 global proc setPositionConstraintAttr( string $vertices[] ){
 	string $vertexString;
@@ -432,4 +617,29 @@ global proc setPositionConstraintAttr( string $vertices[] ){
 	
 	string $targetNode = getSelectedQuikDeformNode();
 	setAttr ($targetNode + ".positionConstraints") -type "string" $vertexString;
+}
+
+
+// adds the groundConstraint info to QuikDeformNode
+// planeString is a semi-colon separated string of plane info
+// a plane with center at 0,0,0 and normal of 0,1,0 will be
+// "plane1,0,0,0,0,1,0;"
+global proc setGroundConstraintAttr( string $planes[] ){
+    string $planeString = "";
+    for ($plane in $planes){
+        float $center[] = `objectCenter -gl $plane`;
+        float $normal[] = getPlaneNormal($plane);
+        string $string = $plane + "," +
+                         $center[0] + "," +
+                         $center[1] + "," +
+                         $center[2] + "," +
+                         $normal[0] + "," +
+                         $normal[1] + "," +
+                         $normal[2] + ";";
+        $planeString += $string;     
+    }
+    
+    print "about to add planeString: \n";
+    print $planeString;
+	// TODO: need to set attr here
 }

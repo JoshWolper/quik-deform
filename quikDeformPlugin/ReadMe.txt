@@ -24,8 +24,7 @@ Maya integration
 - compute button for the node - DONE
 	works for multiple QuikDeformNodes
 	"need to recompute" text that shows up when you change inputs - DONE but has bugs so not using atm
-- set point constraints in attribute editor
-- 
+- set point constraints in attribute editor - DONE
 
 - make a GUI menu in Mel to allow initial data setting
 	- should have all the data fields
@@ -33,11 +32,7 @@ Maya integration
 	- have a window for selecting obj's to simulate 
 	- have a window for selecting groundplanes
 	- have a window for selecting point constraints
-- Attribute Editor set ground/point constraints
-	- have a window in the attribute editor that shows what indices are currently selected
-		- if an item in the window is selected, you can remove it with the remove button
-		- if an item in the viewport is selected, you can add it with the add button
-	- feed vertex index data and plane data into C++
+- Attribute Editor set ground constraints
 
 - allow creating multiple quikDeformNodes (smart naming)
 - save data when saving Maya scene 
