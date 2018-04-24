@@ -120,11 +120,12 @@ public:
     Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> m_solver; //create a public variable for our solver!
 
     //Plane Collision variables
-    void addCollisionPlanes(const std::vector<Eigen::Vector3d> pCenters, const std::vector<double> pLengths, const std::vector<double> pWidths, const std::vector<Eigen::Vector3d> pNormals);
+    void addCollisionPlanes(const std::vector<Eigen::Vector3d> pCenters, const std::vector<double> pLengths, const std::vector<double> pWidths, const std::vector<Eigen::Vector3d> pNormals, double frictionCoeff);
     std::vector<Eigen::Vector3d> planeCenters;
     std::vector<double> planeWidths;
     std::vector<double> planeLengths;
     std::vector<Eigen::Vector3d> planeNormals;
+    double frictionCoefficient;
 
     //Wind stuff
     void addWind(double wx, double wy, double wz, double windMag, bool windOsc, double oscAmp, double period);

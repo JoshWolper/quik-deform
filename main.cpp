@@ -19,7 +19,7 @@ int main(){
     int iter = 1; // solverIterations
     double mass = 1; //mass of each point
     int fr = 24; // frame rate
-    double vx = 0;
+    double vx = 1.5;
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
     bool printsOn = false;
@@ -36,7 +36,7 @@ int main(){
     bool windOsc = true; //whether the wind oscillates or is constant
 
     //Weight PARAMETERS
-    double E = 700;
+    double E = 500000;
     double nu = 0.3;
     double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
     double lame_mu = E / ((double)2 * ((double)1 + nu));
@@ -53,10 +53,10 @@ int main(){
     string faceFile;
     int indexBase;
 
-    //CHANGE THESE TWO PARAMS WHEN CHANGING MODELS!!!
-    int whichObject = 5;
+    //CHANGE THESE PARAMS WHEN CHANGING MODELS!!!
+    int whichObject = 4;
     bool gravityOn = true;
-    bool volumetric = false; //whether this is a thin shell or volumetric
+    bool volumetric = true; //whether this is a thin shell or volumetric
     bool windOn = false;
 
     if(whichObject == 0){
@@ -128,14 +128,15 @@ int main(){
     vector<double> pLengths;
     vector<double> pWidths;
     vector<Vector3d> pNormals;
+    double frictionCoeff = 0.4;
 
     //Plane centers
     pCenters.push_back(Vector3d(0,0,0)); //ground plane
-    //pCenters.push_back(Vector3d(5,0,0)); //right wall plane (90 deg)
+    pCenters.push_back(Vector3d(5,0,0)); //right wall plane (90 deg)
 
     //Plane normals
     pNormals.push_back(Vector3d(0,1,0));
-    //pNormals.push_back(Vector3d(-1,0,0));
+    pNormals.push_back(Vector3d(-1,0,0));
 
     //---------CONSTRUCT AND RUN SIMULATOR-----------//
 
@@ -148,7 +149,7 @@ int main(){
         //quikDeformer.printMatrices();
 
         //-------ADD COLLISION PLANES-------//
-        quikDeformer.addCollisionPlanes(pCenters, pLengths, pWidths, pNormals);
+        quikDeformer.addCollisionPlanes(pCenters, pLengths, pWidths, pNormals, frictionCoeff);
 
         //-----ADD STRAIN CONSTRAINTS-------//
         quikDeformer.add3DStrainConstraints(tetStrainWeight);
@@ -179,7 +180,7 @@ int main(){
         //quikDeformer.printMatrices();
 
         //-------ADD COLLISION PLANES-------//
-        quikDeformer.addCollisionPlanes(pCenters, pLengths, pWidths, pNormals);
+        quikDeformer.addCollisionPlanes(pCenters, pLengths, pWidths, pNormals, frictionCoeff);
 
         //-----ADD STRAIN CONSTRAINTS-------//
         quikDeformer.add2DStrainConstraints(triangleStrainWeight);
