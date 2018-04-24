@@ -22,9 +22,9 @@ Maya integration
 - add tetGen's a slider to GUI - DONE
 - dynamically add more vertices and edges to the surface of the mesh - DONE
 - compute button for the node - DONE
-	works for multiple QuikDeformNodes
-	"need to recompute" text that shows up when you change inputs - DONE but has bugs so not using atm
+	"need to recompute" text that shows up when you change inputs - kind of done but has bugs so not using atm
 - set point constraints in attribute editor - DONE
+- set ground constraints in the attribute editor - DONE
 
 - make a GUI menu in Mel to allow initial data setting
 	- should have all the data fields
@@ -32,7 +32,9 @@ Maya integration
 	- have a window for selecting obj's to simulate 
 	- have a window for selecting groundplanes
 	- have a window for selecting point constraints
-- Attribute Editor set ground constraints
+- add wind parameters to GUI
+- make sure thin-shell works with maya planes
+- make recompute happen when you change the initial mesh
 
 - allow creating multiple quikDeformNodes (smart naming)
 - save data when saving Maya scene 

@@ -54,6 +54,7 @@ struct QuikDeformNodeIO {
 	double youngsModulus;
 	double poissonRatio;
 	string positionConstraints;
+	string collisionConstraints;
 
 	// external force
 	bool doGravity;
@@ -78,6 +79,7 @@ struct QuikDeformNodeIO {
 			youngsModulus == rhs.youngsModulus &&
 			poissonRatio == rhs.poissonRatio &&
 			positionConstraints == rhs.positionConstraints &&
+			collisionConstraints == rhs.collisionConstraints &&
 			// external forces
 			doGravity == rhs.doGravity &&
 			doWind == rhs.doWind &&
@@ -139,6 +141,7 @@ public:
 	static MObject youngsModulus;
 	static MObject poissonRatio;
 	static MObject positionConstraints;
+	static MObject collisionConstraints;
 
 	// external forces attributes
 	static MObject doGravity;

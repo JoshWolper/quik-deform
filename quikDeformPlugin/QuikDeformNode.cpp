@@ -187,6 +187,7 @@ MObject QuikDeformNode::volumetric;
 MObject QuikDeformNode::youngsModulus;
 MObject QuikDeformNode::poissonRatio;
 MObject QuikDeformNode::positionConstraints;
+MObject QuikDeformNode::collisionConstraints;
 
 // external force attributes
 MObject QuikDeformNode::doGravity;
@@ -235,6 +236,7 @@ MStatus QuikDeformNode::initialize() {
 	QuikDeformNode::youngsModulus = numAttr.create("youngsModulus", "E", MFnNumericData::kDouble, 5000);
 	QuikDeformNode::poissonRatio = numAttr.create("poissonRatio", "nu", MFnNumericData::kDouble, 0.3);
 	QuikDeformNode::positionConstraints = typedAttr.create("positionConstraints", "pcs", MFnData::kString);
+	QuikDeformNode::collisionConstraints = typedAttr.create("collisionConstraints", "ccs", MFnData::kString);
 	// external forces attributes
 	QuikDeformNode::doGravity = numAttr.create("doGravity", "dg", MFnNumericData::kBoolean, 1);
 	QuikDeformNode::doWind = numAttr.create("doWind", "dw", MFnNumericData::kBoolean, 0);
@@ -263,6 +265,7 @@ MStatus QuikDeformNode::initialize() {
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::youngsModulus));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::poissonRatio));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::positionConstraints));
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::collisionConstraints));
 	// external forces attributes
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::doGravity));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::doWind));
@@ -273,7 +276,8 @@ MStatus QuikDeformNode::initialize() {
 	// ---------------------------------------
 	// link created attributes 
 	// ---------------------------------------
-	// recomputes the outputMesh
+	// only link the following two b/c the compute function should only run when either
+	// the compute button is clicked or the currentFrame changes
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::doCompute, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::currentFrame, QuikDeformNode::outputMesh));
 	/*
@@ -329,6 +333,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		MDataHandle youngsModulusData = data.inputValue(youngsModulus);
 		MDataHandle poissonRatioData = data.inputValue(poissonRatio);
 		MDataHandle positionConstraintsData = data.inputValue(positionConstraints);
+		MDataHandle collisionConstraintsData = data.inputValue(collisionConstraints);
 
 		// get external forces attributes
 		MDataHandle doGravityData = data.inputValue(doGravity);
@@ -353,6 +358,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		newConfiguration.youngsModulus = youngsModulusData.asDouble();
 		newConfiguration.poissonRatio = poissonRatioData.asDouble();
 		newConfiguration.positionConstraints = positionConstraintsData.asString().asChar();
+		newConfiguration.collisionConstraints = collisionConstraintsData.asString().asChar();
 		// external force attributes
 		newConfiguration.doGravity = doGravityData.asBool();
 		newConfiguration.doWind = doWindData.asBool();
@@ -364,11 +370,16 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		// step 2: recompute output if newInput is different
 		// ---------------------------------------
 		double computeStart = omp_get_wtime();
-
-		//MGlobal::displayInfo("current position constraint");
-		//MGlobal::displayInfo(currentConfiguration.positionConstraints.c_str());
-		//MGlobal::displayInfo("new position constraint");
-		//MGlobal::displayInfo(newConfiguration.positionConstraints.c_str());
+		/*
+		MGlobal::displayInfo("current position constraint");
+		MGlobal::displayInfo(currentConfiguration.positionConstraints.c_str());
+		MGlobal::displayInfo("new position constraint");
+		MGlobal::displayInfo(newConfiguration.positionConstraints.c_str());
+		MGlobal::displayInfo("current collision constraint");
+		MGlobal::displayInfo(currentConfiguration.collisionConstraints.c_str());
+		MGlobal::displayInfo("new collision constraint");
+		MGlobal::displayInfo(newConfiguration.collisionConstraints.c_str());
+		*/
 		// compute output if we've never computed quikDeformer before or if an input attribute change
 		if (quikDeformer == nullptr || currentConfiguration != newConfiguration) {
 			MGlobal::displayInfo(std::string("recomputing everything").c_str());
@@ -431,28 +442,41 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 				originaObj = newObj;
 			}
 
-			//WIND PARAMETERS
-			bool windOn = false;
-			double wx = 1; //wind direction
-			double wy = 0;
-			double wz = 0;
-			double windMag = 1.5; //wind magnitude
-			bool windOsc = false; //whether the wind oscillates or is constant
 
-								  //Weight PARAMETERS
-			double E = currentConfiguration.youngsModulus;
-			double nu = currentConfiguration.poissonRatio;
-			double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
-			double lame_mu = E / ((double)2 * ((double)1 + nu));
+			// calculate collision constraints
+			vector<Eigen::Vector3d> planeCenters, planeNormals;
+			vector<double> pLengths, pWidths; // not used
 
-			double tetStrainWeight = 2 * lame_mu;
-			double volumeWeight = 3 * lame_lambda;
+			if (currentConfiguration.collisionConstraints != "") {
+				std::stringstream stream1(currentConfiguration.collisionConstraints);
+				std::string planeString;
+				while (std::getline(stream1, planeString, ';')) {
+					if (planeString != "") {
+						// tokenize the string of the format: "plane1,0,0,0,1,0,0"
+						vector<std::string> tokens;
+						std::stringstream stream2(planeString);
+						std::string tokenString;
+						while (std::getline(stream2, tokenString, ',')) {
+							if (tokenString != "") {
+								tokens.push_back(tokenString);
+							}
+						}
+						
+						// extract and add the info 
+						Eigen::Vector3d center = Eigen::Vector3d(std::stod(tokens[1]), std::stod(tokens[2]), std::stod(tokens[3]));
+						Eigen::Vector3d normal = Eigen::Vector3d(std::stod(tokens[4]), std::stod(tokens[5]), std::stod(tokens[6])).normalized();
+						planeCenters.push_back(center);
+						planeNormals.push_back(normal);
+					}
+				}
+			}
 
 			// ----- run QuikDeformer to get the computed frames -----
 			if (quikDeformer != nullptr) { delete quikDeformer; }
 
 			quikDeformer = new QuikDeformer(
 				tetVertices, tetTriangles, tetTetrahedrons,
+				planeCenters, pLengths, pWidths, planeNormals,
 				currentConfiguration.timeStep,
 				currentConfiguration.solverIterations,
 				currentConfiguration.frameRate,
@@ -464,11 +488,17 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 				currentConfiguration.volumetric);
 
 			// add strain constraints
+			double E = currentConfiguration.youngsModulus;
+			double nu = currentConfiguration.poissonRatio;
+			double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
+			double lame_mu = E / ((double)2 * ((double)1 + nu));
+			double strainWeight = 2 * lame_mu;
+			double volumeWeight = 3 * lame_lambda;
 			if (currentConfiguration.volumetric) {
-				quikDeformer->add3DStrainConstraints(tetStrainWeight);
+				quikDeformer->add3DStrainConstraints(strainWeight);
 			}
 			else {
-				// TODO: thin shelled triangle constraint
+				quikDeformer->add2DStrainConstraints(strainWeight);
 			}
 
 			// add position constraints
@@ -483,6 +513,19 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 				}
 			}
 
+			// add wind 
+			if (currentConfiguration.doWind) {
+				//WIND PARAMETERS
+				// TODO: need to add wind parameters to the GUI
+				double wx = 1; //wind direction
+				double wy = 0;
+				double wz = 0;
+				double windMag = 10; //wind magnitude
+				double windAmp = 1;
+				double windPeriod = 0.5;
+				bool windOsc = true; //whether the wind oscillates or is constant
+				quikDeformer->addWind(wx, wy, wz, windMag, windOsc, windAmp, windPeriod);
+			}
 
 			std::vector<Eigen::VectorXd> tempFrames; // temp holder of computed frames
 			quikDeformer->runSimulation(currentConfiguration.secondsToSimulate, false, tempFrames);

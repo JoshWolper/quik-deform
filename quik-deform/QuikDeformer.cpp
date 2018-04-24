@@ -1,9 +1,12 @@
 #include "QuikDeformer.h"
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
+#include <math.h> /*acos*/
 
 using namespace Eigen;
 using namespace std;
+
+#define PI 3.14159265
 
 // Destructor
 QuikDeformer::~QuikDeformer(){
@@ -15,7 +18,9 @@ QuikDeformer::~QuikDeformer(){
 }
 
 // Function to read a given object file, fill a matrix q that is m X 3, and return the number of points total
-void QuikDeformer::readObj(const std::string& fileName){
+void QuikDeformer::readObj(const std::string& fileName, int indexBase){
+
+    int temp;
 
     ifstream inputfile;
     inputfile.open(fileName);
@@ -38,7 +43,8 @@ void QuikDeformer::readObj(const std::string& fileName){
             Vector3i currFragment;
             ss.ignore();
             for (int i = 0; i < 3; i++){
-                ss >> currFragment(i);
+                ss >> temp;
+                currFragment(i) = temp - indexBase; //subtract off the indexBase (0 or 1)
             }
             fragments.push_back(currFragment);
         }
@@ -89,7 +95,7 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
             ss >> currPoint(i);
         }
 
-        bool scaleAndTranslate = true;
+        bool scaleAndTranslate = false;
         if(scaleAndTranslate){
 
             double scaleFactor = 100;
@@ -102,7 +108,6 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
             currPoint(2) = (currPoint(2) / scaleFactor) + dz;
 
         }
-
 
         vertices.push_back(currPoint);
 
@@ -168,10 +173,8 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
     cout << "Num tets: " << tetrahedrons.size() << endl;
     cout << "Num fragments: " << fragments.size() << endl;
 
-
     return;
 }
-
 
 
 // function called after readObj to construct the matrices we need
@@ -222,13 +225,47 @@ void QuikDeformer::printMatrices() const {
     cout << "Our inverse mass matrix is: " << endl << *invMassMatrix << endl;
 }
 
-void QuikDeformer::addWind(double wx, double wy, double wz, double windMag, bool windOsc){
+void QuikDeformer::addWind(double wx, double wy, double wz, double windMag, bool windOsc, double oscAmp, double period){
 
     for(int i = 0; i < numVertices; i++){
 
         (*fExtMatrix)((3*i) + 0) += (wx * windMag);
         (*fExtMatrix)((3*i) + 1) += (wy * windMag); //update the forces to include wind effects in the specified direction and magnitude
         (*fExtMatrix)((3*i) + 2) += (wz * windMag);
+
+    }
+
+    //Set variables
+    windX = wx;
+    windY = wy;
+    windZ = wz;
+    windMagnitude = windMag;
+    windOscillates = windOsc;
+    oscillationAmplitude = oscAmp;
+    windPeriod = period;
+
+}
+
+void QuikDeformer::updateWind(){
+
+    //assumes we have windOsc ON, thus all params should be set!
+    //start by grabbing the current elapsed time since wind started
+    double elapsedTime = ( std::clock() - getStartTime() ) / (double) CLOCKS_PER_SEC;
+
+    //Use function f(t) = A * sin( t / period )
+    double func = oscillationAmplitude * sin(elapsedTime / windPeriod);
+
+
+    //THIS ASSUMES THAT GRAVITY IS BASICALLY ALWAYS THE ONLY POSSIBLE FORCE (OTHER THAN WIND)!!!
+    for(int i = 0; i < numVertices; i++){
+
+        (*fExtMatrix)((3*i) + 0) = (windX * windMagnitude) + func;
+        (*fExtMatrix)((3*i) + 1) = (windY * windMagnitude) + func;
+        (*fExtMatrix)((3*i) + 2) = (windZ * windMagnitude) + func;
+
+        if(gravityOn){
+            (*fExtMatrix)((3*i) + 1) -= 9.81; //add gravity if need be
+        }
 
     }
 
@@ -250,7 +287,7 @@ void QuikDeformer::addPositionConstraint(double weight, int posConstraintIndex){
     sMatrix(1, (3 * posConstraintIndex + 1)) = 1;
     sMatrix(2, (3 * posConstraintIndex + 2)) = 1;
 
-    cout << "sMatrix is: " << endl << sMatrix << endl;
+    //cout << "sMatrix is: " << endl << sMatrix << endl;
 
     constraints.push_back(new PositionConstraint(weight, sMatrix, p));
 
@@ -291,60 +328,141 @@ void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
 
         Vector3i currTriangle = fragments[i];
 
-        //Compute Dm
-        MatrixXd Dm = MatrixXd(2,2);
+        //Compute DmHat for triangle
+        MatrixXd DmHat = MatrixXd(3,2).setZero();
 
-        int id0 = 3 * (currTriangle[0] - 1);
-        int id1 = 3 * (currTriangle[1] - 1);
-        int id2 = 3 * (currTriangle[2] - 1);
+        int id0 = 3 * currTriangle[0];
+        int id1 = 3 * currTriangle[1];
+        int id2 = 3 * currTriangle[2];
 
-        Dm(0,0) = (*qMatrix)(id1 + 0) - (*qMatrix)(id0 + 0); //top left = X1.x - X0.x
-        Dm(1,0) = (*qMatrix)(id1 + 1) - (*qMatrix)(id0 + 1); //bottom left = X1.y - X0.y
+        DmHat(0,0) = (*qMatrix)(id1 + 0) - (*qMatrix)(id0 + 0); //top left = X1.x - X0.x
+        DmHat(1,0) = (*qMatrix)(id1 + 1) - (*qMatrix)(id0 + 1); //middle left = X1.y - X0.y
+        DmHat(2,0) = (*qMatrix)(id1 + 2) - (*qMatrix)(id0 + 2); //bottom left = X1.z - X0.z
 
-        Dm(0,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //top right = X2.x - X0.x
-        Dm(1,1) = (*qMatrix)(id2 + 1) - (*qMatrix)(id0 + 1); //bottom right = X2.y - X0.y
+        DmHat(0,1) = (*qMatrix)(id2 + 0) - (*qMatrix)(id0 + 0); //top right = X2.x - X0.x
+        DmHat(1,1) = (*qMatrix)(id2 + 1) - (*qMatrix)(id0 + 1); //middle right = X2.y - X0.y
+        DmHat(2,1) = (*qMatrix)(id2 + 2) - (*qMatrix)(id0 + 2); //bottom right = X2.z - X0.z
+
+        //Now take the QR decomposition of DmHat
+        HouseholderQR<MatrixXd> QRDecomp(DmHat);
+        MatrixXd R = QRDecomp.matrixQR().triangularView<Upper>(); //grab the R matrix (upper triangular)
+        MatrixXd Q = QRDecomp.householderQ();
+
+        if(abs(Q.determinant() - 1) >= 1e-5){
+            //cout << "Correcting Q and R for DmHat QR Error: det(Q) \n" << endl;
+            Q.col(1) *= -1;
+            R(1,1) *= -1;
+        }
+
+        /*/------------------------------------//
+        //CHECK THAT QR Decomp IS CORRECT!!!
+        Eigen::MatrixXd I3 = Eigen::MatrixXd(3, 3).setIdentity();
+        MatrixXd temp33 = MatrixXd(3,3);
+        MatrixXd temp32 = MatrixXd(3,2);
+        temp33 = Q * Q.transpose() - I3;
+        temp32 = Q*R - DmHat;
+        if(temp33(0,0) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(0,1) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(0,2) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(1,0) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(1,1) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(1,2) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(2,0) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(2,1) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp33(2,2) >= 1e-5){ cout << "DmHat QR ERROR: Q * Qt \n" << endl; cout << "Q*Qt: \n" << Q*Q.transpose() << endl;}
+        if(temp32(0,0) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(temp32(0,1) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(temp32(1,0) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(temp32(1,1) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(temp32(2,0) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(temp32(2,1) >= 1e-5){ cout << "DmHat QR ERROR: QR - DmHat \n" << endl; cout << "QR: \n" << Q*R << endl; cout << "DmHat: \n" << DmHat << endl; }
+        if(abs(Q.determinant() - 1) >= 1e-5){
+            cout << "DmHat QR ERROR: det(Q) \n" << endl;
+        }
+        if(R(1,0) >= 1e-5){
+            cout << "DmHat QR ERROR: R(1,0) \n" << endl;
+        }
+        if(R(2,0) >= 1e-5){
+            cout << "DmHat QR ERROR: R(2,0) \n" << endl;
+        }
+        if(R(2,1) >= 1e-5){
+            cout << "DmHat QR ERROR: R(2,1) \n" << endl;
+        }
+        //------------------------------------/*/
+
+        //Set Dm as the top 2x2 of R! (throw out the zeros in third row)
+        MatrixXd Dm = MatrixXd(2,2).setZero();
+        Dm(0,0) = R(0,0); //top left
+        Dm(1,0) = R(1,0); //bottom left
+        Dm(0,1) = R(0,1); // top right
+        Dm(1,1) = R(1,1); //bottom right
 
         MatrixXd Dminv = Dm.inverse();
 
-        double area = Dm.determinant() * 0.5;
-
-        //cout << "Dm for triangle " << i << " :" << endl << Dm << endl;
+        double area = abs(Dm.determinant()) * 0.5;
 
         //SET S MATRIX
-        MatrixXd sMat = MatrixXd(9, 3 * numVertices).setZero();
-        for(int j = 0; j < currTriangle.size(); j++){
+        MatrixXd sMat = MatrixXd(9, 3 * numVertices).setZero(); //9 by 3m
+        for(int j = 0; j < 3; j++){
             //fill in S matrix for each index
-            sMat((3 * j + 0), (3 * (currTriangle[j] - 1) + 0)) = 1;
-            sMat((3 * j + 1), (3 * (currTriangle[j] - 1) + 1)) = 1;
-            sMat((3 * j + 2), (3 * (currTriangle[j] - 1) + 2)) = 1;
+            sMat((3 * j + 0), (3 * currTriangle[j] + 0)) = 1;
+            sMat((3 * j + 1), (3 * currTriangle[j] + 1)) = 1;
+            sMat((3 * j + 2), (3 * currTriangle[j] + 2)) = 1;
         }
-        //cout << "SMatrix: " << endl << sMat << endl;
 
         //SET BP MATRIX (okay to init to all zero)
-        VectorXd Bp = VectorXd(9,1).setZero();
+        VectorXd Bp = VectorXd(6,1).setZero(); //6 by 1
 
         //SET A MATRIX
-        MatrixXd aMat = MatrixXd(9,12).setZero();
-        buildTetStrainA(aMat, Dminv); //build aMat
+        MatrixXd aMat = MatrixXd(6,9).setZero();
+        buildTriangleStrainA(aMat, Dminv); //build aMat from DmInv!
 
-        //Set B = Identity (9 by 9)
-        Eigen::MatrixXd bMat = Eigen::MatrixXd(9, 9).setIdentity(); //identity since what we are passing for p is actually Bp
+        //Set B = Identity (6 by 6)
+        Eigen::MatrixXd bMat = Eigen::MatrixXd(6, 6).setIdentity(); //identity since what we are passing for p is actually Bp
 
-        //constraints.push_back(new TetStrainConstraint(strain3DWeight, sMat, Bp, aMat, bMat, currTet, volume, Dminv));
+        //Form currTriangle into an int vector
+        vector<int> triIndeces;
+        triIndeces.push_back(currTriangle[0]);
+        triIndeces.push_back(currTriangle[1]);
+        triIndeces.push_back(currTriangle[2]);
 
-        cout << "Finished triangle " << i << " :" << endl;
+        /*
+        cout << "Weight: " << strain2DWeight << endl;
+        cout << "sMat: \n" << sMat << endl;
+        cout << "Bp: \n" << Bp << endl;
+        cout << "aMat: \n" << aMat << endl;
+        cout << "bMat: \n" << bMat << endl;
+        cout << "area: " << area << endl;
+        cout << "Dminv: \n" << Dminv << endl;
+        cout << "DmHat: \n" << DmHat << endl;
+        */
+
+        constraints.push_back(new TriangleStrainConstraint(strain2DWeight, sMat, Bp, aMat, bMat, triIndeces, area, Dminv));
+
+        //cout << "Finished triangle " << i << " :" << endl;
 
     }
 
 }
 
+//Build A matrix from DmInverse (as G)
 void QuikDeformer::buildTriangleStrainA(MatrixXd& A_matrix, MatrixXd& G){
 
     A_matrix.setZero();
-    A_matrix(0,2)=G(0,0);A_matrix(0,4)=G(1,0);A_matrix(0,0)=-G(0,0)-G(1,0);
-    A_matrix(1,2)=G(0,1);A_matrix(1,4)=G(1,1);A_matrix(1,0)=-G(0,1)-G(1,1);
-    A_matrix(2,3)=G(0,0);A_matrix(2,5)=G(1,0);A_matrix(2,1)=-G(0,0)-G(1,0);
-    A_matrix(3,3)=G(0,1);A_matrix(3,5)=G(1,1);A_matrix(3,1)=-G(0,1)-G(1,1);
+    double g, h, i, j;
+    g = G(0,0); //top left of G
+    h = G(0,1); //top right of G
+    i = G(1,0); //bottom left of G
+    j = G(1,1); //bottom right of G
+
+    A_matrix(0,0) = -g - i;    A_matrix(0,3) = g;    A_matrix(0,6) = i; //defines the three entries in row one of A
+    A_matrix(1,0) = -h - j;    A_matrix(1,3) = h;    A_matrix(1,6) = j;
+
+    A_matrix(2,1) = -g - i;    A_matrix(2,4) = g;    A_matrix(2,7) = i; //defines the three entries in row three of A
+    A_matrix(3,1) = -h - j;    A_matrix(3,4) = h;    A_matrix(3,7) = j;
+
+    A_matrix(4,2) = -g - i;    A_matrix(4,5) = g;    A_matrix(4,8) = i; //defines the entries in row five of A
+    A_matrix(5,2) = -h - j;    A_matrix(5,5) = h;    A_matrix(5,8) = j;
 
     return;
 }
@@ -379,7 +497,7 @@ void QuikDeformer::add3DStrainConstraints(double strain3DWeight){
 
         MatrixXd Dminv = Dm.inverse();
 
-        double volume = Dm.determinant() / 6.0;
+        double volume = abs(Dm.determinant()) / 6.0;
 
         //cout << "Dm for tet " << i << " :" << endl << Dm << endl;
 
@@ -387,9 +505,9 @@ void QuikDeformer::add3DStrainConstraints(double strain3DWeight){
         MatrixXd sMat = MatrixXd(12, 3 * numVertices).setZero();
         for(int j = 0; j < currTet.size(); j++){
             //fill in S matrix for each index
-            sMat((3 * j + 0), (3 * (currTet[j]) + 0)) = 1;
-            sMat((3 * j + 1), (3 * (currTet[j]) + 1)) = 1;
-            sMat((3 * j + 2), (3 * (currTet[j]) + 2)) = 1;
+            sMat((3 * j + 0), (3 * currTet[j] + 0)) = 1;
+            sMat((3 * j + 1), (3 * currTet[j] + 1)) = 1;
+            sMat((3 * j + 2), (3 * currTet[j] + 2)) = 1;
         }
         //cout << "SMatrix: " << endl << sMat << endl;
 
@@ -549,6 +667,7 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
             // Lines 4-6 : Local Step (calc p_i for each constraint C_i)
             #pragma omp parallel for num_threads(4)
             for(int j = 0; j < constraints.size(); j++) {
+                //cout << "Solving constraint " << j << endl;
                 constraints[j]->projectConstraint(qN_1); //project the constraint based on our calculated q n+1
             }
 
@@ -569,18 +688,24 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
         if(printsOn == true){cout << "lines 3-7 complete" << endl;}
 
         //Ground Collision Checks and Corrections
+        Vector3d inputPoint, outputPoint;
         for(int i = 0; i < numVertices; i++){ //check each position for y < 0
 
-            double yVal = qN_1(3*i + 1);
+            //Calculate the indeces
+            int id0 = 3*i + 0;
+            int id1 = 3*i + 1;
+            int id2 = 3*i + 2;
 
-            if(yVal < 0){
+            //Construct input, and use function to get output
+            inputPoint = Vector3d(qN_1(id0), qN_1(id1), qN_1(id2));
+            outputPoint = planeCollision(inputPoint);
 
-                qN_1(3*i + 1) = 0;
-
-            }
+            //Assign output points to our position matrix!
+            qN_1(id0) = outputPoint[0];
+            qN_1(id1) = outputPoint[1];
+            qN_1(id2) = outputPoint[2];
 
         }
-
 
         // Line 9: vn+1 = (qn+1 - qn) / h
         vN_1 = (qN_1 - qN) / timeStep;
@@ -614,6 +739,11 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
             writeObj(outputFilePath + std::to_string(frame) + ".obj", qN_1);
             frame = frame + 1; //update frame
 
+        }
+
+        //UPDATE WIND IF NEEDED
+        if(windOscillates){
+            updateWind();
         }
 
         step = step + 1;
@@ -727,15 +857,22 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
         if(printsOn == true){cout << "lines 3-7 complete" << endl;}
 
         //Ground Collision Checks and Corrections
+        Vector3d inputPoint, outputPoint;
         for(int i = 0; i < numVertices; i++){ //check each position for y < 0
 
-            double yVal = qN_1(3*i + 1);
+            //Calculate the indeces
+            int id0 = 3*i + 0;
+            int id1 = 3*i + 1;
+            int id2 = 3*i + 2;
 
-            if(yVal < 0){
+            //Construct input, and use function to get output
+            inputPoint = Vector3d(qN_1(id0), qN_1(id1), qN_1(id2));
+            outputPoint = planeCollision(inputPoint);
 
-                qN_1(3*i + 1) = 0;
-
-            }
+            //Assign output points to our position matrix!
+            qN_1(id0) = outputPoint[0];
+            qN_1(id1) = outputPoint[1];
+            qN_1(id2) = outputPoint[2];
 
         }
 
@@ -776,6 +913,11 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
 
         }
 
+        //UPDATE WIND IF NEEDED
+        if(windOscillates) {
+            updateWind();
+        }
+
         step = step + 1;
     }
 
@@ -784,9 +926,75 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
 
 }
 
-Vector3d QuikDeformer::planeCheck(double x, double y, double z){
+Vector3d QuikDeformer::planeCollision(Eigen::Vector3d p){
 
-    Vector3d newPoint = Vector3d(x, y, z);
+    Vector3d newPoint = Vector3d(p[0], p[1], p[2]); //set new point to be the input point by default
+    Vector3d rayP, center, normal, adjustment;
+    double numerator, denom, temp, angle, multiplier;
+
+    //Iterate over every plane, check if above/below, if below adjust the newPoint!
+    for(int i = 0; i < planeCenters.size(); i++){
+
+        center = planeCenters[i];
+        normal = planeNormals[i].normalized();
+
+        //cout << "Center: " << center << endl;
+        //cout << "Normal: " << normal << endl;
+        //cout << "Point: " << p << endl;
+
+        rayP = p - center; //ray from center to input point p
+
+        numerator = normal.dot(rayP);
+        denom = normal.norm() * rayP.norm();
+
+        temp = numerator/denom;
+
+        //Clamp to range of -1 to 1
+        if(temp < -1){
+            temp = -1;
+        } else if(temp > 1){
+            temp = 1;
+        }
+
+        angle = acos(temp) * 180.0 / PI;
+
+        //cout << "Angle: " << angle << endl;
+
+        if((angle > 90.0) && (angle < 270)){
+            //point BELOW plane, must fix
+            adjustment = normal.normalized(); //get the normal and normalize it
+
+            //Determine what the "angle from plane" is
+            if(angle < 180){
+                angle = angle - 90;
+
+            } else if (angle == 180){
+                angle = 90; //so sin is 1
+            } else{
+                angle = 270 - angle;
+            }
+
+            multiplier = sin(angle * (PI / 180.0)) * rayP.norm();
+
+            //cout << "Angle: " << angle << endl;
+            //cout << "Norm: " << rayP.norm() << endl;
+            //cout << "Multiplier: " << multiplier << endl;
+
+            adjustment[0] = adjustment[0] * multiplier;
+            adjustment[1] = adjustment[1] * multiplier;
+            adjustment[2] = adjustment[2] * multiplier;
+
+            newPoint = newPoint + adjustment; //update point to be moved up to surface
+
+        }
+        else{
+            //point above plane, all good just continue loop!
+            continue;
+        }
+
+    }
+
+    //cout << "New point: " << newPoint << endl;
 
     return newPoint;
 }

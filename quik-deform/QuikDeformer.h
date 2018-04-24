@@ -24,30 +24,10 @@ class QuikDeformer {
 public:
     // Constructor for object files
     QuikDeformer(const std::string& objFilePath,
-                 double timeStep,
-                 int solverIterations,
-                 int frameRate,
-                 double mass,
-                 double initVelX,
-                 double initVelY,
-                 double initVelZ,
-                 bool gravOn,
-                 bool volumetricOn):
-                    timeStep(timeStep),
-                    solverIterations(solverIterations),
-                    frameRate(frameRate),
-                    numVertices(0),
-                    gravityOn(gravOn),
-                    volumetric(volumetricOn)
-                    {
-                        readObj(objFilePath); //setup particles and fragments
-                        setupMatrices(mass, initVelX, initVelY, initVelZ);
-                    };
-
-    //Constructor for volumetric models (use node, ele, and face files)
-    QuikDeformer(const std::string& nodeFilePath,
-                 const std::string& eleFilePath,
-                 const std::string& faceFilePath,
+                 const std::vector<Eigen::Vector3d> pCenters,
+                 const std::vector<double> pLengths,
+                 const std::vector<double> pWidths,
+                 const std::vector<Eigen::Vector3d> pNormals,
                  double timeStep,
                  int solverIterations,
                  int frameRate,
@@ -63,7 +43,44 @@ public:
                     frameRate(frameRate),
                     numVertices(0),
                     gravityOn(gravOn),
-                    volumetric(volumetricOn)
+                    volumetric(volumetricOn),
+                    planeCenters(pCenters),
+                    planeLengths(pLengths),
+                    planeWidths(pWidths),
+                    planeNormals(pNormals)
+                    {
+                        readObj(objFilePath, indexBase); //setup particles and fragments
+                        setupMatrices(mass, initVelX, initVelY, initVelZ);
+                    };
+
+    //Constructor for volumetric models (use node, ele, and face files)
+    QuikDeformer(const std::string& nodeFilePath,
+                 const std::string& eleFilePath,
+                 const std::string& faceFilePath,
+                 const std::vector<Eigen::Vector3d> pCenters,
+                 const std::vector<double> pLengths,
+                 const std::vector<double> pWidths,
+                 const std::vector<Eigen::Vector3d> pNormals,
+                 double timeStep,
+                 int solverIterations,
+                 int frameRate,
+                 double mass,
+                 double initVelX,
+                 double initVelY,
+                 double initVelZ,
+                 bool gravOn,
+                 bool volumetricOn,
+                 int indexBase):
+                    timeStep(timeStep),
+                    solverIterations(solverIterations),
+                    frameRate(frameRate),
+                    numVertices(0),
+                    gravityOn(gravOn),
+                    volumetric(volumetricOn),
+                    planeCenters(pCenters),
+                    planeLengths(pLengths),
+                    planeWidths(pWidths),
+                    planeNormals(pNormals)
                     {
                         readVolumetric(nodeFilePath, eleFilePath, faceFilePath, indexBase); //setup particles, tets, and fragments
                         setupMatrices(mass, initVelX, initVelY, initVelZ);
@@ -73,6 +90,10 @@ public:
     QuikDeformer(std::vector<Eigen::Vector3d> particles,
                  std::vector<Eigen::Vector3i> faces,
                  std::vector<std::vector<int>> tets,
+                 const std::vector<Eigen::Vector3d> pCenters,
+                 const std::vector<double> pLengths,
+                 const std::vector<double> pWidths,
+                 const std::vector<Eigen::Vector3d> pNormals,
                  double timeStep,
                  int solverIterations,
                  int frameRate,
@@ -87,7 +108,11 @@ public:
                     frameRate(frameRate),
                     numVertices(0),
                     gravityOn(gravOn),
-                    volumetric(volumetricOn)
+                    volumetric(volumetricOn),
+                    planeCenters(pCenters),
+                    planeLengths(pLengths),
+                    planeWidths(pWidths),
+                    planeNormals(pNormals)
                     {
                         vertices.assign(particles.begin(), particles.end());
                         fragments.assign(faces.begin(), faces.end());
@@ -102,15 +127,13 @@ public:
     void runSimulation(double seconds, const std::string& outputFilePath, bool printsOn);
     void runSimulation(double seconds, bool printsOn, std::vector<Eigen::VectorXd>& frames); //second func for Maya version
 
-    Eigen::Vector3d planeCheck(double x, double y, double z); //return true if point is above plane
+    Eigen::Vector3d planeCollision(Eigen::Vector3d p); //return true if point is above plane
     void randomizeVertices();
 
     void addPositionConstraint(double weight,  int posConstraintIndex);
     void addGroundConstraint(double weight, std::vector<int> posConstraintIndeces, double floorVal);
     void add2DStrainConstraints(double strain2DWeight);
     void add3DStrainConstraints(double strain3DWeight);
-
-    void addWind(double wx, double wy, double wz, double windMag, bool windOsc);
 
     void printMatrices() const;
 
@@ -124,7 +147,26 @@ public:
 
     Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> m_solver; //create a public variable for our solver!
 
+    //Plane Collision variables
+    std::vector<Eigen::Vector3d> planeCenters;
+    std::vector<double> planeWidths;
+    std::vector<double> planeLengths;
+    std::vector<Eigen::Vector3d> planeNormals;
+
+    //Wind stuff
+    void addWind(double wx, double wy, double wz, double windMag, bool windOsc, double oscAmp, double period);
+    void updateWind();
+    bool windOscillates = false;
+    double windX = 0;
+    double windY = 0;
+    double windZ = 0;
+    double windMagnitude = 0;
+    double oscillationAmplitude = 0;
+    double windPeriod = 0;
+
 private:
+
+    //Simulation Variables
     double timeStep;
     int solverIterations;
     int frameRate;
@@ -142,10 +184,11 @@ private:
     Eigen::MatrixXd* mMatrix;
     Eigen::MatrixXd* invMassMatrix;
 
+    //Timers
     clock_t startTime;
     double elapsedTime = 0;
 
-    void readObj(const std::string& fileName); //setup particles and frags from object file
+    void readObj(const std::string& fileName, int indexBase); //setup particles and frags from object file
     void readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath, int indexBase); //setup particles, tets, and fragments
     void writeObj(const std::string& fileName, Eigen::VectorXd qMat) const;
     void writeBgeo(const std::string& fileName) const;

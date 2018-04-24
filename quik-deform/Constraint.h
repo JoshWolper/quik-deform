@@ -34,7 +34,10 @@ public:
     void setB(Eigen::MatrixXd B){ bMatrix = B;};
     void setS(Eigen::MatrixXd S){ sMatrix = S;};
     void setW(double weight){ w = weight; };
+
     void setVolume(double vol){ volume = vol; };
+    void setArea(double a){ area = a; };
+
     void setDmInv(Eigen::MatrixXd Dminv){ DmInv = Dminv; };
     void setIndeces(std::vector<int> ids){ indeces = ids; };
     void setDefGrad(Eigen::Matrix3d F){ defGrad = F; };
@@ -45,6 +48,7 @@ private:
     double w; //constraint weight
     int cardinality; //number of particles involved in constraint
     double volume;
+    double area;
     Eigen::VectorXd pMatrix; //p matrix for all projected points of the constraint
     Eigen::MatrixXd sMatrix; //selection matrix
     Eigen::MatrixXd aMatrix; //A matrix
