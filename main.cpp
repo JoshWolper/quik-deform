@@ -102,7 +102,7 @@ int main(){
         int width = 10;
         int height = 10;
         OBJGeneratorMode mode = OBJGeneratorMode::vertical;
-        double startHeight = 10;
+        double startHeight = 6;
         OBJGenerator::generateClothOBJ(objectFile, vertexDist, width, height, mode, startHeight); //make the cloth to be used
     } else if(whichObject == 6){
         cout << "Processing single triangle model:" << endl;
@@ -142,10 +142,13 @@ int main(){
     if(volumetric){
 
         //---------CONSTRUCTOR--------//
-        QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, pCenters, pLengths, pWidths, pNormals, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
+        QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
 
         //------PRINT MATRICES-------//
         //quikDeformer.printMatrices();
+
+        //-------ADD COLLISION PLANES-------//
+        quikDeformer.addCollisionPlanes(pCenters, pLengths, pWidths, pNormals);
 
         //-----ADD STRAIN CONSTRAINTS-------//
         quikDeformer.add3DStrainConstraints(tetStrainWeight);
@@ -170,10 +173,13 @@ int main(){
     else if(!volumetric){
 
         //---------CONSTRUCTOR--------//
-        QuikDeformer quikDeformer(objectFile, pCenters, pLengths, pWidths, pNormals, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
+        QuikDeformer quikDeformer(objectFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
 
         //------PRINT MATRICES-------//
         //quikDeformer.printMatrices();
+
+        //-------ADD COLLISION PLANES-------//
+        quikDeformer.addCollisionPlanes(pCenters, pLengths, pWidths, pNormals);
 
         //-----ADD STRAIN CONSTRAINTS-------//
         quikDeformer.add2DStrainConstraints(triangleStrainWeight);

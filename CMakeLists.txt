@@ -27,8 +27,6 @@ set(SOURCE_FILES
         Constraint.h
         PositionConstraint.h
         PositionConstraint.cpp
-        GroundConstraint.cpp
-        GroundConstraint.h
         OBJGenerator.cpp
         OBJGenerator.h
         TetStrainConstraint.cpp

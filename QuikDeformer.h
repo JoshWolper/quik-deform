@@ -12,7 +12,6 @@
 #include <string>
 #include "Constraint.h"
 #include "PositionConstraint.h"
-#include "GroundConstraint.h"
 #include "TetStrainConstraint.h"
 #include "TriangleStrainConstraint.h"
 #include "SVD.h"
@@ -22,10 +21,6 @@ class QuikDeformer {
 public:
     // Constructor for object files
     QuikDeformer(const std::string& objFilePath,
-                 const std::vector<Eigen::Vector3d> pCenters,
-                 const std::vector<double> pLengths,
-                 const std::vector<double> pWidths,
-                 const std::vector<Eigen::Vector3d> pNormals,
                  double timeStep,
                  int solverIterations,
                  int frameRate,
@@ -41,11 +36,7 @@ public:
                     frameRate(frameRate),
                     numVertices(0),
                     gravityOn(gravOn),
-                    volumetric(volumetricOn),
-                    planeCenters(pCenters),
-                    planeLengths(pLengths),
-                    planeWidths(pWidths),
-                    planeNormals(pNormals)
+                    volumetric(volumetricOn)
                     {
                         readObj(objFilePath, indexBase); //setup particles and fragments
                         setupMatrices(mass, initVelX, initVelY, initVelZ);
@@ -55,10 +46,6 @@ public:
     QuikDeformer(const std::string& nodeFilePath,
                  const std::string& eleFilePath,
                  const std::string& faceFilePath,
-                 const std::vector<Eigen::Vector3d> pCenters,
-                 const std::vector<double> pLengths,
-                 const std::vector<double> pWidths,
-                 const std::vector<Eigen::Vector3d> pNormals,
                  double timeStep,
                  int solverIterations,
                  int frameRate,
@@ -74,11 +61,7 @@ public:
                     frameRate(frameRate),
                     numVertices(0),
                     gravityOn(gravOn),
-                    volumetric(volumetricOn),
-                    planeCenters(pCenters),
-                    planeLengths(pLengths),
-                    planeWidths(pWidths),
-                    planeNormals(pNormals)
+                    volumetric(volumetricOn)
                     {
                         readVolumetric(nodeFilePath, eleFilePath, faceFilePath, indexBase); //setup particles, tets, and fragments
                         setupMatrices(mass, initVelX, initVelY, initVelZ);
@@ -88,10 +71,6 @@ public:
     QuikDeformer(std::vector<Eigen::Vector3d> particles,
                  std::vector<Eigen::Vector3i> faces,
                  std::vector<std::vector<int>> tets,
-                 const std::vector<Eigen::Vector3d> pCenters,
-                 const std::vector<double> pLengths,
-                 const std::vector<double> pWidths,
-                 const std::vector<Eigen::Vector3d> pNormals,
                  double timeStep,
                  int solverIterations,
                  int frameRate,
@@ -106,11 +85,7 @@ public:
                     frameRate(frameRate),
                     numVertices(0),
                     gravityOn(gravOn),
-                    volumetric(volumetricOn),
-                    planeCenters(pCenters),
-                    planeLengths(pLengths),
-                    planeWidths(pWidths),
-                    planeNormals(pNormals)
+                    volumetric(volumetricOn)
                     {
                         vertices.assign(particles.begin(), particles.end());
                         fragments.assign(faces.begin(), faces.end());
@@ -129,7 +104,6 @@ public:
     void randomizeVertices();
 
     void addPositionConstraint(double weight,  int posConstraintIndex);
-    void addGroundConstraint(double weight, std::vector<int> posConstraintIndeces, double floorVal);
     void add2DStrainConstraints(double strain2DWeight);
     void add3DStrainConstraints(double strain3DWeight);
 
@@ -146,6 +120,7 @@ public:
     Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> m_solver; //create a public variable for our solver!
 
     //Plane Collision variables
+    void addCollisionPlanes(const std::vector<Eigen::Vector3d> pCenters, const std::vector<double> pLengths, const std::vector<double> pWidths, const std::vector<Eigen::Vector3d> pNormals);
     std::vector<Eigen::Vector3d> planeCenters;
     std::vector<double> planeWidths;
     std::vector<double> planeLengths;

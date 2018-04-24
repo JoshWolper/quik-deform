@@ -85,12 +85,6 @@
 		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/Constraint.h">
 			<Option target="QUIKDEFORM"/>
 		</Unit>
-		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/GroundConstraint.cpp">
-			<Option target="QUIKDEFORM"/>
-		</Unit>
-		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/GroundConstraint.h">
-			<Option target="QUIKDEFORM"/>
-		</Unit>
 		<Unit filename="/Users/joshwolper/Desktop/quik-deform/quik-deform/OBJGenerator.cpp">
 			<Option target="QUIKDEFORM"/>
 		</Unit>

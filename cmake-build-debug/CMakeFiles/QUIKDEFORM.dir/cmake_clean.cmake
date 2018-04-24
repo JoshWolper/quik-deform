@@ -3,7 +3,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/QUIKDEFORM.dir/SVD.cpp.o"
   "CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o"
   "CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o"
-  "CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o"
   "CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o"
   "CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o"
   "CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o"

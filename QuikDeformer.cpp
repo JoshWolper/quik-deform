@@ -271,6 +271,16 @@ void QuikDeformer::updateWind(){
 
 }
 
+void QuikDeformer::addCollisionPlanes(const std::vector<Eigen::Vector3d> pCenters, const std::vector<double> pLengths, const std::vector<double> pWidths, const std::vector<Eigen::Vector3d> pNormals){
+
+    planeCenters = pCenters;
+    planeLengths = pLengths;
+    planeWidths = pWidths;
+    planeNormals = pNormals;
+
+}
+
+
 void QuikDeformer::addPositionConstraint(double weight, int posConstraintIndex){
 
     //Turn index into sMatrix and p Vector!
@@ -292,34 +302,6 @@ void QuikDeformer::addPositionConstraint(double weight, int posConstraintIndex){
     constraints.push_back(new PositionConstraint(weight, sMatrix, p));
 
 }
-
-void QuikDeformer::addGroundConstraint(double weight, vector<int> posConstraintIndeces, double floorVal){
-
-    //Turn index into sMatrix and p Vector!
-
-    MatrixXd sMatrix = MatrixXd(3 * posConstraintIndeces.size(), 3 * numVertices); //3 by 3M S matrix
-    VectorXd p = VectorXd(3 * posConstraintIndeces.size(), 1); //make our vector to hold all the points in the constraint
-
-    sMatrix.setZero();
-
-    for(int i = 0; i < posConstraintIndeces.size(); i++){
-
-        p(i*3 + 0) = vertices[posConstraintIndeces[i]][0];
-        p(i*3 + 1) = vertices[posConstraintIndeces[i]][1];
-        p(i*3 + 2) = vertices[posConstraintIndeces[i]][2];
-
-        sMatrix((3 * i + 0), (3 * posConstraintIndeces[i] + 0)) = 1;
-        sMatrix((3 * i + 1), (3 * posConstraintIndeces[i] + 1)) = 1;
-        sMatrix((3 * i + 2), (3 * posConstraintIndeces[i] + 2)) = 1;
-
-    }
-
-    cout << "sMatrix is: " << endl << sMatrix << endl;
-
-    constraints.push_back(new GroundConstraint(weight, sMatrix, p, posConstraintIndeces, floorVal));
-
-}
-
 
 void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
 

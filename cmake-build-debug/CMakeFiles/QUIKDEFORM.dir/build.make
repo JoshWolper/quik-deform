@@ -153,33 +153,9 @@ CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o.provides: CMakeFiles/QUIKDEFO
 CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o.provides.build: CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o
 
 
-CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o: CMakeFiles/QUIKDEFORM.dir/flags.make
-CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o: ../GroundConstraint.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/GroundConstraint.cpp
-
-CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.i"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/joshwolper/Desktop/quik-deform/quik-deform/GroundConstraint.cpp > CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.i
-
-CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.s"
-	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/joshwolper/Desktop/quik-deform/quik-deform/GroundConstraint.cpp -o CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.s
-
-CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o.requires:
-
-.PHONY : CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o.requires
-
-CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o.provides: CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o.requires
-	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o.provides.build
-.PHONY : CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o.provides
-
-CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o.provides.build: CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o
-
-
 CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o: CMakeFiles/QUIKDEFORM.dir/flags.make
 CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o: ../OBJGenerator.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/OBJGenerator.cpp
 
 CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.i: cmake_force
@@ -203,7 +179,7 @@ CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o.provides.build: CMakeFiles/QUIKDEFO
 
 CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o: CMakeFiles/QUIKDEFORM.dir/flags.make
 CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o: ../TetStrainConstraint.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/TetStrainConstraint.cpp
 
 CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.i: cmake_force
@@ -227,7 +203,7 @@ CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o.provides.build: CMakeFiles/Q
 
 CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o: CMakeFiles/QUIKDEFORM.dir/flags.make
 CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o: ../TriangleStrainConstraint.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o"
 	/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o -c /Users/joshwolper/Desktop/quik-deform/quik-deform/TriangleStrainConstraint.cpp
 
 CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.i: cmake_force
@@ -255,7 +231,6 @@ QUIKDEFORM_OBJECTS = \
 "CMakeFiles/QUIKDEFORM.dir/SVD.cpp.o" \
 "CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o" \
 "CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o" \
-"CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o" \
 "CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o" \
 "CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o" \
 "CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o"
@@ -267,13 +242,12 @@ QUIKDEFORM: CMakeFiles/QUIKDEFORM.dir/main.cpp.o
 QUIKDEFORM: CMakeFiles/QUIKDEFORM.dir/SVD.cpp.o
 QUIKDEFORM: CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o
 QUIKDEFORM: CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o
-QUIKDEFORM: CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o
 QUIKDEFORM: CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o
 QUIKDEFORM: CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o
 QUIKDEFORM: CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o
 QUIKDEFORM: CMakeFiles/QUIKDEFORM.dir/build.make
 QUIKDEFORM: CMakeFiles/QUIKDEFORM.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable QUIKDEFORM"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/Users/joshwolper/Desktop/quik-deform/quik-deform/cmake-build-debug/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable QUIKDEFORM"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/QUIKDEFORM.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -285,7 +259,6 @@ CMakeFiles/QUIKDEFORM.dir/requires: CMakeFiles/QUIKDEFORM.dir/main.cpp.o.require
 CMakeFiles/QUIKDEFORM.dir/requires: CMakeFiles/QUIKDEFORM.dir/SVD.cpp.o.requires
 CMakeFiles/QUIKDEFORM.dir/requires: CMakeFiles/QUIKDEFORM.dir/QuikDeformer.cpp.o.requires
 CMakeFiles/QUIKDEFORM.dir/requires: CMakeFiles/QUIKDEFORM.dir/PositionConstraint.cpp.o.requires
-CMakeFiles/QUIKDEFORM.dir/requires: CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o.requires
 CMakeFiles/QUIKDEFORM.dir/requires: CMakeFiles/QUIKDEFORM.dir/OBJGenerator.cpp.o.requires
 CMakeFiles/QUIKDEFORM.dir/requires: CMakeFiles/QUIKDEFORM.dir/TetStrainConstraint.cpp.o.requires
 CMakeFiles/QUIKDEFORM.dir/requires: CMakeFiles/QUIKDEFORM.dir/TriangleStrainConstraint.cpp.o.requires

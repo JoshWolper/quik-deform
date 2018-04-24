@@ -123,33 +123,6 @@ QUIKDEFORM/fast:
 	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/build
 .PHONY : QUIKDEFORM/fast
 
-GroundConstraint.o: GroundConstraint.cpp.o
-
-.PHONY : GroundConstraint.o
-
-# target to build an object file
-GroundConstraint.cpp.o:
-	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.o
-.PHONY : GroundConstraint.cpp.o
-
-GroundConstraint.i: GroundConstraint.cpp.i
-
-.PHONY : GroundConstraint.i
-
-# target to preprocess a source file
-GroundConstraint.cpp.i:
-	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.i
-.PHONY : GroundConstraint.cpp.i
-
-GroundConstraint.s: GroundConstraint.cpp.s
-
-.PHONY : GroundConstraint.s
-
-# target to generate assembly for a file
-GroundConstraint.cpp.s:
-	$(MAKE) -f CMakeFiles/QUIKDEFORM.dir/build.make CMakeFiles/QUIKDEFORM.dir/GroundConstraint.cpp.s
-.PHONY : GroundConstraint.cpp.s
-
 OBJGenerator.o: OBJGenerator.cpp.o
 
 .PHONY : OBJGenerator.o
@@ -348,9 +321,6 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... QUIKDEFORM"
-	@echo "... GroundConstraint.o"
-	@echo "... GroundConstraint.i"
-	@echo "... GroundConstraint.s"
 	@echo "... OBJGenerator.o"
 	@echo "... OBJGenerator.i"
 	@echo "... OBJGenerator.s"
