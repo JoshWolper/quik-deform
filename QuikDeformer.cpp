@@ -56,7 +56,7 @@ void QuikDeformer::readObj(const std::string& fileName, int indexBase){
     return;
 }
 
-void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath, int indexBase){
+void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath, int indexBase, bool scaleModel){
 
     //Open all the files and check for errors
     ifstream nodeFile, eleFile, faceFile;
@@ -95,8 +95,7 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
             ss >> currPoint(i);
         }
 
-        bool scaleAndTranslate = true;
-        if(scaleAndTranslate){
+        if(scaleModel){
 
             double scaleFactor = 100;
             double dx = 0;

@@ -16,27 +16,27 @@ int main(){
 
     //SIM PARAMETERS
     double h = 1e-2; //timestep
-    int iter = 1; // solverIterations
+    int iter = 5; // solverIterations
     double mass = 1; //mass of each point
     int fr = 24; // frame rate
-    double vx = 1.5;
+    double vx = 0;
     double vy = 0; //init initial velocity direction and magnitude
     double vz = 0;
     bool printsOn = false;
-    double seconds = 10; //how long to run sim
+    double seconds = 5; //how long to run sim
     string outputFilepath = "../Output/";
 
     //WIND PARAMETERS
-    double wx = 1; //wind direction
+    double wx = 0; //wind direction
     double wy = 0;
-    double wz = 0;
-    double windMag = 10; //wind magnitude
+    double wz = -1;
+    double windMag = 20; //wind magnitude
     double windAmp = 1;
     double windPeriod = 0.5;
     bool windOsc = true; //whether the wind oscillates or is constant
 
     //Weight PARAMETERS
-    double E = 500000;
+    double E = 800;
     double nu = 0.3;
     double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
     double lame_mu = E / ((double)2 * ((double)1 + nu));
@@ -52,12 +52,13 @@ int main(){
     string eleFile;
     string faceFile;
     int indexBase;
+    bool scaleModel;
 
     //CHANGE THESE PARAMS WHEN CHANGING MODELS!!!
-    int whichObject = 4;
+    int whichObject = 5;
     bool gravityOn = true;
-    bool volumetric = true; //whether this is a thin shell or volumetric
-    bool windOn = false;
+    bool volumetric = false; //whether this is a thin shell or volumetric
+    bool windOn = true;
 
     if(whichObject == 0){
         //Tet with 1 tet --> INDEX BASE IS 1
@@ -66,6 +67,7 @@ int main(){
         nodeFile = "../Models/tet.1.node";
         eleFile = "../Models/tet.1.ele";
         faceFile = "../Models/tet.1.face";
+        scaleModel = false;
     } else if (whichObject == 1){
         //Cube with 6 tets --> INDEX BASE IS 1
         cout << "Processing volumetric cube model:" << endl;
@@ -73,6 +75,7 @@ int main(){
         nodeFile = "../Models/cube.1.node";
         eleFile = "../Models/cube.1.ele";
         faceFile = "../Models/cube.1.face";
+        scaleModel = false;
     } else if (whichObject == 2){
         //Icosahedron with 16 tets --> INDEX BASE IS 0
         cout << "Processing volumetric icosahedron model:" << endl;
@@ -80,6 +83,7 @@ int main(){
         nodeFile = "../Models/icosahedron.1.node";
         eleFile = "../Models/icosahedron.1.ele";
         faceFile = "../Models/icosahedron.1.face";
+        scaleModel = false;
     } else if (whichObject == 3){
         //Tetgen weird box shape 600 tets --> INDEX BASE IS 1
         cout << "Processing volumetric box with hole model:" << endl;
@@ -87,6 +91,7 @@ int main(){
         nodeFile = "../tetgen1.5.1-beta1/example.1.node";
         eleFile = "../tetgen1.5.1-beta1/example.1.ele";
         faceFile = "../tetgen1.5.1-beta1/example.1.face";
+        scaleModel = false;
     } else if (whichObject == 4){
         //Sphere with 2064 tets --> INDEX BASE IS 0
         cout << "Processing volumetric sphere model:" << endl;
@@ -94,6 +99,7 @@ int main(){
         nodeFile = "../Models/sphere.1.node";
         eleFile = "../Models/sphere.1.ele";
         faceFile = "../Models/sphere.1.face";
+        scaleModel = true;
     } else if(whichObject == 5) {
         cout << "Processing cloth model:" << endl;
         indexBase = 1;
@@ -104,14 +110,17 @@ int main(){
         OBJGeneratorMode mode = OBJGeneratorMode::vertical;
         double startHeight = 6;
         OBJGenerator::generateClothOBJ(objectFile, vertexDist, width, height, mode, startHeight); //make the cloth to be used
+        scaleModel = false;
     } else if(whichObject == 6){
         cout << "Processing single triangle model:" << endl;
         indexBase = 1;
         objectFile = "../Models/triangle.obj";
+        scaleModel = false;
     } else if(whichObject == 7){
         cout << "Processing square model (2 tris):" << endl;
         indexBase = 1;
         objectFile = "../Models/square.obj";
+        scaleModel = false;
     } else {
         cout << "Failed to choose a case so basic tetrahedron selected" << endl;
         //Tet with 1 tet --> INDEX BASE IS 1
@@ -119,6 +128,7 @@ int main(){
         nodeFile = "../Models/tet.1.node";
         eleFile = "../Models/tet.1.ele";
         faceFile = "../Models/tet.1.face";
+        scaleModel = false;
     }
 
     //---------DEFINE COLLISION PLANES------------//
@@ -132,18 +142,18 @@ int main(){
 
     //Plane centers
     pCenters.push_back(Vector3d(0,0,0)); //ground plane
-    pCenters.push_back(Vector3d(5,0,0)); //right wall plane (90 deg)
+    //pCenters.push_back(Vector3d(5,0,0)); //right wall plane (90 deg)
 
     //Plane normals
     pNormals.push_back(Vector3d(0,1,0));
-    pNormals.push_back(Vector3d(-1,0,0));
+    //pNormals.push_back(Vector3d(-1,0,0));
 
     //---------CONSTRUCT AND RUN SIMULATOR-----------//
 
     if(volumetric){
 
         //---------CONSTRUCTOR--------//
-        QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase);
+        QuikDeformer quikDeformer(nodeFile, eleFile, faceFile, h, iter, fr, mass, vx, vy, vz, gravityOn, volumetric, indexBase, scaleModel);
 
         //------PRINT MATRICES-------//
         //quikDeformer.printMatrices();
@@ -187,6 +197,8 @@ int main(){
 
         //------ADD POSITION CONSTRAINTS------//
         double posConstraintW = 100000;
+
+        /*
         quikDeformer.addPositionConstraint(posConstraintW, 0);
         quikDeformer.addPositionConstraint(posConstraintW, 11);
         quikDeformer.addPositionConstraint(posConstraintW, 22);
@@ -198,6 +210,19 @@ int main(){
         quikDeformer.addPositionConstraint(posConstraintW, 88);
         quikDeformer.addPositionConstraint(posConstraintW, 99);
         quikDeformer.addPositionConstraint(posConstraintW, 110);
+        */
+
+        quikDeformer.addPositionConstraint(posConstraintW, 0);
+        quikDeformer.addPositionConstraint(posConstraintW, 1);
+        quikDeformer.addPositionConstraint(posConstraintW, 2);
+        quikDeformer.addPositionConstraint(posConstraintW, 3);
+        quikDeformer.addPositionConstraint(posConstraintW, 4);
+        quikDeformer.addPositionConstraint(posConstraintW, 5);
+        quikDeformer.addPositionConstraint(posConstraintW, 6);
+        quikDeformer.addPositionConstraint(posConstraintW, 7);
+        quikDeformer.addPositionConstraint(posConstraintW, 8);
+        quikDeformer.addPositionConstraint(posConstraintW, 9);
+        quikDeformer.addPositionConstraint(posConstraintW, 10);
 
         //------ADD WIND EFFECTS--------------//
         if(windOn){

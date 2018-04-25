@@ -55,7 +55,8 @@ public:
                  double initVelZ,
                  bool gravOn,
                  bool volumetricOn,
-                 int indexBase):
+                 int indexBase,
+                 bool scaleModel):
                     timeStep(timeStep),
                     solverIterations(solverIterations),
                     frameRate(frameRate),
@@ -63,7 +64,7 @@ public:
                     gravityOn(gravOn),
                     volumetric(volumetricOn)
                     {
-                        readVolumetric(nodeFilePath, eleFilePath, faceFilePath, indexBase); //setup particles, tets, and fragments
+                        readVolumetric(nodeFilePath, eleFilePath, faceFilePath, indexBase, scaleModel); //setup particles, tets, and fragments
                         setupMatrices(mass, initVelX, initVelY, initVelZ);
                     };
 
@@ -163,7 +164,7 @@ private:
     double elapsedTime = 0;
 
     void readObj(const std::string& fileName, int indexBase); //setup particles and frags from object file
-    void readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath, int indexBase); //setup particles, tets, and fragments
+    void readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath, int indexBase, bool scaleModel); //setup particles, tets, and fragments
     void writeObj(const std::string& fileName, Eigen::VectorXd qMat) const;
     void writeBgeo(const std::string& fileName) const;
     void setupMatrices(double mass, double vx, double vy, double vz);
