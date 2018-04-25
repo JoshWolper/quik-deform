@@ -1,29 +1,613 @@
 string $myMenu = `menu -p $gMainWindow -to true -l "QuikDeform"`; 
-menuItem -parent $myMenu -label "QuikDeform Node" -c "setUpQuikDeformNode";
-menuItem -parent $myMenu -label "QuikDeform Node With Selection" -c "setUpQuikDeformNodeSpecial";
+menuItem -parent $myMenu -label "Create QuikDeform Node" -c "createQuikDeformMenu";
 
 
-global proc setUpQuikDeformNode(){
-    createNode QuikDeformNode -n QuikDeformNode1;
+global proc createQuikDeformMenu(){
+    if (`window -exists quikDeformWindow` == 0){
+		createQuikDeformWindow();
+	}
+	else{
+		print "Error: Create QuikDeform Node Window is already open";
+	}
 }
 
 
-global proc setUpQuikDeformNodeSpecial(){
-    string $selection[] = `ls -selection`; 
-    if (size($selection) == 1){
-		string $shapes[] = `listRelatives -shapes $selection[0]`;
-		$mesh = $shapes[0];
 
-        createNode transform -n QuikDeformedTransform;
-		createNode mesh -n QuikDeformedMesh -p QuikDeformedTransform;
-		sets -add initialShadingGroup QuikDeformedMesh;
-        createNode QuikDeformNode -n QuikDeformNode1;
+global proc createQuikDeformWindow()
+{
+    window 
+        -title "Create New QuikDeformNode"
+        -width 520
+        -height 398
+        quikDeformWindow;
+        columnLayout -rowSpacing 5;
+            scrollLayout  -width 515;
+                columnLayout  -width 495;
+                    frameLayout -label "Simulation Attributes" -collapsable true -width 495;
+                        columnLayout -rowSpacing 2;
+                            floatSliderGrp 
+                        		-label "Time Step" 
+                        		-field true
+                        		-minValue 0.001 
+                        		-fieldMinValue 0.00001
+                        		-maxValue 0.1
+                        		-fieldMaxValue 2
+                        		-value 0.01
+                        		-precision 3
+                        		-width 480
+                        		timeStepSlider_w;
+                        	intSliderGrp 
+                        		-label "Solver Iterations" 
+                        		-field true
+                        		-minValue 1 
+                        		-maxValue 20
+                        		-fieldMaxValue 100 
+                        		-value 5
+                        		-width 480
+                        		solverIterSlider_w;
+                        	floatFieldGrp 
+                                -label "Seconds to Simulate" 
+                                -value1 5
+                                secondsField_w;
+                        	intFieldGrp
+                        	    -label "framerate"
+                        	    -value1 24
+                        	    frameRateField_w;
+                            setParent..;
+                        setParent..;
+                    frameLayout -label "Object Attributes" -collapsable true -width 495;
+                        columnLayout -rowSpacing 2;
+                            checkBoxGrp
+                                -label "Keep Original Mesh"
+                                -value1 true
+                                keepMeshCheckbox_w;
+                            floatSliderGrp 
+                                -label "Tetrahedra Max Volume" 
+                                -field true
+                                -minValue 0.1 
+                                -fieldMinValue 0.001
+                                -maxValue 10
+                                -fieldMaxValue 1000
+                                -value 1.0
+                                -precision 3
+                                -width 480
+                                tetVolumeSlider_w;
+                            floatSliderGrp 
+                                -label "Vertex Mass" 
+                                -field true
+                                -minValue 0.01 
+                                -fieldMinValue 0.0001
+                                -maxValue 10 
+                                -fieldMaxValue 500
+                                -value 1
+                                -precision 3
+                                -width 480
+                                massSlider_w;
+                            floatFieldGrp
+                                -label "Initial Object Velocity"
+                                -numberOfFields 3
+                                -value1 0 
+                                -value2 0
+                                -value3 0
+                                objVelocityFieldGrp_w;
+                            radioButtonGrp
+                                -label "Simulation Type"
+                                -numberOfRadioButtons 2
+                                -label1 "Volumetric"
+                                -data1 1
+                                -label2 "Thin-shell"
+                                -data2 0
+                                -select 1
+                                -width 480
+                                volumetricRadio_w;
+                            floatSliderGrp 
+                                -label "Young's Modulus" 
+                                -field true
+                                -minValue 1000
+                                -fieldMinValue 1
+                                -maxValue 10000
+                                -fieldMaxValue 1000000
+                                -value 5000
+                                -precision 3
+                                -width 480
+                                youngsModulusSlider_w;
+                            floatSliderGrp 
+                                -label "Poisson Ratio" 
+                                -field true
+                                -minValue 0.1
+                                -fieldMinValue 0.01
+                                -maxValue 0.5
+                                -fieldMaxValue 1
+                                -value 0.3
+                                -precision 3
+                                -width 480
+                                poissonRatioSlider_w;
+                             // for position constraint
+                            rowLayout 
+                                - numberOfColumns 3
+                                - columnAlign3 "right" "left" "center"
+                                - columnAttach3 "both" "both" "both"
+                                - columnWidth3 140 240 100;
+                                text -label "Position Constraints";
+                                textScrollList 
+                                	-numberOfRows 6
+                                	-allowMultiSelection true 
+                                	-height 60
+                                	positionConstraintTextScroll_w;
+                                columnLayout -rowSpacing 5;
+                                	button 
+                                		-label "Add"
+                                		-width 90
+                                		-command "addPositionConstraintCmd_w" ;
+                                	button 
+                                		-label "Remove"
+                                		-width 90
+                                		-command "removePositionConstraintCmd_w" ;
+                                    setParent..;
+                                setParent..;
+                            // collision constraints
+                            rowLayout 
+                                - numberOfColumns 3
+                                - columnAlign3 "right" "left" "center"
+                                - columnAttach3 "both" "both" "both"
+                                - columnWidth3 140 240 100;
+                                text -label "Collision Constraints";
+                                textScrollList 
+                                	-numberOfRows 6
+                                	-allowMultiSelection true 
+                                	-height 60
+                                	-selectCommand "selectCollisionPlanes_w"
+                                	collisionConstraintTextScroll_w;
+                                columnLayout -rowSpacing 5;
+                                    button 
+                                    	-label "Add"
+                                    	-width 90
+                                    	-command "addCollisionConstraintCmd_w" ;
+                                    button 
+                                    	-label "Remove"
+                                    	-width 90
+                                    	-command "addCollisionConstraintCmd_w" ;
+                                     setParent..;
+                                 setParent..;
+                             setParent..;
+                        setParent..;
+                    frameLayout -label "External Forces" -collapsable true -width 495;
+                        columnLayout -rowSpacing 2;
+                            checkBoxGrp
+                                -label "Enable Gravity"
+                                -value1 true
+                                doGravityCheckbox_w;
+                            checkBoxGrp
+                                -label "Enable Wind"
+                                -value1 false
+                                doWindCheckbox_w;
+                            floatFieldGrp
+                        	    -label "Wind Direction"
+                        	    -numberOfFields 3
+                        	    -value1 0 
+                        	    -value2 0
+                        	    -value3 0
+                        	    windDirectionFieldGrp_w;
+                            floatSliderGrp 
+                        		-label "Wind Magnitude" 
+                        		-field true
+                        		-minValue 0.1
+                        		-fieldMinValue 0.001
+                        		-maxValue 100
+                        		-fieldMaxValue 1000
+                        		-value 1
+                        		-precision 3
+                        		-width 480
+                        		windMagnitudeSlider_w;
+                        	checkBoxGrp
+                                -label "Enable Wind Oscillation"
+                                -value1 false
+                                doWindOscillationCheckbox_w;
+                            setParent..;
+                        setParent..;
+                    setParent..;
+                setParent..;
+        rowLayout 
+            -numberOfColumns 2
+            -columnWidth2 190 318
+            -columnAlign2 "center" "center"
+            -columnAttach2 "both" "both"
+            -columnOffset2 2 0;
+            button 
+                -label "Cancel"
+                -command "deleteUI -window quikDeformWindow;"
+                -width 190;
+            button
+                -label "Create and Simulate QuikDeformNode"
+                -command "createQuikDeformNode_w();deleteUI -window quikDeformWindow;"
+                -width 300;
         
-		connectAttr time1.outTime QuikDeformNode1.currentFrame;
-		connectAttr ($mesh + ".worldMesh") QuikDeformNode1.inputMesh;
-        connectAttr QuikDeformNode1.outputMesh QuikDeformedMesh.inMesh;
+    showWindow;    
+}
 
-    } else{
-        print ("Error: more or less than 1 object selected");
+global proc addPositionConstraintCmd_w()
+{
+    // get selected items
+    string $selection[] = `ls -selection`; 
+    string $indices[] = extractVertexIndices($selection);
+    
+    // add the index if it doesn't already exist in the textScrollList
+    string $allItems[] = `textScrollList -query -allItems positionConstraintTextScroll_w`;
+    for ($index in $indices){
+        if (!containsItem($allItems, $index)){
+            textScrollList -edit -append $index positionConstraintTextScroll_w;
+            textScrollList -edit -deselectAll positionConstraintTextScroll_w;
+            textScrollList -edit -selectItem $index positionConstraintTextScroll_w;
+        }
     }
+}
+
+// delete the indices currently selected
+global proc removePositionConstraintCmd_w()
+{
+    string $selected[] = `textScrollList -query -selectItem positionConstraintTextScroll_w`;
+    print $selected;
+    for ($item in $selected){
+        textScrollList -edit -removeItem $item positionConstraintTextScroll_w;
+    }
+}
+
+global proc addCollisionConstraintCmd_w() 
+{
+    // get selected items
+    string $selection[] = `ls -selection`; 
+    
+    // add the objects
+    string $allItems[] = `textScrollList -query -allItems collisionConstraintTextScroll_w`;
+    for ($object in $selection){
+		print ("attempting to add " + $object);
+        // make sure the object is a non-slanted plane
+        float $center[] = `objectCenter -gl $object`;
+        float $normal[] = getPlaneNormal($object);
+        if ($normal[0] == 0 && $normal[1] == 0 && $normal[2] == 0){
+            print ("Error: " + $object + " is not a non-slanted plane");
+        }
+        // make sure the object is not already in the textSrollList
+        else if (!containsItem($allItems, $object)){
+            textScrollList -edit -append $object collisionConstraintTextScroll_w;
+        }
+    }
+}
+
+// delete the indices currently selected
+global proc removeCollisionConstraintCmd_w()
+{
+    string $selected[] = `textScrollList -query -selectItem collisionConstraintTextScroll_w`;
+    for ($item in $selected){
+        textScrollList -edit -removeItem $item collisionConstraintTextScroll_w;
+    }
+}
+
+
+// creates the QuikDeformNode according to inputs in the window
+global proc createQuikDeformNode_w(){
+    string $selection[] = `ls -selection`; 
+    if (`size($selection)` == 1){
+		// get the right name for the next quikDeformNode and quikDeformMesh
+		string $allNodes[] = `ls -type "QuikDeformNode"`;
+	    int $size = `size($allNodes)`;
+	    string $nodeName = "QuikDeformNode" + ($size + 1);
+	    string $meshName = "QuikDeformMesh" + ($size + 1);
+
+        // create the nodes and meshes
+        string $shapes[] = `listRelatives -shapes $selection[0]`;
+		 $mesh = $shapes[0];
+        createNode transform -n QuikDeformedTransform;
+        createNode mesh -n $meshName -p QuikDeformedTransform;
+        sets -add initialShadingGroup $meshName;
+        createNode QuikDeformNode -n $nodeName;
+        
+        // hook up all the attributes properly
+        connectAttr time1.outTime ($nodeName + ".currentFrame");
+        connectAttr ($mesh + ".worldMesh") ($nodeName + ".inputMesh");
+        connectAttr ($nodeName + ".outputMesh") ($meshName + ".inMesh");
+        
+        // set attributes for the node based on the window
+        // timeStep
+        float $timeStepValue = `floatSliderGrp -q -value timeStepSlider_w`;
+        setAttr ($nodeName + ".timeStep") $timeStepValue;
+        // solverIterations
+        int $solverIterValue = `intSliderGrp -q -value solverIterSlider_w`;
+        setAttr ($nodeName + ".solverIterations") $solverIterValue;
+        // seconds
+        float $secondsValue = `floatFieldGrp -q -value1 secondsField_w`;
+        setAttr ($nodeName + ".secondsToSimulate") $secondsValue;
+        // frameRate
+        int $frameRateValue = `intFieldGrp -q -value1 frameRateField_w`;
+        setAttr ($nodeName + ".frameRate") $frameRateValue;
+        // keep original mesh
+        int $keepMeshValue = `checkBoxGrp -q - value1 keepMeshCheckbox_w`;
+        setAttr ($nodeName + ".keepMesh") $keepMeshValue;
+        // tet volume
+        float $tetVolumeValue = `floatSliderGrp -q -value tetVolumeSlider_w`;
+        setAttr ($nodeName + ".tetVolume") $tetVolumeValue;
+        // mass
+        float $massValue = `floatSliderGrp -q -value massSlider_w`;
+        setAttr ($nodeName + ".mass") $massValue;
+        // initial velocity
+        float $initialVelX = `floatFieldGrp -q -value1 objVelocityFieldGrp_w`;
+        float $initialVelY = `floatFieldGrp -q -value2 objVelocityFieldGrp_w`;
+        float $initialVelZ = `floatFieldGrp -q -value3 objVelocityFieldGrp_w`;
+        setAttr ($nodeName + ".initialVelocityX") $initialVelX;
+        setAttr ($nodeName + ".initialVelocityY") $initialVelY;
+        setAttr ($nodeName + ".initialVelocityZ") $initialVelZ;
+        // simulation type
+        float $simTypeVal = `radioButtonGrp -q -select volumetricRadio_w`;
+        if ($simTypeVal == 1){
+            setAttr ($nodeName + ".volumetric") 1;
+        }
+        else{
+            setAttr ($nodeName + ".volumetric") 0;
+        }
+        // young's modulus
+        float $youngsModulusVal = `floatSliderGrp -q -value youngsModulusSlider_w`;
+        setAttr ($nodeName + ".youngsModulus") $youngsModulusVal;
+        // poisson ratio
+        float $poissonRatioVal = `floatSliderGrp -q -value poissonRatioSlider_w`;
+        setAttr ($nodeName + ".poissonRatio") $poissonRatioVal;
+        // position constraints
+        string $allIndices[] = `textScrollList -query -allItems positionConstraintTextScroll_w`;
+        setPositionConstraintAttr($allIndices);
+        // collision constraints
+        string $allPlanes[] = `textScrollList -query -allItems collisionConstraintTextScroll_w`;
+        setCollisionConstraintAttr($allPlanes);
+        // enable gravity
+        int $enableGravityVal = `checkBoxGrp -q - value1 doGravityCheckbox_w`;
+        setAttr ($nodeName + ".doGravity") $enableGravityVal;
+        // enable wind
+        int $enbleWindVal = `checkBoxGrp -q - value1 doWindCheckbox_w`;
+        setAttr ($nodeName + ".doWind") $enbleWindVal;
+        // wind direction
+        float $windDirX = `floatFieldGrp -q -value1 windDirectionFieldGrp_w`;
+        float $windDirY = `floatFieldGrp -q -value2 windDirectionFieldGrp_w`;
+        float $windDirZ = `floatFieldGrp -q -value3 windDirectionFieldGrp_w`;
+        setAttr ($nodeName + ".windDirectionX") $windDirX;
+        setAttr ($nodeName + ".windDirectionY") $windDirY;
+        setAttr ($nodeName + ".windDirectionZ") $windDirZ;
+        // wind magnitude
+        float $windMagVal = `floatSliderGrp -q -value windMagnitudeSlider_w`;
+        setAttr ($nodeName + ".windMagnitude") $windMagVal;
+        // enable wind oscillation
+        int $enableWindOsc = `checkBoxGrp -q - value1 doWindOscillationCheckbox_w`;
+        setAttr ($nodeName + ".windOscillation") $enableWindOsc;
+        
+        // set doCompute to true to do computation
+        setAttr ($nodeName + ".doCompute") true;
+    } else{
+        print ("Error: please select 1 and only 1 object to run simulation on");
+    }
+}
+
+
+
+// --------------------------------------------
+//     helper functions
+// --------------------------------------------
+
+// get the selected or last-created QuikDeformNode
+global proc string getSelectedQuikDeformNode()
+{
+	string $selections[] = `ls -sl`;  // get the current selection
+	if (`size($selections)` > 0){
+		// if selected node is a QuikDeformNode, return it right away
+		string $doComputeAttr[] = `listAttr -string "doCompute" $selections[0]`;
+		if (`size($doComputeAttr)` > 0){
+			return $selections[0];
+		}
+		
+		// if selected node is a face/vertex/etc., get the parent node
+		string $parent = $selections[0];
+		string $dot = `match ".[a-z]+\\[[0-9]+" $selections[0]`;
+			string $buffer[];
+		if ($dot != ""){
+			tokenize $selections[0] "." $buffer;
+			$parent = $buffer[0];
+		}
+		
+		// return the QuikDeformNode related to the selected node 
+		string $shapeNodes[] = `listRelatives -s $parent`;   // get the related shape node
+		string $quikDeformNode[] = `listConnections -type "QuikDeformNode" $shapeNodes[0]`;   // get the connected QuikDeformNode 
+		if (`size($quikDeformNode)` > 0){
+			return $quikDeformNode[0];
+		}
+	}
+	
+	// else no node or no QuikDeformNode is selected, just return the latest QuikDeformNode created
+	string $allNodes[] = `ls -type "QuikDeformNode"`;
+	int $size = `size($allNodes)`;
+	if ($size > 0){
+		return $allNodes[$size - 1];
+	}
+	else{
+		print "No valid QuikDeformNode can be found";
+		return "";
+	}
+}
+
+
+// check if a target string exists in a string array
+global proc int containsItem(string $allItems[], string $target)
+{
+    for ($str in $allItems) {
+        if ($str == $target){
+            return 1;
+        }
+    }
+    
+    return 0;
+}
+
+// takes in a list of selected items, extract and return the vertex indices
+global proc string[] extractVertexIndices(string $selected[])
+{
+    string $indices[];
+    for ($item in $selected){
+        // make sure this item contains vertex information
+        string $vertexInfo = `match "\\.vtx\\[[0-9]*:*[0-9]*\\]$" $item`;
+        if ($vertexInfo != ""){
+            // check if the vertex info contains a colon
+            string $colonInfo = `match "[0-9]+:[0-9]+" $vertexInfo`;
+            if ($colonInfo == ""){
+                // no colon, just extract and add the number from vertexInfo
+                $indices[`size($indices)`] = `match "[0-9]+" $vertexInfo`;
+            }
+            else{
+                // has colon, extract and add all numbers from vertexInfo
+                string $buffer[];
+                tokenize $colonInfo ":" $buffer;
+                int $index1 = $buffer[0];
+                int $index2 = $buffer[1];
+                int $iter;
+                for ($iter = $index1; $iter <= $index2; $iter++){
+                    $indices[`size($indices)`] = (string)$iter;
+                }
+            }
+        }
+    }
+    
+    return $indices;
+}
+
+
+// selects the selected items
+global proc selectCollisionPlanes_w(){
+    string $selected[] = `textScrollList -query -selectItem collisionConstraintTextScroll_w`;
+    select -r $selected;
+}
+
+// returns the surface normal of the plane.
+// returns 0,0,0 if plane is slanted or not a plane at all
+global proc float[] getPlaneNormal( string $plane ){
+    string $faces[] = `polyInfo -fn $plane`;
+    float $answer[] = {0,0,0};
+
+    for ($face in $faces) {
+        string $buffer[];
+        $numTokens = `tokenize $face " " $buffer`;
+        
+        // Get the face number
+        string $strFaceNum = $buffer[1];
+        $strFaceNum = substring($strFaceNum, 1, size($strFaceNum)-1);
+        int $faceNum = $strFaceNum;
+        
+        // Get the local normal vector of each face
+        float $axis[] = {(float)$buffer[2], (float)$buffer[3], (float)$buffer[4] };
+        
+        // Combine the local normal with the object's matrix to get it's 
+        // normal in world space
+        float $transform[] = `xform -q -m -ws $plane`;
+        float $worldAxis[] = pointMatrixMult( $axis, $transform );
+        
+        // if worldAxis is close enough to 0 just make it 0
+        if (equivalentTol(0, $worldAxis[0], 0.0001) == 1){
+            $worldAxis[0] = 0;
+        }
+        if (equivalentTol(0, $worldAxis[1], 0.0001) == 1){
+            $worldAxis[1] = 0;
+        }
+        if (equivalentTol(0, $worldAxis[2], 0.0001) == 1){
+            $worldAxis[2] = 0;
+        }
+        
+        // set the answer array if it's empty
+        if ($answer[0] == 0 && $answer[1] == 0 && $answer[2] == 0)
+        {
+            $answer[0] = $worldAxis[0];
+            $answer[1] = $worldAxis[1];
+            $answer[2] = $worldAxis[2];
+        }
+         // make sure the world normals is non-slanted and match up with others
+        if (checkValidNormal($worldAxis) == 0 ||
+            $answer[0] != $worldAxis[0] ||
+            $answer[1] != $worldAxis[1] ||
+            $answer[2] != $worldAxis[2]) 
+        {
+            $answer[0] = 0;
+            $answer[1] = 0;
+            $answer[2] = 0;
+            break;
+        }
+    }
+    
+    return $answer;
+}
+
+// check if the input normal is non-slanted
+global proc int checkValidNormal( float $normal[] ){    
+    if ($normal[0] != 0 && $normal[1] == 0 && $normal[2] == 0){
+        return 1;
+    }
+    if ($normal[0] == 0 && $normal[1] != 0 && $normal[2] == 0){
+        return 1;
+    }
+    if ($normal[0] == 0 && $normal[1] == 0 && $normal[2] != 0){
+        return 1;
+    }
+    
+    return 0;
+}
+
+
+// parse the given collisionConstraint string and return an array of names
+global proc string[] getPlaneNames(string $input ){
+	string $planes[];
+	string $names[];
+	tokenize $input ";" $planes;
+	for ($plane in $planes){
+		// parse info for each plane
+		string $info[];
+		tokenize $plane "," $info;
+		string $name = $info[0];
+		if ($name != ""){
+			$names[`size($names)`] = $name;
+		}
+	}
+	
+	return $names;
+}
+
+
+// take in a list of vertices and set the selected QuikDeformNode's attribute
+global proc setPositionConstraintAttr( string $vertices[] ){
+	string $vertexString;
+	for ($vertex in $vertices){
+		$vertexString += $vertex + ",";
+	}
+	
+	print ("about to add string: " + $vertexString);
+	
+	string $targetNode = getSelectedQuikDeformNode();
+	setAttr ($targetNode + ".positionConstraints") -type "string" $vertexString;
+}
+
+
+// adds the collisionConstraint info to QuikDeformNode
+// planeString is a semi-colon separated string of plane info
+// a plane with center at 0,0,0 and normal of 0,1,0 will be
+// "plane1,0,0,0,0,1,0;"
+global proc setCollisionConstraintAttr( string $planes[] ){
+    string $planeString = "";
+    for ($plane in $planes){
+        float $center[] = `objectCenter -gl $plane`;
+        float $normal[] = getPlaneNormal($plane);
+        string $string = $plane + "," +
+                         $center[0] + "," +
+                         $center[1] + "," +
+                         $center[2] + "," +
+                         $normal[0] + "," +
+                         $normal[1] + "," +
+                         $normal[2] + ";";
+        $planeString += $string;     
+    }
+    
+    print "about to add planeString: \n";
+    print $planeString;
+	
+	string $targetNode = getSelectedQuikDeformNode();
+	setAttr ($targetNode + ".collisionConstraints") -type "string" $planeString;
 }

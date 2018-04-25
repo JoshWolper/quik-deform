@@ -27,11 +27,7 @@ Maya integration
 - set ground constraints in the attribute editor - DONE
 
 - make a GUI menu in Mel to allow initial data setting
-	- should have all the data fields
-		sim, obj, external force attributes
-	- have a window for selecting obj's to simulate 
-	- have a window for selecting groundplanes
-	- have a window for selecting point constraints
+	- potential bug about having multiple GUI items of same name
 - add wind parameters to GUI
 - make sure thin-shell works with maya planes
 - make recompute happen when you change the initial mesh
@@ -39,6 +35,7 @@ Maya integration
 - allow creating multiple quikDeformNodes (smart naming)
 - save data when saving Maya scene 
 	nAttr.setStorable(true)?
+- starting frame
 - subdivision slider
 	dynamically change a to allow subdivisions
 - progress bar?

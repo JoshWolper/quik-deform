@@ -20,7 +20,7 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 		editorTemplate -callCustom "timeSliderAttributeNew" "timeSliderAttributeUpdate" "timeStep";
 		// custom int slider for solverIterations
 		editorTemplate -callCustom "iterSliderAttributeNew" "iterSliderAttributeUpdate" "solverIterations";
-        editorTemplate -label "Seconds" -addControl "secondsToSimulate";
+        editorTemplate -label "Seconds to Simulate" -addControl "secondsToSimulate";
 		editorTemplate -label "Framerate" -addControl "frameRate";
 
     editorTemplate -endLayout;
@@ -44,8 +44,8 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 		editorTemplate -callCustom "poissonRatioSliderAttributeNew" "poissonRatioSliderAttributeUpdate" "poissonRatio";
 		// custom textScrollList for positionConstraints
 		editorTemplate -callCustom "positionConstraintTextScrollNew" "positionConstraintTextScrollUpdate";
-		// custom button (and pop up window) for groundConstraints
-		editorTemplate -callCustom "groundConstraintsButtonNew" "groundConstraintsButtonUpdate";
+		// custom button (and pop up window) for collisionConstraints
+		editorTemplate -callCustom "collisionConstraintsButtonNew" "collisionConstraintsButtonUpdate";
 		
 	editorTemplate -endLayout;
 
@@ -236,15 +236,15 @@ global proc poissonRatioSliderAttributeUpdate( string $attrName )
 // ----- slider for windMagnitude -----
 global proc windMagnitudeSliderAttributeNew( string $attrName )
 {
-	floatSliderGrp 
-		-label "Wind Magnitude" 
-		-field true
-		-minValue 0.1
-		-fieldMinValue 0.001
-		-maxValue 100
-		-fieldMaxValue 1000
-		-value 1
-		windMagnitudeSlider;
+		floatSliderGrp 
+			-label "Wind Magnitude" 
+			-field true
+			-minValue 0.1
+			-fieldMinValue 0.001
+			-maxValue 100
+			-fieldMaxValue 1000
+			-value 1
+			windMagnitudeSlider;
 	connectControl windMagnitudeSlider $attrName;
 }
 
@@ -266,6 +266,13 @@ global proc simulateButtonUpdate()
 global proc simulateButtonCmd()
 {
 	string $targetNode = getSelectedQuikDeformNode();
+	
+	// update the info for collision constraint planes
+	string $constraintInfo = `getAttr ($targetNode + ".collisionConstraints")`;
+	string $planes[] = getPlaneNames($constraintInfo);
+	setCollisionConstraintAttr($planes);
+	
+	// set doCompute to true to do computation
 	setAttr ($targetNode + ".doCompute") true;
 }
 
@@ -336,24 +343,24 @@ global proc removePositionConstraintCmd()
 }
 
 
-// ----- button for groundConstraints -----
-global proc groundConstraintsButtonNew()
+// ----- button for collisionConstraints -----
+global proc collisionConstraintsButtonNew()
 {
 	rowLayout 
         - numberOfColumns 2
         - columnAlign2 "right" "left"
     	- columnAttach2 "both" "both";
-		text -label "Ground Constraints";
-		button -label "Customize" -width 100 -command "showGroundConstraintsWindow" groundConstraintButton;
+		text -label "Collision Constraints";
+		button -label "Customize" -width 100 -command "showCollisionConstraintsWindow" collisionConstraintButton;
 }
 
-global proc groundConstraintsButtonUpdate()
+global proc collisionConstraintsButtonUpdate()
 {}
 
-global proc showGroundConstraintsWindow()
+global proc showCollisionConstraintsWindow()
 {
 	window 
-	-title "Customize Ground Constraints"
+	-title "Customize Collision Constraints"
 	-width 260;
 		columnLayout 
 			-rowSpacing 10
@@ -361,7 +368,7 @@ global proc showGroundConstraintsWindow()
 			-columnAttach "both" 10
 			-width 260;
 			text 
-				-label "Showing Ground Constraints for:"
+				-label "Showing Collision Constraints for:"
 				-align "left"
 				-width 260;
 			text 
@@ -373,8 +380,8 @@ global proc showGroundConstraintsWindow()
 				-allowMultiSelection true 
 				-width 240
 				-height 60
-				-selectCommand "selectGroundPlanes"
-				groundConstraintTextScroll;
+				-selectCommand "selectCollisionPlanes"
+				collisionConstraintTextScroll;
 			rowLayout 
 				-numberOfColumns 2
 				-columnAlign2 "left" "left"
@@ -383,29 +390,39 @@ global proc showGroundConstraintsWindow()
 				button 
 					-label "Add"
 					-width 115
-					-command "addGroundConstraintCmd" ;
+					-command "addCollisionConstraintCmd" ;
 				button 
 					-label "Remove"
 					-width 115
-					-command "removeGroundConstraintCmd" ;
+					-command "removeCollisionConstraintCmd" ;
 				setParent ..;
 			text
-				-label "**please make sure only non-slanted \nplanes are selected as ground constraints**"
+				-label "**please make sure only non-slanted \nplanes are selected as collision constraints**"
 				-width 260;
 	showWindow;
 	
-	// TODO: need to read Attr from node and get info to populate the textScrollList
+	// populate the window with info from the currently selected QuikDeformNode
+	string $targetNode = getSelectedQuikDeformNode();
+	text -edit -label $targetNode nodeNameText;
+	// parse info for all collision constraints
+	string $constraintInfo = `getAttr ($targetNode + ".collisionConstraints")`;
+	string $names[] = getPlaneNames($constraintInfo);
+	for ($name in $names){
+		textScrollList -edit -append $name collisionConstraintTextScroll;
+	}
+	textScrollList -edit -deselectAll collisionConstraintTextScroll;
 }
 
 // add the currently selected plane
-global proc addGroundConstraintCmd() 
+global proc addCollisionConstraintCmd() 
 {
     // get selected items
     string $selection[] = `ls -selection`; 
     
     // add the objects
-    string $allItems[] = `textScrollList -query -allItems groundConstraintTextScroll`;
+    string $allItems[] = `textScrollList -query -allItems collisionConstraintTextScroll`;
     for ($object in $selection){
+		print ("attempting to add " + $object);
         // make sure the object is a non-slanted plane
         float $center[] = `objectCenter -gl $object`;
         float $normal[] = getPlaneNormal($object);
@@ -414,28 +431,26 @@ global proc addGroundConstraintCmd()
         }
         // make sure the object is not already in the textSrollList
         else if (!containsItem($allItems, $object)){
-            textScrollList -edit -append $object groundConstraintTextScroll;
-            textScrollList -edit -deselectAll groundConstraintTextScroll;
-            textScrollList -edit -selectItem $object groundConstraintTextScroll;
+            textScrollList -edit -append $object collisionConstraintTextScroll;
         }
     }
 	
 	// update the underlying attributes of the node
-	string $everyItem[] = `textScrollList -query -allItems groundConstraintTextScroll`;
-	setGroundConstraintAttr($everyItem);
+	string $everyItem[] = `textScrollList -query -allItems collisionConstraintTextScroll`;
+	setCollisionConstraintAttr($everyItem);
 }
 
 // delete the indices currently selected
-global proc removeGroundConstraintCmd()
+global proc removeCollisionConstraintCmd()
 {
-    string $selected[] = `textScrollList -query -selectItem groundConstraintTextScroll`;
+    string $selected[] = `textScrollList -query -selectItem collisionConstraintTextScroll`;
     for ($item in $selected){
-        textScrollList -edit -removeItem $item groundConstraintTextScroll;
+        textScrollList -edit -removeItem $item collisionConstraintTextScroll;
     }
 	
 	// update the underlying attributes of the node
-	string $everyItem[] = `textScrollList -query -allItems groundConstraintTextScroll`;
-	setGroundConstraintAttr($everyItem);
+	string $everyItem[] = `textScrollList -query -allItems collisionConstraintTextScroll`;
+	setCollisionConstraintAttr($everyItem);
 }
 
 
@@ -457,8 +472,8 @@ global proc string getSelectedQuikDeformNode()
 		// if selected node is a face/vertex/etc., get the parent node
 		string $parent = $selections[0];
 		string $dot = `match ".[a-z]+\\[[0-9]+" $selections[0]`;
-		if ($dot != ""){
 			string $buffer[];
+		if ($dot != ""){
 			tokenize $selections[0] "." $buffer;
 			$parent = $buffer[0];
 		}
@@ -529,8 +544,8 @@ global proc string[] extractVertexIndices(string $selected[])
 
 
 // selects the selected items
-global proc selectGroundPlanes(){
-    string $selected[] = `textScrollList -query -selectItem groundConstraintTextScroll`;
+global proc selectCollisionPlanes(){
+    string $selected[] = `textScrollList -query -selectItem collisionConstraintTextScroll`;
     select -r $selected;
 }
 
@@ -607,12 +622,32 @@ global proc int checkValidNormal( float $normal[] ){
 }
 
 
+// parse the given collisionConstraint string and return an array of names
+global proc string[] getPlaneNames(string $input ){
+	string $planes[];
+	string $names[];
+	tokenize $input ";" $planes;
+	for ($plane in $planes){
+		// parse info for each plane
+		string $info[];
+		tokenize $plane "," $info;
+		string $name = $info[0];
+		if ($name != ""){
+			$names[`size($names)`] = $name;
+		}
+	}
+	
+	return $names;
+}
+
+
 // take in a list of vertices and set the selected QuikDeformNode's attribute
 global proc setPositionConstraintAttr( string $vertices[] ){
 	string $vertexString;
 	for ($vertex in $vertices){
 		$vertexString += $vertex + ",";
 	}
+	
 	print ("about to add string: " + $vertexString);
 	
 	string $targetNode = getSelectedQuikDeformNode();
@@ -620,11 +655,11 @@ global proc setPositionConstraintAttr( string $vertices[] ){
 }
 
 
-// adds the groundConstraint info to QuikDeformNode
+// adds the collisionConstraint info to QuikDeformNode
 // planeString is a semi-colon separated string of plane info
 // a plane with center at 0,0,0 and normal of 0,1,0 will be
 // "plane1,0,0,0,0,1,0;"
-global proc setGroundConstraintAttr( string $planes[] ){
+global proc setCollisionConstraintAttr( string $planes[] ){
     string $planeString = "";
     for ($plane in $planes){
         float $center[] = `objectCenter -gl $plane`;
@@ -641,5 +676,7 @@ global proc setGroundConstraintAttr( string $planes[] ){
     
     print "about to add planeString: \n";
     print $planeString;
-	// TODO: need to set attr here
+	
+	string $targetNode = getSelectedQuikDeformNode();
+	setAttr ($targetNode + ".collisionConstraints") -type "string" $planeString;
 }
