@@ -25,16 +25,24 @@ Maya integration
 	"need to recompute" text that shows up when you change inputs - kind of done but has bugs so not using atm
 - set point constraints in attribute editor - DONE
 - set ground constraints in the attribute editor - DONE
+- make a GUI menu in Mel to allow initial data setting - DONE
+- allow creating multiple quikDeformNodes simultaneously - DONE
+- make sure thin-shell works with maya planes - DONE
+	works but only in certain configurations
 
-- make a GUI menu in Mel to allow initial data setting
-	- potential bug about having multiple GUI items of same name
-- add wind parameters to GUI
-- make sure thin-shell works with maya planes
-- make recompute happen when you change the initial mesh
 
-- allow creating multiple quikDeformNodes (smart naming)
 - save data when saving Maya scene 
 	nAttr.setStorable(true)?
+		this stores the parameters but not the positions since they're stored and retrieved at run time
+	need to keyframe every position
+- make recompute happen when you change the initial mesh
+	move originalVertices and triangles into inputIO and compare it when necessary
+
+
+- figure out why cloth is so slow
+- add wind parameters to GUI
+
+- test if rendering works
 - starting frame
 - subdivision slider
 	dynamically change a to allow subdivisions

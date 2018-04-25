@@ -11,8 +11,49 @@
 	}
 
 
-// helper function that gets vertices and triangles from a Maya mesh
+// extract original data from the mesh
 void getMeshData(const MFnMesh& mesh,
+	std::vector<Eigen::Vector3d>& originalVertices,
+	std::vector<Eigen::Vector3i>& originalTriangles) {
+
+	// reset all input containers
+	originalVertices.clear();
+	originalTriangles.clear();
+
+	// -------------------------------
+	// get vertices
+	// -------------------------------
+	// TODO: vertex data need to also include any transforms done to it like scaling 
+	// maybe just also copy the transform? or apply the transform to the vertices after reading it?
+	MPointArray meshVertices;
+	mesh.getPoints(meshVertices);
+	for (auto i = 0u; i < meshVertices.length(); i++) {
+		originalVertices.emplace_back(Eigen::Vector3d(meshVertices[i][0], meshVertices[i][1], meshVertices[i][2]));
+	}
+
+	// -------------------------------
+	// get triangles
+	// -------------------------------
+	MIntArray triangleCounts, triangleIndices;
+	mesh.getTriangles(triangleCounts, triangleIndices);
+
+	// triangleCounts contains number of triangles per face
+	// sum it up to get total number of triangles
+	int triangleNum = 0;
+	for (auto i = 0u; i < triangleCounts.length(); i++) {
+		triangleNum += triangleCounts[i];
+	}
+
+	for (int i = 0; i < triangleNum; i++) {
+		originalTriangles.emplace_back(Eigen::Vector3i(triangleIndices[i * 3],
+			triangleIndices[i * 3 + 1],
+			triangleIndices[i * 3 + 2]));
+	}
+}
+
+
+// extract original data from the mesh and also return a tetrahedralized version
+void getTetMeshData(const MFnMesh& mesh,
 	std::vector<Eigen::Vector3d>& originalVertices,
 	std::vector<Eigen::Vector3i>& originalTriangles,
 	std::vector<Eigen::Vector3d>& tetVertices,
@@ -20,7 +61,6 @@ void getMeshData(const MFnMesh& mesh,
 	std::vector<std::vector<int>>& tetTetrahedrons,
 	double tetVolume,
 	bool printVals) {
-
 	// reset all input containers
 	originalVertices.clear();
 	originalTriangles.clear();
@@ -68,7 +108,7 @@ void getMeshData(const MFnMesh& mesh,
 	tetInput.numberofpoints = meshVertices.length();
 	tetInput.pointlist = new REAL[tetInput.numberofpoints * 3];
 	for (int i = 0; i < tetInput.numberofpoints; i++) {
-		tetInput.pointlist[i * 3]	  = meshVertices[i][0];
+		tetInput.pointlist[i * 3] = meshVertices[i][0];
 		tetInput.pointlist[i * 3 + 1] = meshVertices[i][1];
 		tetInput.pointlist[i * 3 + 2] = meshVertices[i][2];
 	}
@@ -107,14 +147,14 @@ void getMeshData(const MFnMesh& mesh,
 	// get vertices
 	for (int i = 0; i < tetOutput.numberofpoints; i++) {
 		tetVertices.emplace_back(Eigen::Vector3d(tetOutput.pointlist[i * 3],
-												 tetOutput.pointlist[i * 3 + 1],
-												 tetOutput.pointlist[i * 3 + 2]));
+			tetOutput.pointlist[i * 3 + 1],
+			tetOutput.pointlist[i * 3 + 2]));
 	}
 	// get triangles
 	for (int i = 0; i < tetOutput.numberoftrifaces; i++) {
 		tetTriangles.emplace_back(Eigen::Vector3i(tetOutput.trifacelist[i * 3],
-												  tetOutput.trifacelist[i * 3 + 1],
-												  tetOutput.trifacelist[i * 3 + 2]));
+			tetOutput.trifacelist[i * 3 + 1],
+			tetOutput.trifacelist[i * 3 + 2]));
 	}
 	// get tetrahedrons
 	for (int i = 0; i < tetOutput.numberoftetrahedra; i++) {
@@ -221,28 +261,48 @@ MStatus QuikDeformNode::initialize() {
 	QuikDeformNode::doCompute = numAttr.create("doCompute", "dc", MFnNumericData::kBoolean, 1);
 	// simulation attributes
 	QuikDeformNode::inputMesh = typedAttr.create("inputMesh", "im", MFnData::kMesh);
+	typedAttr.setStorable(true);
 	QuikDeformNode::outputMesh = typedAttr.create("outputMesh", "om", MFnData::kMesh);
+	typedAttr.setStorable(true);
 	QuikDeformNode::timeStep = numAttr.create("timeStep", "ts", MFnNumericData::kDouble, 0.01);
+	numAttr.setStorable(true);
 	QuikDeformNode::solverIterations = numAttr.create("solverIterations", "si", MFnNumericData::kInt, 5);
+	numAttr.setStorable(true);
 	QuikDeformNode::secondsToSimulate = numAttr.create("secondsToSimulate", "f", MFnNumericData::kInt, 5);
+	numAttr.setStorable(true);
 	QuikDeformNode::frameRate = numAttr.create("frameRate", "fr", MFnNumericData::kInt, 24);
+	numAttr.setStorable(true);
 	QuikDeformNode::currentFrame = numAttr.create("currentFrame", "cf", MFnNumericData::kInt, 1);
 	// object attributes
 	QuikDeformNode::keepMesh = numAttr.create("keepMesh", "kp", MFnNumericData::kBoolean, 1);
+	numAttr.setStorable(true);
 	QuikDeformNode::tetVolume = numAttr.create("tetVolume", "tv", MFnNumericData::kDouble, 1.0);
+	numAttr.setStorable(true);
 	QuikDeformNode::mass = numAttr.create("mass", "m", MFnNumericData::kDouble, 1.0);
+	numAttr.setStorable(true);
 	QuikDeformNode::initialVelocity = numAttr.createPoint("initialVelocity", "iv");
+	numAttr.setStorable(true);
 	QuikDeformNode::volumetric = numAttr.create("volumetric", "v", MFnNumericData::kBoolean, 1);
+	numAttr.setStorable(true);
 	QuikDeformNode::youngsModulus = numAttr.create("youngsModulus", "E", MFnNumericData::kDouble, 5000);
+	numAttr.setStorable(true);
 	QuikDeformNode::poissonRatio = numAttr.create("poissonRatio", "nu", MFnNumericData::kDouble, 0.3);
+	numAttr.setStorable(true);
 	QuikDeformNode::positionConstraints = typedAttr.create("positionConstraints", "pcs", MFnData::kString);
+	typedAttr.setStorable(true);
 	QuikDeformNode::collisionConstraints = typedAttr.create("collisionConstraints", "ccs", MFnData::kString);
+	typedAttr.setStorable(true);
 	// external forces attributes
 	QuikDeformNode::doGravity = numAttr.create("doGravity", "dg", MFnNumericData::kBoolean, 1);
+	numAttr.setStorable(true);
 	QuikDeformNode::doWind = numAttr.create("doWind", "dw", MFnNumericData::kBoolean, 0);
+	numAttr.setStorable(true);
 	QuikDeformNode::windDirection = numAttr.createPoint("windDirection", "wd");
+	numAttr.setStorable(true);
 	QuikDeformNode::windMagnitude = numAttr.create("windMagnitude", "wm", MFnNumericData::kDouble, 0.01);
+	numAttr.setStorable(true);
 	QuikDeformNode::windOscillation = numAttr.create("windOscillation", "wo", MFnNumericData::kBoolean, 0);
+	numAttr.setStorable(true);
 
 	// ---------------------------------------
 	// add all created attributes 
@@ -283,11 +343,11 @@ MStatus QuikDeformNode::initialize() {
 	/*
 	// simulation attributes
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::timeStep, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::inputMesh, QuikDeformNode::outputMesh)); 
+	CHECK_MSTATUS(attributeAffects(QuikDeformNode::inputMesh, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::solverIterations, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::secondsToSimulate, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::frameRate, QuikDeformNode::outputMesh));
-	
+
 	// object attributes
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::keepMesh, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::tetVolume, QuikDeformNode::outputMesh));
@@ -385,63 +445,71 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			MGlobal::displayInfo(std::string("recomputing everything").c_str());
 
 			// TODO: what happens when the originalMesh is the only thing changed?
-			// TODO: rotation kind of messes up the world matrix thing. try it without world Mesh again
 			MDataHandle inputMeshData = data.inputValue(inputMesh);
 			originaObj = inputMeshData.asMeshTransformed();
 			currentConfiguration = newConfiguration;
 
-			// ----- get data from the mesh and tetrahedralize it -----
-			// original vertices and triangles from the Maya mesh
-			std::vector<Eigen::Vector3d> originalVertices;
-			std::vector<Eigen::Vector3i> originalTriangles;
+			// declare the containers that will contain data for the mesh we want to simulate
+			std::vector<Eigen::Vector3d> meshVertices;
+			std::vector<Eigen::Vector3i> meshTriangles;
+			std::vector<std::vector<int>> meshTetrahedrons;
+			unsigned int vertexNumber = 0u; // how many vertices are in the final mesh
 
-			// tetgen generated vertices, triangles and tetrahedrons
-			std::vector<Eigen::Vector3d> tetVertices;
-			std::vector<Eigen::Vector3i> tetTriangles;
-			std::vector<std::vector<int>> tetTetrahedrons;
+			// if the simulation is volumetric, tetrahedralize the mesh 
+			if (currentConfiguration.volumetric) {
+				// ----- get data from the mesh and tetrahedralize it -----
+				// containers for data from the original mesh
+				std::vector<Eigen::Vector3d> originalVertices;
+				std::vector<Eigen::Vector3i> originalTriangles;
 
+				// tetrahedralize the original mesh
+				getTetMeshData((MFnMesh)originaObj, originalVertices, originalTriangles,
+					meshVertices, meshTriangles, meshTetrahedrons, currentConfiguration.tetVolume, false);
+				vertexNumber = originalVertices.size();
 
-			// tetrahedralize the original mesh
-			getMeshData((MFnMesh)originaObj, originalVertices, originalTriangles,
-				tetVertices, tetTriangles, tetTetrahedrons, currentConfiguration.tetVolume, false);
+				// make a new mesh as the originalObj if keepMesh if false
+				if (!currentConfiguration.keepMesh) {
+					MFnMeshData dataCreator;
+					MObject newObj = dataCreator.create();
 
-			// make a new mesh as the originalObj if keepMesh if false
-			if (!currentConfiguration.keepMesh) {
-				MFnMeshData dataCreator;
-				MObject newObj = dataCreator.create();
+					// set up the input values to make a new mesh with
+					MPointArray vertexArray;
+					MIntArray polygonCounts;
+					MIntArray polygonConnects;
+					for (auto i = 0; i < meshVertices.size(); i++) {
+						vertexArray.append(meshVertices[i][0], meshVertices[i][1], meshVertices[i][2]);
+					}
+					for (auto i = 0; i < meshTriangles.size(); i++) {
+						polygonCounts.append(3);
+						polygonConnects.append(meshTriangles[i][2]); // reverse order to get the right surface normal
+						polygonConnects.append(meshTriangles[i][1]);
+						polygonConnects.append(meshTriangles[i][0]);
+					}
 
-				// set up the input values to make a new mesh with
-				MPointArray vertexArray;
-				MIntArray polygonCounts;
-				MIntArray polygonConnects;
-				for (auto i = 0; i < tetVertices.size(); i++) {
-					vertexArray.append(tetVertices[i][0], tetVertices[i][1], tetVertices[i][2]);
+					// make the new mesh
+					MFnMesh newMesh;
+					newMesh.create(vertexArray.length(), polygonCounts.length(), vertexArray, polygonCounts, polygonConnects, newObj);
+
+					// fix vertex normal for newMesh
+					for (auto j = 0; j < meshTriangles.size(); j++) {
+						MVector p1(vertexArray[meshTriangles[j][2]]);
+						MVector p2(vertexArray[meshTriangles[j][1]]);
+						MVector p3(vertexArray[meshTriangles[j][0]]);
+						MVector surfaceNormal = (p2 - p1) ^ (p3 - p1);
+						newMesh.setFaceVertexNormal(surfaceNormal, j, meshTriangles[j][2]);
+						newMesh.setFaceVertexNormal(surfaceNormal, j, meshTriangles[j][1]);
+						newMesh.setFaceVertexNormal(surfaceNormal, j, meshTriangles[j][0]);
+					}
+
+					originaObj = newObj;
+					vertexNumber = meshVertices.size();
 				}
-				for (auto i = 0; i < tetTriangles.size(); i++) {
-					polygonCounts.append(3);
-					polygonConnects.append(tetTriangles[i][2]); // reverse order to get the right surface normal
-					polygonConnects.append(tetTriangles[i][1]);
-					polygonConnects.append(tetTriangles[i][0]);
-				}
-
-				// make the new mesh
-				MFnMesh newMesh;
-				newMesh.create(vertexArray.length(), polygonCounts.length(), vertexArray, polygonCounts, polygonConnects, newObj);
-
-				// fix vertex normal for newMesh
-				for (auto j = 0; j < tetTriangles.size(); j++) {
-					MVector p1(vertexArray[tetTriangles[j][2]]);
-					MVector p2(vertexArray[tetTriangles[j][1]]);
-					MVector p3(vertexArray[tetTriangles[j][0]]);
-					MVector surfaceNormal = (p2 - p1) ^ (p3 - p1);
-					newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][2]);
-					newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][1]);
-					newMesh.setFaceVertexNormal(surfaceNormal, j, tetTriangles[j][0]);
-				}
-
-				originaObj = newObj;
 			}
-
+			// thin-shell simulation. no need to tetrahedralize. just use original data.
+			else {
+				getMeshData((MFnMesh)originaObj, meshVertices, meshTriangles);
+				vertexNumber = meshVertices.size();
+			}
 
 			// calculate collision constraints
 			vector<Eigen::Vector3d> planeCenters, planeNormals;
@@ -461,7 +529,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 								tokens.push_back(tokenString);
 							}
 						}
-						
+
 						// extract and add the info 
 						Eigen::Vector3d center = Eigen::Vector3d(std::stod(tokens[1]), std::stod(tokens[2]), std::stod(tokens[3]));
 						Eigen::Vector3d normal = Eigen::Vector3d(std::stod(tokens[4]), std::stod(tokens[5]), std::stod(tokens[6])).normalized();
@@ -475,7 +543,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			if (quikDeformer != nullptr) { delete quikDeformer; }
 
 			quikDeformer = new QuikDeformer(
-				tetVertices, tetTriangles, tetTetrahedrons,
+				meshVertices, meshTriangles, meshTetrahedrons,
 				planeCenters, pLengths, pWidths, planeNormals,
 				currentConfiguration.timeStep,
 				currentConfiguration.solverIterations,
@@ -490,10 +558,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			// add strain constraints
 			double E = currentConfiguration.youngsModulus;
 			double nu = currentConfiguration.poissonRatio;
-			double lame_lambda = E * nu / (((double)1 + nu) * ((double)1 - (double)2 * nu));
-			double lame_mu = E / ((double)2 * ((double)1 + nu));
-			double strainWeight = 2 * lame_mu;
-			double volumeWeight = 3 * lame_lambda;
+			double strainWeight = 2 * (E / ((double)2 * ((double)1 + nu)));
 			if (currentConfiguration.volumetric) {
 				quikDeformer->add3DStrainConstraints(strainWeight);
 			}
@@ -505,7 +570,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			if (currentConfiguration.positionConstraints != "") {
 				std::stringstream ss(currentConfiguration.positionConstraints);
 				std::string indexString;
-				while(std::getline(ss, indexString, ',')){
+				while (std::getline(ss, indexString, ',')) {
 					if (indexString != "") {
 						int index = std::stoi(indexString);
 						quikDeformer->addPositionConstraint(100000, index);
@@ -535,9 +600,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			computedFrames.clear();
 			for (auto i = 0u; i < tempFrames.size(); i++) {
 				MPointArray array;
-				// only copy over vertices for the mesh that we're currently using
-				auto vertexNumber = currentConfiguration.keepMesh ? originalVertices.size() : tetVertices.size();
-				for (auto j = 0; j < vertexNumber; j++) {
+				for (auto j = 0u; j < vertexNumber; j++) {
 					array.append(tempFrames[i][j * 3], tempFrames[i][j * 3 + 1], tempFrames[i][j * 3 + 2]);
 				}
 				computedFrames.push_back(array);
@@ -547,7 +610,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			std::string timeDiff = "Computation complete. Time elapsed: " + std::to_string(timeElapsed) + " seconds";
 			MGlobal::displayInfo(timeDiff.c_str());
 
-			
+
 		}
 		else {
 			MGlobal::displayInfo("Input is the same. No recomputation needed.");
@@ -580,7 +643,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	}
 	else {
 		MGlobal::displayInfo(std::string("can't showing frame " + std::to_string(frameToDisplay) + ", because it has not been computed yet.").c_str());
-	} 
+	}
 
 	return MStatus::kSuccess;
 }

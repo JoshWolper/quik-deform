@@ -269,7 +269,7 @@ global proc simulateButtonCmd()
 	
 	// update the info for collision constraint planes
 	string $constraintInfo = `getAttr ($targetNode + ".collisionConstraints")`;
-	string $planes[] = getPlaneNames($constraintInfo);
+	string $planes[] = getPlanesFromString($constraintInfo);
 	setCollisionConstraintAttr($planes);
 	
 	// set doCompute to true to do computation
@@ -304,7 +304,19 @@ global proc positionConstraintTextScrollNew()
 }
 
 global proc positionConstraintTextScrollUpdate()
-{}
+{
+    // update the textScrollList to show this node's constraints
+	string $targetNode = getSelectedQuikDeformNode();
+	// parse info to get vertices
+	string $constraintInfo = `getAttr ($targetNode + ".positionConstraints")`;
+	string $vertices[] = getVerticesFromString($constraintInfo);
+	// remove all and add the current data
+	textScrollList -edit -removeAll positionConstraintTextScroll;
+	for ($vertex in $vertices){
+		textScrollList -edit -append $vertex positionConstraintTextScroll;
+	}
+	textScrollList -edit -deselectAll positionConstraintTextScroll;    
+}
 
 
 // add the indices currently selected
@@ -406,7 +418,7 @@ global proc showCollisionConstraintsWindow()
 	text -edit -label $targetNode nodeNameText;
 	// parse info for all collision constraints
 	string $constraintInfo = `getAttr ($targetNode + ".collisionConstraints")`;
-	string $names[] = getPlaneNames($constraintInfo);
+	string $names[] = getPlanesFromString($constraintInfo);
 	for ($name in $names){
 		textScrollList -edit -append $name collisionConstraintTextScroll;
 	}
@@ -623,7 +635,7 @@ global proc int checkValidNormal( float $normal[] ){
 
 
 // parse the given collisionConstraint string and return an array of names
-global proc string[] getPlaneNames(string $input ){
+global proc string[] getPlanesFromString(string $input ){
 	string $planes[];
 	string $names[];
 	tokenize $input ";" $planes;
@@ -640,6 +652,20 @@ global proc string[] getPlaneNames(string $input ){
 	return $names;
 }
 
+
+// parse the given positionConstraint string and return an array of vertices
+global proc string[] getVerticesFromString(string $input){
+    string $vertices[];
+    string $result[];
+    tokenize $input "," $vertices;
+    for ($vertex in $vertices){
+        if ($vertex != ""){
+            $result[`size($result)`] = $vertex;
+        }
+    }
+    
+    return $result;
+}
 
 // take in a list of vertices and set the selected QuikDeformNode's attribute
 global proc setPositionConstraintAttr( string $vertices[] ){

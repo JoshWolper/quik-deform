@@ -293,12 +293,13 @@ global proc createQuikDeformNode_w(){
 	    int $size = `size($allNodes)`;
 	    string $nodeName = "QuikDeformNode" + ($size + 1);
 	    string $meshName = "QuikDeformMesh" + ($size + 1);
+		string $transformName = "QuikDeformTransform" + ($size + 1);
 
         // create the nodes and meshes
         string $shapes[] = `listRelatives -shapes $selection[0]`;
 		 $mesh = $shapes[0];
-        createNode transform -n QuikDeformedTransform;
-        createNode mesh -n $meshName -p QuikDeformedTransform;
+        createNode transform -n $transformName;
+        createNode mesh -n $meshName -p $transformName;
         sets -add initialShadingGroup $meshName;
         createNode QuikDeformNode -n $nodeName;
         

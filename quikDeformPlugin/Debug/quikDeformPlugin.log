@@ -1,4 +1,7 @@
 ﻿  QuikDeformNode.cpp
 d:\git\quikdeform\quik-deform\quik-deform\GroundConstraint.h(32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 D:\Git\quikDeform\quik-deform\quik-deform\QuikDeformer.h(120): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+QuikDeformNode.cpp(468): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+QuikDeformNode.cpp(505): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+QuikDeformNode.cpp(511): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
   quikDeformPlugin.vcxproj -> D:\Git\quikDeform\quik-deform\quikDeformPlugin\Debug\quikDeformPlugin.mll
