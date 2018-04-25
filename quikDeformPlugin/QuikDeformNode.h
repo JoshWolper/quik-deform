@@ -55,12 +55,15 @@ struct QuikDeformNodeIO {
 	double poissonRatio;
 	string positionConstraints;
 	string collisionConstraints;
+	double frictionCoeff;
 
 	// external force
 	bool doGravity;
 	bool doWind;
 	MVector windDirection;
 	double windMagnitude;
+	double windAmplitude;
+	double windPeriod;
 	bool windOscillation;
 
 	bool operator==(const QuikDeformNodeIO& rhs) const {
@@ -80,11 +83,14 @@ struct QuikDeformNodeIO {
 			poissonRatio == rhs.poissonRatio &&
 			positionConstraints == rhs.positionConstraints &&
 			collisionConstraints == rhs.collisionConstraints &&
+			frictionCoeff == rhs.frictionCoeff &&
 			// external forces
 			doGravity == rhs.doGravity &&
 			doWind == rhs.doWind &&
 			windDirection == rhs.windDirection &&
 			windMagnitude == rhs.windMagnitude &&
+			windAmplitude == rhs.windAmplitude &&
+			windPeriod == rhs.windPeriod &&
 			windOscillation == rhs.windOscillation;
 	}
 
@@ -133,21 +139,24 @@ public:
 	static MObject currentFrame;
 	
 	// object attributes
-	static MObject keepMesh; // whether we want to keep the original mesh or use tetgen's mesh
+	static MObject keepMesh; 
 	static MObject tetVolume;
 	static MObject mass;
 	static MObject initialVelocity;
-	static MObject volumetric; // if we're doing volumetric or thin-shell simulation TODO: make this into an enum
+	static MObject volumetric; 
 	static MObject youngsModulus;
 	static MObject poissonRatio;
 	static MObject positionConstraints;
 	static MObject collisionConstraints;
+	static MObject frictionCoeff; 
 
 	// external forces attributes
 	static MObject doGravity;
 	static MObject doWind;
 	static MObject windDirection;
 	static MObject windMagnitude;
+	static MObject windAmplitude; 
+	static MObject windPeriod; 
 	static MObject windOscillation;
 
 	static MTypeId id;

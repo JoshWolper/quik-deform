@@ -46,6 +46,8 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 		editorTemplate -callCustom "positionConstraintTextScrollNew" "positionConstraintTextScrollUpdate";
 		// custom button (and pop up window) for collisionConstraints
 		editorTemplate -callCustom "collisionConstraintsButtonNew" "collisionConstraintsButtonUpdate";
+		// custom button for frictionCoeff
+		editorTemplate -callCustom "frictionCoeffSliderAttributeNew" "frictionCoeffSliderAttributeUpdate" "frictionCoeff";
 		
 	editorTemplate -endLayout;
 
@@ -59,6 +61,8 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 		editorTemplate -label "Wind Direction" -addControl "windDirection";
 		// custom float slider for windMagnitude
 		editorTemplate -callCustom "windMagnitudeSliderAttributeNew" "windMagnitudeSliderAttributeUpdate" "windMagnitude";
+		editorTemplate -callCustom "windAmplitudeSliderAttributeNew" "windAmplitudeSliderAttributeUpdate" "windAmplitude";
+		editorTemplate -callCustom "windPeriodSliderAttributeNew" "windPeriodSliderAttributeUpdate" "windPeriod";
 		editorTemplate -label "Enable Wind Oscillation" -addControl "windOscillation";
 
 	editorTemplate -endLayout;
@@ -233,6 +237,25 @@ global proc poissonRatioSliderAttributeUpdate( string $attrName )
 }
 
 
+// ----- slider for frictionCoeff -----
+global proc frictionCoeffSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Friction Coefficient" 
+		-field true
+		-minValue 0
+		-maxValue 1
+		-value 0.4
+		frictionCoeffSlider;
+	connectControl frictionCoeffSlider $attrName;
+}
+
+global proc frictionCoeffSliderAttributeUpdate( string $attrName )
+{
+   connectControl frictionCoeffSlider $attrName;
+}
+
+
 // ----- slider for windMagnitude -----
 global proc windMagnitudeSliderAttributeNew( string $attrName )
 {
@@ -243,7 +266,7 @@ global proc windMagnitudeSliderAttributeNew( string $attrName )
 			-fieldMinValue 0.001
 			-maxValue 100
 			-fieldMaxValue 1000
-			-value 1
+			-value 0
 			windMagnitudeSlider;
 	connectControl windMagnitudeSlider $attrName;
 }
@@ -252,6 +275,46 @@ global proc windMagnitudeSliderAttributeUpdate( string $attrName )
 {
    connectControl windMagnitudeSlider $attrName;
 }
+
+
+// ----- slider for windAmplitude -----
+global proc windAmplitudeSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Wind Amplitude" 
+		-field true
+		-minValue 0
+		-maxValue 10
+		-value 1
+		windAmplitudeSlider;
+	connectControl windAmplitudeSlider $attrName;
+}
+
+global proc windAmplitudeSliderAttributeUpdate( string $attrName )
+{
+   connectControl windAmplitudeSlider $attrName;
+}
+
+
+
+// ----- slider for windPeriod -----
+global proc windPeriodSliderAttributeNew( string $attrName )
+{
+	floatSliderGrp 
+		-label "Wind Period" 
+		-field true
+		-minValue 0.1
+		-maxValue 5
+		-value 0.5
+		windPeriodSlider;
+	connectControl windPeriodSlider $attrName;
+}
+
+global proc windPeriodSliderAttributeUpdate( string $attrName )
+{
+   connectControl windPeriodSlider $attrName;
+}
+
 
 
 // ----- button for compute -----
@@ -274,6 +337,8 @@ global proc simulateButtonCmd()
 	
 	// set doCompute to true to do computation
 	setAttr ($targetNode + ".doCompute") true;
+	
+	print ("stuff happens here");
 }
 
 

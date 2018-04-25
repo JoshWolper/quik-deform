@@ -37,61 +37,104 @@ void TriangleStrainConstraint::projectConstraint(Eigen::VectorXd qN_1){
     MatrixXd F = MatrixXd(3,2).setZero();
     F = Ds * Dminv;
 
+    //cout << "---------------------" << endl;
+    //cout << "DefGrad: \n" << F << endl;
+
     //Now that we have computed F, take the SVD of it!
     JacobiSVD<MatrixXd> SVD( F, ComputeFullV | ComputeFullU );
     MatrixXd U = SVD.matrixU();
     MatrixXd V = SVD.matrixV();
+    VectorXd singVals = SVD.singularValues();
 
-    //Check if U is rotation or not!
-    if(U.determinant() < 0){
-        U.col(1) *= -1;
-    }
-
-    //Check if V is rotation or not!
-    if(V.determinant() < 0){
-        V.col(1) *= -1;
-    }
+    //cout << "U(before): \n" << U << endl;
+    //cout << "Vt(before): \n" << V.transpose() << endl;
 
     MatrixXd S = MatrixXd(3,2).setZero();
-    S(0,0) = 1;
-    S(1,1) = 1;
+    S(0,0) = singVals(0);
+    S(1,1) = singVals(1);
+    //cout << "S(before): \n" << S << endl;
+
+    //cout << "det(U): " << U.determinant();
+    //cout << "det(V): " << V.determinant();
+
+    //Determinant correction so that we ALWAYS have either BOTH determinants negative or BOTh positive
+    if(U.determinant() * V.determinant() == -1){
+        U.col(2) *= -1;
+    }
+
+    //cout << "U(after): \n" << U << endl;
+    //cout << "Vt(after): \n" << V.transpose() << endl;
+
+    double strainMin = 0.97;
+    double strainMax = 1.03;
+
+    //Clamp singular values to be between strainMin and strainMax
+    if(singVals(0) > strainMax){
+        singVals(0) = strainMax;
+    }
+    if(singVals(0) < strainMin){
+        singVals(0) = strainMin;
+    }
+    if(singVals(1) < strainMin){
+        singVals(1) = strainMin;
+    }
+    if(singVals(1) > strainMax){
+        singVals(1) = strainMax;
+    }
+
+    //reset S to have the new singular values
+    S(0,0) = singVals(0);
+    S(1,1) = singVals(1);
 
     MatrixXd Vt = V.transpose();
 
     /*/-------------------------------------//
     //CHECK THAT SVD IS CORRECT!!
+    Eigen::MatrixXd I3 = Eigen::MatrixXd(3, 3).setIdentity();
     Eigen::MatrixXd I2 = Eigen::MatrixXd(2, 2).setIdentity();
-    MatrixXd temp22 = U * U.transpose() - I2;
-    if(temp22(0,0) >= 1e-5){ cout << "Rhat SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
-    if(temp22(0,1) >= 1e-5){ cout << "Rhat SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
-    if(temp22(1,0) >= 1e-5){ cout << "Rhat SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
-    if(temp22(1,1) >= 1e-5){ cout << "Rhat SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
-    temp22 = V * V.transpose() - I2;
-    if(temp22(0,0) >= 1e-5){ cout << "Rhat SVD ERROR: V * Vt \n" << endl; cout << "V*Vt: \n" << V*V.transpose() << endl;}
-    if(temp22(0,1) >= 1e-5){ cout << "Rhat SVD ERROR: V * Vt \n" << endl; cout << "V*Vt: \n" << V*V.transpose() << endl;}
-    if(temp22(1,0) >= 1e-5){ cout << "Rhat SVD ERROR: V * Vt \n" << endl; cout << "V*Vt: \n" << V*V.transpose() << endl;}
-    if(temp22(1,1) >= 1e-5){ cout << "Rhat SVD ERROR: V * Vt \n" << endl; cout << "V*Vt: \n" << V*V.transpose() << endl;}
-    temp22 = U * S * V.transpose() - Rhat;
-    if(temp22(0,0) >= 1e-5){ cout << "Rhat SVD ERROR: USVt - Rhat \n" << endl; cout << "USVt: \n" << U*S*V.transpose() << endl; cout << "Rhat: \n" << Rhat << endl;}
-    if(temp22(0,1) >= 1e-5){ cout << "Rhat SVD ERROR: USVt - Rhat \n" << endl; cout << "USVt: \n" << U*S*V.transpose() << endl; cout << "Rhat: \n" << Rhat << endl;}
-    if(temp22(1,0) >= 1e-5){ cout << "Rhat SVD ERROR: USVt - Rhat \n" << endl; cout << "USVt: \n" << U*S*V.transpose() << endl; cout << "Rhat: \n" << Rhat << endl;}
-    if(temp22(1,1) >= 1e-5){ cout << "Rhat SVD ERROR: USVt - Rhat \n" << endl; cout << "USVt: \n" << U*S*V.transpose() << endl; cout << "Rhat: \n" << Rhat << endl;}
+    MatrixXd temp22 = V * V.transpose() - I2;
+    MatrixXd temp33 = U * U.transpose() - I3;
+    MatrixXd temp32 = MatrixXd(3,2).setZero();
+    if(temp33(0,0) >= 1e-5){ cout << "F SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
+    if(temp33(0,1) >= 1e-5){ cout << "F SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
+    if(temp33(0,2) >= 1e-5){ cout << "F SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
+    if(temp33(1,0) >= 1e-5){ cout << "F SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
+    if(temp33(1,1) >= 1e-5){ cout << "F SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
+    if(temp33(1,2) >= 1e-5){ cout << "F SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
+    if(temp33(2,0) >= 1e-5){ cout << "F SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
+    if(temp33(2,1) >= 1e-5){ cout << "F SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
+    if(temp33(2,2) >= 1e-5){ cout << "F SVD ERROR: U * Ut \n" << endl; cout << "U*Ut: \n" << U*U.transpose() << endl;}
+
+    if(temp22(0,0) >= 1e-5){ cout << "F SVD ERROR: V * Vt \n" << endl; cout << "V*Vt: \n" << V*V.transpose() << endl;}
+    if(temp22(0,1) >= 1e-5){ cout << "F SVD ERROR: V * Vt \n" << endl; cout << "V*Vt: \n" << V*V.transpose() << endl;}
+    if(temp22(1,0) >= 1e-5){ cout << "F SVD ERROR: V * Vt \n" << endl; cout << "V*Vt: \n" << V*V.transpose() << endl;}
+    if(temp22(1,1) >= 1e-5){ cout << "F SVD ERROR: V * Vt \n" << endl; cout << "V*Vt: \n" << V*V.transpose() << endl;}
+
+    temp32 = U * S * V.transpose() - F;
+    if(temp32(0,0) >= 1e-5){ cout << "F SVD ERROR: USVt - F \n" << endl; cout << "USVt: \n" << U*S*V.transpose() << endl; cout << "F: \n" << F << endl;}
+    if(temp32(0,1) >= 1e-5){ cout << "F SVD ERROR: USVt - F \n" << endl; cout << "USVt: \n" << U*S*V.transpose() << endl; cout << "F: \n" << F << endl;}
+    if(temp32(1,0) >= 1e-5){ cout << "F SVD ERROR: USVt - F \n" << endl; cout << "USVt: \n" << U*S*V.transpose() << endl; cout << "F: \n" << F << endl;}
+    if(temp32(1,1) >= 1e-5){ cout << "F SVD ERROR: USVt - F \n" << endl; cout << "USVt: \n" << U*S*V.transpose() << endl; cout << "F: \n" << F << endl;}
+    if(temp32(2,0) >= 1e-5){ cout << "F SVD ERROR: USVt - F \n" << endl; cout << "USVt: \n" << U*S*V.transpose() << endl; cout << "F: \n" << F << endl;}
+    if(temp32(2,1) >= 1e-5){ cout << "F SVD ERROR: USVt - F \n" << endl; cout << "USVt: \n" << U*S*V.transpose() << endl; cout << "F: \n" << F << endl;}
+
     if(singVals(0) < abs(singVals(1))){
-        cout << "Rhat SVD ERROR: sigma1 > |sigma2| \n" << endl;
+        cout << "F SVD ERROR: sigma1 > |sigma2| \n" << endl;
         cout << "Sigma1: \n" << singVals(0) << endl;
         cout << "|Sigma2|: \n" << abs(singVals(1)) << endl;
     }
-    if(U.determinant() - 1 >= 1e-5 || U.determinant() == -1){
-        cout << "Rhat SVD ERROR: det(U) \n" << endl;
+    if(abs(U.determinant() - 1) >= 1e-5){
+        cout << "F SVD ERROR: det(U) \n" << endl;
     }
-    if(V.determinant() - 1 >= 1e-5 || V.determinant() == -1){
-        cout << "Rhat SVD ERROR: det(V) \n" << endl;
+    if(abs(V.determinant() - 1) >= 1e-5){
+        cout << "F SVD ERROR: det(V) \n" << endl;
     }
     //-------------------------------------/*/
 
     MatrixXd BpMat = MatrixXd(3,2).setZero();
     BpMat = U * S * Vt;
 
+    //cout << "S(after): \n" << S << endl;
     //cout << "Bp = UVt: \n" << BpMat << endl;
 
     //Set Bp to be the elements of Q * newR

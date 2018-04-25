@@ -169,6 +169,15 @@ global proc createQuikDeformWindow()
                                     	-command "addCollisionConstraintCmd_w" ;
                                      setParent..;
                                  setParent..;
+							 floatSliderGrp 
+								-label "Friction Coefficient" 
+								-field true
+								-minValue 0
+								-maxValue 1
+								-value 0.4
+								-precision 3
+                                -width 480
+								frictionCoeffSlider_w;
                              setParent..;
                         setParent..;
                     frameLayout -label "External Forces" -collapsable true -width 495;
@@ -199,6 +208,25 @@ global proc createQuikDeformWindow()
                         		-precision 3
                         		-width 480
                         		windMagnitudeSlider_w;
+							floatSliderGrp 
+								-label "Wind Amplitude" 
+								-field true
+								-minValue 0
+								-maxValue 10
+								-value 1
+								-precision 3
+                        		-width 480
+
+								windAmplitudeSlider_w;
+							floatSliderGrp 
+								-label "Wind Period" 
+								-field true
+								-minValue 0.1
+								-maxValue 5
+								-value 0.5
+								-precision 3
+                        		-width 480
+								windPeriodSlider_w;
                         	checkBoxGrp
                                 -label "Enable Wind Oscillation"
                                 -value1 false
@@ -357,6 +385,9 @@ global proc createQuikDeformNode_w(){
         // collision constraints
         string $allPlanes[] = `textScrollList -query -allItems collisionConstraintTextScroll_w`;
         setCollisionConstraintAttr($allPlanes);
+		// friction coefficient
+        float $frictionCoeffVal = `floatSliderGrp -q -value frictionCoeffSlider_w`;
+        setAttr ($nodeName + ".frictionCoeff") $frictionCoeffVal;
         // enable gravity
         int $enableGravityVal = `checkBoxGrp -q - value1 doGravityCheckbox_w`;
         setAttr ($nodeName + ".doGravity") $enableGravityVal;
@@ -373,6 +404,12 @@ global proc createQuikDeformNode_w(){
         // wind magnitude
         float $windMagVal = `floatSliderGrp -q -value windMagnitudeSlider_w`;
         setAttr ($nodeName + ".windMagnitude") $windMagVal;
+		// wind amplitude
+        float $windAmplitudeVal = `floatSliderGrp -q -value windAmplitudeSlider_w`;
+        setAttr ($nodeName + ".windAmplitude") $windAmplitudeVal;
+		// wind period
+        float $windPeriodVal = `floatSliderGrp -q -value windPeriodSlider_w`;
+        setAttr ($nodeName + ".windPeriod") $windPeriodVal;
         // enable wind oscillation
         int $enableWindOsc = `checkBoxGrp -q - value1 doWindOscillationCheckbox_w`;
         setAttr ($nodeName + ".windOscillation") $enableWindOsc;

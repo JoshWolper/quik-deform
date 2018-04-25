@@ -32,12 +32,6 @@
     <ClCompile Include="..\quik-deform\PositionConstraint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\quik-deform\GroundConstraint.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\quik-deform\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="QuikDeformNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -56,9 +50,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\quik-deform\global.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\quik-deform\GroundConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\quik-deform\PositionConstraint.h">

@@ -228,12 +228,15 @@ MObject QuikDeformNode::youngsModulus;
 MObject QuikDeformNode::poissonRatio;
 MObject QuikDeformNode::positionConstraints;
 MObject QuikDeformNode::collisionConstraints;
+MObject QuikDeformNode::frictionCoeff;
 
 // external force attributes
 MObject QuikDeformNode::doGravity;
 MObject QuikDeformNode::doWind;
 MObject QuikDeformNode::windDirection;
 MObject QuikDeformNode::windMagnitude;
+MObject QuikDeformNode::windAmplitude;
+MObject QuikDeformNode::windPeriod;
 MObject QuikDeformNode::windOscillation;
 
 MTypeId QuikDeformNode::id(0x80000);
@@ -292,6 +295,8 @@ MStatus QuikDeformNode::initialize() {
 	typedAttr.setStorable(true);
 	QuikDeformNode::collisionConstraints = typedAttr.create("collisionConstraints", "ccs", MFnData::kString);
 	typedAttr.setStorable(true);
+	QuikDeformNode::frictionCoeff = numAttr.create("frictionCoeff", "fc", MFnNumericData::kDouble, 0.4);
+	numAttr.setStorable(true);
 	// external forces attributes
 	QuikDeformNode::doGravity = numAttr.create("doGravity", "dg", MFnNumericData::kBoolean, 1);
 	numAttr.setStorable(true);
@@ -299,7 +304,11 @@ MStatus QuikDeformNode::initialize() {
 	numAttr.setStorable(true);
 	QuikDeformNode::windDirection = numAttr.createPoint("windDirection", "wd");
 	numAttr.setStorable(true);
-	QuikDeformNode::windMagnitude = numAttr.create("windMagnitude", "wm", MFnNumericData::kDouble, 0.01);
+	QuikDeformNode::windMagnitude = numAttr.create("windMagnitude", "wm", MFnNumericData::kDouble, 1);
+	numAttr.setStorable(true);
+	QuikDeformNode::windAmplitude = numAttr.create("windAmplitude", "wa", MFnNumericData::kDouble, 1);
+	numAttr.setStorable(true);
+	QuikDeformNode::windPeriod = numAttr.create("windPeriod", "wp", MFnNumericData::kDouble, 0.5);
 	numAttr.setStorable(true);
 	QuikDeformNode::windOscillation = numAttr.create("windOscillation", "wo", MFnNumericData::kBoolean, 0);
 	numAttr.setStorable(true);
@@ -326,11 +335,14 @@ MStatus QuikDeformNode::initialize() {
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::poissonRatio));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::positionConstraints));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::collisionConstraints));
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::frictionCoeff));
 	// external forces attributes
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::doGravity));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::doWind));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::windDirection));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::windMagnitude));
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::windAmplitude));
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::windPeriod));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::windOscillation));
 
 	// ---------------------------------------
@@ -340,30 +352,7 @@ MStatus QuikDeformNode::initialize() {
 	// the compute button is clicked or the currentFrame changes
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::doCompute, QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(attributeAffects(QuikDeformNode::currentFrame, QuikDeformNode::outputMesh));
-	/*
-	// simulation attributes
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::timeStep, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::inputMesh, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::solverIterations, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::secondsToSimulate, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::frameRate, QuikDeformNode::outputMesh));
-
-	// object attributes
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::keepMesh, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::tetVolume, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::mass, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::initialVelocity, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::volumetric, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::youngsModulus, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::poissonRatio, QuikDeformNode::outputMesh));
-	// external forces
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::doGravity, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::doWind, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::windDirection, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::windMagnitude, QuikDeformNode::outputMesh));
-	CHECK_MSTATUS(attributeAffects(QuikDeformNode::windOscillation, QuikDeformNode::outputMesh));
-	*/
-
+	
 	return MS::kSuccess;
 }
 
@@ -394,12 +383,15 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		MDataHandle poissonRatioData = data.inputValue(poissonRatio);
 		MDataHandle positionConstraintsData = data.inputValue(positionConstraints);
 		MDataHandle collisionConstraintsData = data.inputValue(collisionConstraints);
+		MDataHandle frictionCoeffData = data.inputValue(frictionCoeff);
 
 		// get external forces attributes
 		MDataHandle doGravityData = data.inputValue(doGravity);
 		MDataHandle doWindData = data.inputValue(doWind);
 		MDataHandle windDirectionData = data.inputValue(windDirection);
 		MDataHandle windMagnitudeData = data.inputValue(windMagnitude);
+		MDataHandle windAmplitudeData = data.inputValue(windAmplitude);
+		MDataHandle windPeriodData = data.inputValue(windPeriod);
 		MDataHandle windOscillationData = data.inputValue(windOscillation);
 
 		// set up the newConfiguration
@@ -419,27 +411,21 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 		newConfiguration.poissonRatio = poissonRatioData.asDouble();
 		newConfiguration.positionConstraints = positionConstraintsData.asString().asChar();
 		newConfiguration.collisionConstraints = collisionConstraintsData.asString().asChar();
+		newConfiguration.frictionCoeff = frictionCoeffData.asDouble();
 		// external force attributes
 		newConfiguration.doGravity = doGravityData.asBool();
 		newConfiguration.doWind = doWindData.asBool();
-		newConfiguration.windDirection = windDirectionData.asVector().normal();
+		newConfiguration.windDirection = windDirectionData.asFloatVector().normal();
 		newConfiguration.windMagnitude = windMagnitudeData.asDouble();
+		newConfiguration.windAmplitude = windAmplitudeData.asDouble();
+		newConfiguration.windPeriod = windPeriodData.asDouble();
 		newConfiguration.windOscillation = windOscillationData.asBool();
 
 		// ---------------------------------------
 		// step 2: recompute output if newInput is different
 		// ---------------------------------------
 		double computeStart = omp_get_wtime();
-		/*
-		MGlobal::displayInfo("current position constraint");
-		MGlobal::displayInfo(currentConfiguration.positionConstraints.c_str());
-		MGlobal::displayInfo("new position constraint");
-		MGlobal::displayInfo(newConfiguration.positionConstraints.c_str());
-		MGlobal::displayInfo("current collision constraint");
-		MGlobal::displayInfo(currentConfiguration.collisionConstraints.c_str());
-		MGlobal::displayInfo("new collision constraint");
-		MGlobal::displayInfo(newConfiguration.collisionConstraints.c_str());
-		*/
+
 		// compute output if we've never computed quikDeformer before or if an input attribute change
 		if (quikDeformer == nullptr || currentConfiguration != newConfiguration) {
 			MGlobal::displayInfo(std::string("recomputing everything").c_str());
@@ -511,40 +497,14 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 				vertexNumber = meshVertices.size();
 			}
 
-			// calculate collision constraints
-			vector<Eigen::Vector3d> planeCenters, planeNormals;
-			vector<double> pLengths, pWidths; // not used
 
-			if (currentConfiguration.collisionConstraints != "") {
-				std::stringstream stream1(currentConfiguration.collisionConstraints);
-				std::string planeString;
-				while (std::getline(stream1, planeString, ';')) {
-					if (planeString != "") {
-						// tokenize the string of the format: "plane1,0,0,0,1,0,0"
-						vector<std::string> tokens;
-						std::stringstream stream2(planeString);
-						std::string tokenString;
-						while (std::getline(stream2, tokenString, ',')) {
-							if (tokenString != "") {
-								tokens.push_back(tokenString);
-							}
-						}
-
-						// extract and add the info 
-						Eigen::Vector3d center = Eigen::Vector3d(std::stod(tokens[1]), std::stod(tokens[2]), std::stod(tokens[3]));
-						Eigen::Vector3d normal = Eigen::Vector3d(std::stod(tokens[4]), std::stod(tokens[5]), std::stod(tokens[6])).normalized();
-						planeCenters.push_back(center);
-						planeNormals.push_back(normal);
-					}
-				}
-			}
+			double setupStart = omp_get_wtime();
 
 			// ----- run QuikDeformer to get the computed frames -----
 			if (quikDeformer != nullptr) { delete quikDeformer; }
 
 			quikDeformer = new QuikDeformer(
 				meshVertices, meshTriangles, meshTetrahedrons,
-				planeCenters, pLengths, pWidths, planeNormals,
 				currentConfiguration.timeStep,
 				currentConfiguration.solverIterations,
 				currentConfiguration.frameRate,
@@ -578,19 +538,46 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 				}
 			}
 
+			// calculate collision constraints
+			vector<Eigen::Vector3d> planeCenters, planeNormals;
+			vector<double> pLengths, pWidths; // not used
+			if (currentConfiguration.collisionConstraints != "") {
+				std::stringstream stream1(currentConfiguration.collisionConstraints);
+				std::string planeString;
+				while (std::getline(stream1, planeString, ';')) {
+					if (planeString != "") {
+						// tokenize the string of the format: "plane1,0,0,0,1,0,0"
+						vector<std::string> tokens;
+						std::stringstream stream2(planeString);
+						std::string tokenString;
+						while (std::getline(stream2, tokenString, ',')) {
+							if (tokenString != "") {
+								tokens.push_back(tokenString);
+							}
+						}
+						// extract and add the info 
+						Eigen::Vector3d center = Eigen::Vector3d(std::stod(tokens[1]), std::stod(tokens[2]), std::stod(tokens[3]));
+						Eigen::Vector3d normal = Eigen::Vector3d(std::stod(tokens[4]), std::stod(tokens[5]), std::stod(tokens[6])).normalized();
+						planeCenters.push_back(center);
+						planeNormals.push_back(normal);
+					}
+				}
+				quikDeformer->addCollisionPlanes(planeCenters, pLengths, pWidths, planeNormals, currentConfiguration.frictionCoeff);
+			}
+
 			// add wind 
 			if (currentConfiguration.doWind) {
-				//WIND PARAMETERS
-				// TODO: need to add wind parameters to the GUI
-				double wx = 1; //wind direction
-				double wy = 0;
-				double wz = 0;
-				double windMag = 10; //wind magnitude
-				double windAmp = 1;
-				double windPeriod = 0.5;
-				bool windOsc = true; //whether the wind oscillates or is constant
-				quikDeformer->addWind(wx, wy, wz, windMag, windOsc, windAmp, windPeriod);
+				quikDeformer->addWind(currentConfiguration.windDirection[0],
+								  	  currentConfiguration.windDirection[1],
+									  currentConfiguration.windDirection[2],
+									  currentConfiguration.windMagnitude, 
+									  currentConfiguration.windOscillation, 
+									  currentConfiguration.windAmplitude, 
+									  currentConfiguration.windPeriod);
 			}
+
+			double runSimulationStart = omp_get_wtime();
+
 
 			std::vector<Eigen::VectorXd> tempFrames; // temp holder of computed frames
 			quikDeformer->runSimulation(currentConfiguration.secondsToSimulate, false, tempFrames);
@@ -606,9 +593,18 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 				computedFrames.push_back(array);
 			}
 
-			double timeElapsed = omp_get_wtime() - computeStart;;
-			std::string timeDiff = "Computation complete. Time elapsed: " + std::to_string(timeElapsed) + " seconds";
+			double totalTimeElapsed = omp_get_wtime() - computeStart;
+			double tetgenTook = setupStart - computeStart;
+			double setupTook =  runSimulationStart - setupStart;
+			double simTook = omp_get_wtime() - runSimulationStart;
+			std::string timeDiff = "Computation complete. Time elapsed: " + std::to_string(totalTimeElapsed) + " seconds";
+			std::string tetTime = "tetrahedralizing mesh took: " + std::to_string(tetgenTook) + " seconds";
+			std::string setupTime = "setting up QuikDeformer took: " + std::to_string(setupTook) + " seconds";
+			std::string simTime = "run simulation took: " + std::to_string(simTook) + " seconds";
 			MGlobal::displayInfo(timeDiff.c_str());
+			MGlobal::displayInfo(tetTime.c_str());
+			MGlobal::displayInfo(setupTime.c_str());
+			MGlobal::displayInfo(simTime.c_str());
 
 
 		}

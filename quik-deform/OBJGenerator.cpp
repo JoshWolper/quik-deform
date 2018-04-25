@@ -40,6 +40,9 @@ void OBJGenerator::generateClothOBJ(const std::string &fileName,
                 pos <<  0 - i * vertexDist,
                         0,
                         0 - j * vertexDist;
+
+                pos(1) = pos(1) + startHeight; //increase y value by startHeight!
+
                 positions.push_back(pos);
             }
         }

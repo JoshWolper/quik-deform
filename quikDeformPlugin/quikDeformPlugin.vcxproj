@@ -15,8 +15,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\quik-deform\GroundConstraint.cpp" />
-    <ClCompile Include="..\quik-deform\main.cpp" />
     <ClCompile Include="..\quik-deform\OBJGenerator.cpp" />
     <ClCompile Include="..\quik-deform\PositionConstraint.cpp" />
     <ClCompile Include="..\quik-deform\QuikDeformer.cpp" />
@@ -28,7 +26,6 @@
   <ItemGroup>
     <ClInclude Include="..\quik-deform\Constraint.h" />
     <ClInclude Include="..\quik-deform\global.h" />
-    <ClInclude Include="..\quik-deform\GroundConstraint.h" />
     <ClInclude Include="..\quik-deform\OBJGenerator.h" />
     <ClInclude Include="..\quik-deform\PositionConstraint.h" />
     <ClInclude Include="..\quik-deform\QuikDeformer.h" />

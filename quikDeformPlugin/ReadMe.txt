@@ -29,6 +29,7 @@ Maya integration
 - allow creating multiple quikDeformNodes simultaneously - DONE
 - make sure thin-shell works with maya planes - DONE
 	works but only in certain configurations
+- add wind parameters to GUI	- DONE
 
 
 - save data when saving Maya scene 
@@ -39,13 +40,8 @@ Maya integration
 	move originalVertices and triangles into inputIO and compare it when necessary
 
 
-- figure out why cloth is so slow
-- add wind parameters to GUI
 
 - test if rendering works
-- starting frame
-- subdivision slider
-	dynamically change a to allow subdivisions
 - progress bar?
 	https://help.autodesk.com/cloudhelp/2017/ENU/Maya-Tech-Docs/CommandsPython/progressBar.html
 	https://help.autodesk.com/cloudhelp/2017/ENU/Maya-Tech-Docs/Commands/show.html?componentBox.html&cat=Windows

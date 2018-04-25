@@ -56,7 +56,7 @@ void QuikDeformer::readObj(const std::string& fileName, int indexBase){
     return;
 }
 
-void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath, int indexBase){
+void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string& elePath, const std::string& facePath, int indexBase, bool scaleModel){
 
     //Open all the files and check for errors
     ifstream nodeFile, eleFile, faceFile;
@@ -95,8 +95,7 @@ void QuikDeformer::readVolumetric(const std::string& nodePath, const std::string
             ss >> currPoint(i);
         }
 
-        bool scaleAndTranslate = false;
-        if(scaleAndTranslate){
+        if(scaleModel){
 
             double scaleFactor = 100;
             double dx = 0;
@@ -271,6 +270,17 @@ void QuikDeformer::updateWind(){
 
 }
 
+void QuikDeformer::addCollisionPlanes(const std::vector<Eigen::Vector3d> pCenters, const std::vector<double> pLengths, const std::vector<double> pWidths, const std::vector<Eigen::Vector3d> pNormals, double frictionCoeff){
+
+    planeCenters = pCenters;
+    planeLengths = pLengths;
+    planeWidths = pWidths;
+    planeNormals = pNormals;
+    frictionCoefficient = frictionCoeff;
+
+}
+
+
 void QuikDeformer::addPositionConstraint(double weight, int posConstraintIndex){
 
     //Turn index into sMatrix and p Vector!
@@ -292,34 +302,6 @@ void QuikDeformer::addPositionConstraint(double weight, int posConstraintIndex){
     constraints.push_back(new PositionConstraint(weight, sMatrix, p));
 
 }
-
-void QuikDeformer::addGroundConstraint(double weight, vector<int> posConstraintIndeces, double floorVal){
-
-    //Turn index into sMatrix and p Vector!
-
-    MatrixXd sMatrix = MatrixXd(3 * posConstraintIndeces.size(), 3 * numVertices); //3 by 3M S matrix
-    VectorXd p = VectorXd(3 * posConstraintIndeces.size(), 1); //make our vector to hold all the points in the constraint
-
-    sMatrix.setZero();
-
-    for(int i = 0; i < posConstraintIndeces.size(); i++){
-
-        p(i*3 + 0) = vertices[posConstraintIndeces[i]][0];
-        p(i*3 + 1) = vertices[posConstraintIndeces[i]][1];
-        p(i*3 + 2) = vertices[posConstraintIndeces[i]][2];
-
-        sMatrix((3 * i + 0), (3 * posConstraintIndeces[i] + 0)) = 1;
-        sMatrix((3 * i + 1), (3 * posConstraintIndeces[i] + 1)) = 1;
-        sMatrix((3 * i + 2), (3 * posConstraintIndeces[i] + 2)) = 1;
-
-    }
-
-    cout << "sMatrix is: " << endl << sMatrix << endl;
-
-    constraints.push_back(new GroundConstraint(weight, sMatrix, p, posConstraintIndeces, floorVal));
-
-}
-
 
 void QuikDeformer::add2DStrainConstraints(double strain2DWeight){
 
@@ -689,6 +671,8 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
 
         //Ground Collision Checks and Corrections
         Vector3d inputPoint, outputPoint;
+        vector<int> collisionIndeces;
+        collisionIndeces.clear(); //make sure this is empty
         for(int i = 0; i < numVertices; i++){ //check each position for y < 0
 
             //Calculate the indeces
@@ -699,6 +683,14 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
             //Construct input, and use function to get output
             inputPoint = Vector3d(qN_1(id0), qN_1(id1), qN_1(id2));
             outputPoint = planeCollision(inputPoint);
+
+            //Now check if we DID correct this point or not to see if we should damp the velocity or not
+            if((inputPoint[0] != outputPoint[0]) || (inputPoint[1] != outputPoint[1]) || (inputPoint[2] != outputPoint[2])){
+
+                //Add this index to the collision list for this step!
+                collisionIndeces.push_back(i);
+
+            }
 
             //Assign output points to our position matrix!
             qN_1(id0) = outputPoint[0];
@@ -711,6 +703,22 @@ void QuikDeformer::runSimulation(double seconds, const std::string &outputFilePa
         vN_1 = (qN_1 - qN) / timeStep;
 
         if(printsOn == true){cout << "line 9 complete" << endl;}
+
+        //Now we must add frictional damping based on the points that are in collision right now!
+        for(int i = 0; i < collisionIndeces.size(); i++){
+            //Calculate the indeces
+            int j = collisionIndeces[i];
+            int id0 = 3*j + 0;
+            int id1 = 3*j + 1;
+            int id2 = 3*j + 2;
+
+            vN_1(id0) *= frictionCoefficient;
+            vN_1(id1) *= frictionCoefficient;
+            vN_1(id2) *= frictionCoefficient;
+
+            //cout << "Damped velocity of vertex " << j << endl;
+
+        }
 
         //At end of this loop set qN = qN+1 because we are moving to the next time now for the next loop!
         qN = qN_1;
@@ -858,6 +866,8 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
 
         //Ground Collision Checks and Corrections
         Vector3d inputPoint, outputPoint;
+        vector<int> collisionIndeces;
+        collisionIndeces.clear(); //make sure this is empty
         for(int i = 0; i < numVertices; i++){ //check each position for y < 0
 
             //Calculate the indeces
@@ -868,6 +878,14 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
             //Construct input, and use function to get output
             inputPoint = Vector3d(qN_1(id0), qN_1(id1), qN_1(id2));
             outputPoint = planeCollision(inputPoint);
+
+            //Now check if we DID correct this point or not to see if we should damp the velocity or not
+            if((inputPoint[0] != outputPoint[0]) || (inputPoint[1] != outputPoint[1]) || (inputPoint[2] != outputPoint[2])){
+
+                //Add this index to the collision list for this step!
+                collisionIndeces.push_back(i);
+
+            }
 
             //Assign output points to our position matrix!
             qN_1(id0) = outputPoint[0];
@@ -881,6 +899,20 @@ void QuikDeformer::runSimulation(double seconds, bool printsOn, std::vector<Eige
         vN_1 = (qN_1 - qN) / timeStep;
 
         if(printsOn == true){cout << "line 9 complete" << endl;}
+
+        //Now we must add frictional damping based on the points that are in collision right now!
+        for(int i = 0; i < collisionIndeces.size(); i++){
+            //Calculate the indeces
+            int j = collisionIndeces[i];
+            int id0 = 3*j + 0;
+            int id1 = 3*j + 1;
+            int id2 = 3*j + 2;
+
+            vN_1(id0) *= frictionCoefficient;
+            vN_1(id1) *= frictionCoefficient;
+            vN_1(id2) *= frictionCoefficient;
+
+        }
 
         //At end of this loop set qN = qN+1 because we are moving to the next time now for the next loop!
         qN = qN_1;
@@ -937,10 +969,6 @@ Vector3d QuikDeformer::planeCollision(Eigen::Vector3d p){
 
         center = planeCenters[i];
         normal = planeNormals[i].normalized();
-
-        //cout << "Center: " << center << endl;
-        //cout << "Normal: " << normal << endl;
-        //cout << "Point: " << p << endl;
 
         rayP = p - center; //ray from center to input point p
 
