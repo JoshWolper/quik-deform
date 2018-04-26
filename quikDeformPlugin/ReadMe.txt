@@ -11,10 +11,6 @@
 ---------------------------------------------------------------------------------
 			Todo
 ---------------------------------------------------------------------------------
-QuikDeformer
-
-
-
 Maya integration
 - combine mesh data with transform data - DONE
 - update the GUI to better reflect the parameters - DONE
@@ -30,18 +26,12 @@ Maya integration
 - make sure thin-shell works with maya planes - DONE
 	works but only in certain configurations
 - add wind parameters to GUI	- DONE
+- computed simulation should be saved when the Maya scene is saved - DONE
 
-
-- save data when saving Maya scene 
-	nAttr.setStorable(true)?
-		this stores the parameters but not the positions since they're stored and retrieved at run time
-	need to keyframe every position
-- make recompute happen when you change the initial mesh
-	move originalVertices and triangles into inputIO and compare it when necessary
-
-
-
-- test if rendering works
+Future work
+- fix UVs so that textures work
+- Changing the inputMesh after setting constraints is discouraged
+	all position constriant indices will be messed up
 - progress bar?
 	https://help.autodesk.com/cloudhelp/2017/ENU/Maya-Tech-Docs/CommandsPython/progressBar.html
 	https://help.autodesk.com/cloudhelp/2017/ENU/Maya-Tech-Docs/Commands/show.html?componentBox.html&cat=Windows

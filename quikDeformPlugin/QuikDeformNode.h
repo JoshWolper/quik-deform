@@ -38,7 +38,7 @@
 
 
 // a simple struct that lets QuikDeformNode pass inputs into QuikDeformer
-struct QuikDeformNodeIO {
+struct QuikDeformNodeInput {
 	// simulation attributes
 	double timeStep;
 	int solverIterations;
@@ -66,7 +66,7 @@ struct QuikDeformNodeIO {
 	double windPeriod;
 	bool windOscillation;
 
-	bool operator==(const QuikDeformNodeIO& rhs) const {
+	bool operator==(const QuikDeformNodeInput& rhs) const {
 		return
 			// simulation
 			timeStep == rhs.timeStep &&
@@ -94,7 +94,7 @@ struct QuikDeformNodeIO {
 			windOscillation == rhs.windOscillation;
 	}
 
-	bool operator!=(const QuikDeformNodeIO& rhs) const {
+	bool operator!=(const QuikDeformNodeInput& rhs) const {
 		return !((*this) == rhs);
 	}
 
@@ -159,12 +159,18 @@ public:
 	static MObject windPeriod; 
 	static MObject windOscillation;
 
+	// attributes used to hold saved data
+	static MObject savedFrames;
+	static MObject savedMesh;
+
 	static MTypeId id;
 
 private:
 	// basic node stats
 	QuikDeformer* quikDeformer;
-	MObject originaObj;
+	MObject originalMesh;
 	std::vector<MPointArray> computedFrames;
-	QuikDeformNodeIO currentConfiguration;
+	QuikDeformNodeInput currentConfiguration;
+
+	QuikDeformNodeInput getConfiguration(MDataBlock& data);
 };

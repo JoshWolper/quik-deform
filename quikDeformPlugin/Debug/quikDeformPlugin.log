@@ -1,1 +1,7 @@
-﻿  quikDeformPlugin.vcxproj -> D:\Git\quikDeform\quik-deform\quikDeformPlugin\Debug\quikDeformPlugin.mll
+﻿  QuikDeformNode.cpp
+D:\Git\quikDeform\quik-deform\quik-deform\QuikDeformer.h(96): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+QuikDeformNode.cpp(485): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+QuikDeformNode.cpp(522): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+QuikDeformNode.cpp(528): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+QuikDeformNode.cpp(572): warning C4018: '<': signed/unsigned mismatch
+  quikDeformPlugin.vcxproj -> D:\Git\quikDeform\quik-deform\quikDeformPlugin\Debug\quikDeformPlugin.mll

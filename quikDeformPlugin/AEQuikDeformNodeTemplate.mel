@@ -85,6 +85,9 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 	editorTemplate -suppress "currentFrame";
 	editorTemplate -suppress "doCompute";
 	editorTemplate -suppress "positionConstraints";
+	editorTemplate -suppress "collisionConstraints";
+	editorTemplate -suppress "savedFrames";
+	editorTemplate -suppress "savedMesh";
 }
 
 
