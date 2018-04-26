@@ -16,7 +16,7 @@ int main(){
 
     //SIM PARAMETERS
     double h = 1e-2; //timestep
-    int iter = 5; // solverIterations
+    int iter = 1; // solverIterations
     double mass = 1; //mass of each point
     int fr = 24; // frame rate
     double vx = 0;

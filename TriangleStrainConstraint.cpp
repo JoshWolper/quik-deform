@@ -37,34 +37,22 @@ void TriangleStrainConstraint::projectConstraint(Eigen::VectorXd qN_1){
     MatrixXd F = MatrixXd(3,2).setZero();
     F = Ds * Dminv;
 
-    //cout << "---------------------" << endl;
-    //cout << "DefGrad: \n" << F << endl;
-
     //Now that we have computed F, take the SVD of it!
     JacobiSVD<MatrixXd> SVD( F, ComputeFullV | ComputeFullU );
     MatrixXd U = SVD.matrixU();
     MatrixXd V = SVD.matrixV();
     VectorXd singVals = SVD.singularValues();
 
-    //cout << "U(before): \n" << U << endl;
-    //cout << "Vt(before): \n" << V.transpose() << endl;
-
     MatrixXd S = MatrixXd(3,2).setZero();
     S(0,0) = singVals(0);
     S(1,1) = singVals(1);
-    //cout << "S(before): \n" << S << endl;
-
-    //cout << "det(U): " << U.determinant();
-    //cout << "det(V): " << V.determinant();
 
     //Determinant correction so that we ALWAYS have either BOTH determinants negative or BOTh positive
     if(U.determinant() * V.determinant() == -1){
         U.col(2) *= -1;
     }
 
-    //cout << "U(after): \n" << U << endl;
-    //cout << "Vt(after): \n" << V.transpose() << endl;
-
+    //TODO: in the future, make these variables passed into the constructor!!!
     double strainMin = 0.97;
     double strainMax = 1.03;
 
