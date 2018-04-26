@@ -45,6 +45,10 @@ global proc createQuikDeformWindow()
                         		-value 5
                         		-width 480
                         		solverIterSlider_w;
+							intFieldGrp 
+                                -label "Starting Frame" 
+                                -value1 1
+                                startingFrameField_w;
                         	floatFieldGrp 
                                 -label "Seconds to Simulate" 
                                 -value1 5
@@ -274,7 +278,7 @@ global proc addPositionConstraintCmd_w()
 global proc removePositionConstraintCmd_w()
 {
     string $selected[] = `textScrollList -query -selectItem positionConstraintTextScroll_w`;
-    print $selected;
+    //print $selected;
     for ($item in $selected){
         textScrollList -edit -removeItem $item positionConstraintTextScroll_w;
     }
@@ -288,7 +292,7 @@ global proc addCollisionConstraintCmd_w()
     // add the objects
     string $allItems[] = `textScrollList -query -allItems collisionConstraintTextScroll_w`;
     for ($object in $selection){
-		print ("attempting to add " + $object);
+		//print ("attempting to add " + $object);
         // make sure the object is a non-slanted plane
         float $center[] = `objectCenter -gl $object`;
         float $normal[] = getPlaneNormal($object);
@@ -343,7 +347,10 @@ global proc createQuikDeformNode_w(){
         // solverIterations
         int $solverIterValue = `intSliderGrp -q -value solverIterSlider_w`;
         setAttr ($nodeName + ".solverIterations") $solverIterValue;
-        // seconds
+		// starting frame
+		float $startingFrameValue = `intFieldGrp -q -value1 startingFrameField_w`;
+        setAttr ($nodeName + ".startingFrame") $startingFrameValue;
+        // seconds to simulate
         float $secondsValue = `floatFieldGrp -q -value1 secondsField_w`;
         setAttr ($nodeName + ".secondsToSimulate") $secondsValue;
         // frameRate
@@ -416,6 +423,9 @@ global proc createQuikDeformNode_w(){
         
         // set doCompute to true to do computation
         setAttr ($nodeName + ".doCompute") true;
+
+		// hide the original obj
+		hide $selection[0];
     } else{
         print ("Error: please select 1 and only 1 object to run simulation on");
     }
@@ -617,7 +627,7 @@ global proc setPositionConstraintAttr( string $vertices[] ){
 		$vertexString += $vertex + ",";
 	}
 	
-	print ("about to add string: " + $vertexString);
+	//print ("about to add string: " + $vertexString);
 	
 	string $targetNode = getSelectedQuikDeformNode();
 	setAttr ($targetNode + ".positionConstraints") -type "string" $vertexString;
@@ -643,8 +653,8 @@ global proc setCollisionConstraintAttr( string $planes[] ){
         $planeString += $string;     
     }
     
-    print "about to add planeString: \n";
-    print $planeString;
+    //print "about to add planeString: \n";
+    //print $planeString;
 	
 	string $targetNode = getSelectedQuikDeformNode();
 	setAttr ($targetNode + ".collisionConstraints") -type "string" $planeString;

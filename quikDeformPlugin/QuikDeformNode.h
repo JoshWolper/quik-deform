@@ -134,6 +134,7 @@ public:
 	static MObject outputMesh;
 	static MObject timeStep;
 	static MObject solverIterations;
+	static MObject startingFrame;
 	static MObject secondsToSimulate;
 	static MObject frameRate;
 	static MObject currentFrame;

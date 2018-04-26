@@ -27,6 +27,7 @@ Maya integration
 	works but only in certain configurations
 - add wind parameters to GUI	- DONE
 - computed simulation should be saved when the Maya scene is saved - DONE
+- customize starting frame - DONE
 
 Future work
 - fix UVs so that textures work

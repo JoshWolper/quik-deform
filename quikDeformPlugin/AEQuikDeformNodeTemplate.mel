@@ -20,7 +20,8 @@ global proc AEQuikDeformNodeTemplate( string $nodeName )
 		editorTemplate -callCustom "timeSliderAttributeNew" "timeSliderAttributeUpdate" "timeStep";
 		// custom int slider for solverIterations
 		editorTemplate -callCustom "iterSliderAttributeNew" "iterSliderAttributeUpdate" "solverIterations";
-        editorTemplate -label "Seconds to Simulate" -addControl "secondsToSimulate";
+        editorTemplate -label "Starting Frame" -addControl "startingFrame";
+		editorTemplate -label "Seconds to Simulate" -addControl "secondsToSimulate";
 		editorTemplate -label "Framerate" -addControl "frameRate";
 
     editorTemplate -endLayout;
@@ -340,8 +341,6 @@ global proc simulateButtonCmd()
 	
 	// set doCompute to true to do computation
 	setAttr ($targetNode + ".doCompute") true;
-	
-	print ("stuff happens here");
 }
 
 
@@ -502,7 +501,7 @@ global proc addCollisionConstraintCmd()
     // add the objects
     string $allItems[] = `textScrollList -query -allItems collisionConstraintTextScroll`;
     for ($object in $selection){
-		print ("attempting to add " + $object);
+		//print ("attempting to add " + $object);
         // make sure the object is a non-slanted plane
         float $center[] = `objectCenter -gl $object`;
         float $normal[] = getPlaneNormal($object);
@@ -742,7 +741,7 @@ global proc setPositionConstraintAttr( string $vertices[] ){
 		$vertexString += $vertex + ",";
 	}
 	
-	print ("about to add string: " + $vertexString);
+	//print ("about to add string: " + $vertexString);
 	
 	string $targetNode = getSelectedQuikDeformNode();
 	setAttr ($targetNode + ".positionConstraints") -type "string" $vertexString;
@@ -768,8 +767,8 @@ global proc setCollisionConstraintAttr( string $planes[] ){
         $planeString += $string;     
     }
     
-    print "about to add planeString: \n";
-    print $planeString;
+    //print "about to add planeString: \n";
+    //print $planeString;
 	
 	string $targetNode = getSelectedQuikDeformNode();
 	setAttr ($targetNode + ".collisionConstraints") -type "string" $planeString;

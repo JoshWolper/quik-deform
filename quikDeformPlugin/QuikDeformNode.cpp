@@ -258,6 +258,7 @@ MObject QuikDeformNode::inputMesh;
 MObject QuikDeformNode::outputMesh;
 MObject QuikDeformNode::timeStep;
 MObject QuikDeformNode::solverIterations;
+MObject QuikDeformNode::startingFrame;
 MObject QuikDeformNode::secondsToSimulate;
 MObject QuikDeformNode::frameRate;
 MObject QuikDeformNode::currentFrame;
@@ -316,6 +317,8 @@ MStatus QuikDeformNode::initialize() {
 	numAttr.setStorable(true);
 	QuikDeformNode::solverIterations = numAttr.create("solverIterations", "si", MFnNumericData::kInt, 5);
 	numAttr.setStorable(true);
+	QuikDeformNode::startingFrame = numAttr.create("startingFrame", "sf", MFnNumericData::kInt, 1);
+	numAttr.setStorable(true);
 	QuikDeformNode::secondsToSimulate = numAttr.create("secondsToSimulate", "f", MFnNumericData::kInt, 5);
 	numAttr.setStorable(true);
 	QuikDeformNode::frameRate = numAttr.create("frameRate", "fr", MFnNumericData::kInt, 24);
@@ -372,6 +375,7 @@ MStatus QuikDeformNode::initialize() {
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::outputMesh));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::timeStep));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::solverIterations));
+	CHECK_MSTATUS(addAttribute(QuikDeformNode::startingFrame));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::secondsToSimulate));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::frameRate));
 	CHECK_MSTATUS(addAttribute(QuikDeformNode::currentFrame));
@@ -426,9 +430,6 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 			if (!computedFrames.empty()) {
 				MGlobal::displayInfo("successfully loaded saved frame data");
 			}
-			else {
-				MGlobal::displayInfo("failed to load saved frame data");
-			}
 		}
 	}
 	// if there's no originalMesh but there is data in savedMesh, read in the mesh
@@ -455,7 +456,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 
 		// only compute output if we've never computed quikDeformer before or if input changed
 		if (quikDeformer == nullptr || currentConfiguration != newConfiguration) {
-			MGlobal::displayInfo(std::string("recomputing everything").c_str());
+			//MGlobal::displayInfo(std::string("recomputing everything").c_str());
 
 			// --------------------------------------------------------
 			// step 2.1: get the mesh. tetrahedralize it if neccessary
@@ -645,7 +646,7 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 
 			// print out some times
 			double totalTimeElapsed = omp_get_wtime() - computeStart;
-			std::string timeDiff = "Computation complete. Time elapsed: " + std::to_string(totalTimeElapsed) + " seconds";
+			std::string timeDiff = "Simulation complete. Time elapsed: " + std::to_string(totalTimeElapsed) + " seconds";
 			MGlobal::displayInfo(timeDiff.c_str());
 
 			// save the savedFrames into attributes
@@ -672,18 +673,23 @@ MStatus QuikDeformNode::compute(const MPlug& plug, MDataBlock& data) {
 	MFnMesh newMesh;
 	newMesh.copy(originalMesh, newOutputObj);
 
-	// update output
+	// get frame info
 	MDataHandle currentFrameData = data.inputValue(currentFrame);
+	MDataHandle startingFrameData = data.inputValue(startingFrame);
+	int frameOffset = startingFrameData.asInt() - 1;
 	int frameToDisplay = currentFrameData.asInt();
+	int frameIndex = frameToDisplay - frameOffset - 1;
 	int totalFrames = currentConfiguration.frameRate * currentConfiguration.secondsToSimulate;
-	if (frameToDisplay <= totalFrames) {
-		newMesh.setPoints(computedFrames[frameToDisplay - 1]);
+
+	// display data for the right frame
+	if (frameIndex < totalFrames && frameIndex >= 0) {
+		newMesh.setPoints(computedFrames[frameIndex]);
 		newMesh.setObject(newOutputObj);
 		outputMeshData.set(newOutputObj);
 		data.setClean(plug);
 	}
 	else {
-		MGlobal::displayInfo(std::string("can't showing frame " + std::to_string(frameToDisplay) + ", because it has not been computed yet.").c_str());
+		//MGlobal::displayInfo(std::string("can't show frame " + std::to_string(frameToDisplay) + ", because it has not been computed yet.").c_str());
 	}
 
 	return MStatus::kSuccess;
